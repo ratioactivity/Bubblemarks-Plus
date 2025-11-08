@@ -1,6 +1,10 @@
 
 
-const STORAGE_KEY = "bubblemarks.bookmarks.v1";
+if (typeof window !== "undefined") {
+  window.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ script validated");
+
+    const STORAGE_KEY = "bubblemarks.bookmarks.v1";
 const DEFAULT_SOURCE = "bookmarks.json";
 const FALLBACK_PALETTES = [
   { background: "#ffe9f6", accent: "#ff80c8", shadow: "#ffc3e4" },
@@ -878,6 +882,7 @@ function sortBookmarksAlphabetically(entries) {
     return nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
   });
 }
+
 
 function getDefaultCategorySettings() {
   return DEFAULT_CATEGORY_SETTINGS.map((item) => ({ ...item }));
@@ -4158,4 +4163,5 @@ function setupDataTools() {
   });
 })();
 
-console.log("✅ script validated");
+  });
+}
