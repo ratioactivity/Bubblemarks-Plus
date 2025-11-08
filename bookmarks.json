@@ -1,0 +1,308 @@
+[
+  {
+    "name": "Hulu",
+    "url": "https://www.hulu.com",
+    "category": "AV",
+    "image": "https://deadline.com/wp-content/uploads/2022/08/hulu-Green-digital-logo-1.jpg?w=1024"
+  },
+  {
+    "name": "Prime Video",
+    "url": "https://www.amazon.com/Amazon-Video/b/?&node=2858778011&ref=dvm_MLP_ROWNA_US_1&rs=140-5036548-8732934:C",
+    "category": "AV",
+    "image": "https://ppc.land/content/images/2024/01/prime-video.png"
+  },
+  {
+    "name": "HBO Max",
+    "url": "https://www.hbomax.com/#",
+    "category": "AV",
+    "image": "https://hardynet.net/wp-content/uploads/2020/07/HBO-Max-logo3.jpg"
+  },
+  {
+    "name": "ChatGPT 4o",
+    "url": "https://chatgpt.com/?model=gpt-4o",
+    "category": "AI",
+    "image": "https://www.c-sharpcorner.com/article/introducing-chatgpt-4o-the-future-of-multimodal-ai-interaction/Images/ChatGPT-4o.jpg"
+  },
+  {
+    "name": "ChatGPT 5o",
+    "url": "https://chatgpt.com/?model=gpt-5",
+    "category": "AI",
+    "image": "https://images.ctfassets.net/kftzwdyauwt9/2BUWdgTaQBs75ThHVwgAQ9/07670be78f9babba79f23515ab434124/20250805_Jupiter_ArtCard_1920x1080_16x9_DZ_v20__00265_.jpg?w=1600&h=900&fit=fill"
+  },
+  {
+    "name": "Google Drive",
+    "url": "https://drive.google.com/drive/u/0/home",
+    "category": "Google",
+    "image": "https://www.bobcloud.net/wp-content/uploads/2023/10/Google-Drive-Logo-2023.png"
+  },
+  {
+    "name": "Font Generator",
+    "url": "https://codepen.io/dhglxaqq-the-builder/pen/yLdGrqK",
+    "category": "Tools",
+    "image": "https://compote.slate.com/images/277a0417-dc8b-4aa4-88a8-9d87a4420c0b.jpeg?crop=4120%2C2746%2Cx0%2Cy91"
+  },
+  {
+    "name": "Otter Cam",
+    "url": "https://www.montereybayaquarium.org/animals/live-cams/sea-otter-cam",
+    "category": "AV",
+    "image": "https://giorgifoundation.org/wp-content/uploads/2020/08/cMontereyBayAquarium_TR19-0747.jpg"
+  },
+  {
+    "name": "Pinterest",
+    "url": "https://www.pinterest.com/",
+    "category": "Tools",
+    "image": "https://assets.turbologo.com/blog/en/2021/11/14085702/Pinterest-Logo-2016-1.png"
+  },
+  {
+    "name": "Chase",
+    "url": "https://www.chase.com/",
+    "category": "Shop",
+    "image": "https://d2hmeuvi8rov6c.cloudfront.net/companies/wide_images/000/000/005/1518101921_large.png"
+  },
+  {
+    "name": "Discover",
+    "url": "https://www.discover.com/",
+    "category": "Shop",
+    "image": "https://shop.goebt.com/pub/media/catalog/product/cache/c3c992f3003f382ded6b88eb2c380b50/d/i/discover-logo_1.jpeg"
+  },
+  {
+    "name": "Image Upscaler",
+    "url": "https://imgupscaler.com/",
+    "category": "Tools",
+    "image": "https://fixthephoto.com/images/content/imgupscaler-logo.png"
+  },
+  {
+    "name": "Background Remover",
+    "url": "https://www.remove.bg/",
+    "category": "Tools",
+    "image": "https://www.toolpilot.ai/cdn/shop/files/removebg.jpg?v=1688392321"
+  },
+  {
+    "name": "Google Home",
+    "url": "https://home.google.com/u/0/home/1-e329dd0e8f07b1267872ec64c1a0c4d18454946b2e6d274e7dfc1afd912ec965/cameras/grid",
+    "category": "Google",
+    "image": "https://1000logos.net/wp-content/uploads/2021/12/Google-Home-Logo.png"
+  },
+  {
+    "name": "Doordash",
+    "url": "https://www.doordash.com/",
+    "category": "Tools",
+    "image": "https://1000logos.net/wp-content/uploads/2021/06/DoorDash-logo-2048x1152.png"
+  },
+  {
+    "name": "YouTube",
+    "url": "https://www.youtube.com/",
+    "category": "AV",
+    "image": "https://preview.redd.it/accurate-recreation-of-the-new-youtube-logo-v0-l8divibm8dxd1.png?width=1080&crop=smart&auto=webp&s=1eae35ce4367dc1bdff820374e0089a8ecefd39f"
+  },
+  {
+    "name": "Etsy",
+    "url": "https://www.etsy.com/",
+    "category": "Tools",
+    "image": "https://cdn.freebiesupply.com/logos/large/2x/etsy-2-logo-png-transparent.png"
+  },
+  {
+    "name": "Twitch",
+    "url": "https://www.twitch.tv/",
+    "category": "AV",
+    "image": "https://variety.com/wp-content/uploads/2019/09/twitch_logo.jpg"
+  },
+  {
+    "name": "Jacob\u2019s Twitch",
+    "url": "https://www.twitch.tv/jaketheallosaurian",
+    "category": "AV",
+    "image": "https://www.nhm.ac.uk/content/dam/nhm-www/discover/dinosaur-parents/dino-parents-allosaurus-illustration-two-column.jpg"
+  },
+  {
+    "name": "Starz",
+    "url": "https://www.starz.com/us/en/",
+    "category": "AV",
+    "image": "https://images.squarespace-cdn.com/content/v1/6481e2427d99a120d7205507/715fad38-eee4-4c0f-9bf9-8d5bdea27754/STARZ_Cover_01_NOISE.jpg"
+  },
+  {
+    "name": "Quotev",
+    "url": "https://www.quotev.com/",
+    "category": "Tools",
+    "image": "https://i.quotev.com/6f76kabpaaaa.jpg"
+  },
+  {
+    "name": "Github",
+    "url": "https://github.com",
+    "category": "Tools",
+    "image": "https://beecrowd.com/wp-content/uploads/2024/04/2022-08-18-GitHub.jpg"
+  },
+  {
+    "name": "Orca Acoustics",
+    "url": "https://www.orcabehaviorinstitute.org/orca-acoustics",
+    "category": "AV",
+    "image": "https://i.pinimg.com/736x/ae/48/f1/ae48f1d0d2be72f3afdcd6b3db845329.jpg"
+  },
+  {
+    "name": "Ebay",
+    "url": "ebay.com",
+    "category": "Shop",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/88/Radium_Dial.jpg"
+  },
+  {
+    "name": "Codex",
+    "url": "https://chatgpt.com/codex",
+    "category": "AI",
+    "image": "https://i.ytimg.com/vi/Kd0QGZMy_tA/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAqVomHi3c0ozIhCk6F4qtJL1QFTA"
+  },
+  {
+    "name": "itch.io",
+    "url": "https://itch.io",
+    "category": "Games",
+    "image": "https://i.pcmag.com/imagery/reviews/044PXMK6FlED1dNwOXkecXV-4..v1597354669.jpg"
+  },
+  {
+    "name": "GX Games",
+    "url": "https://gx.games",
+    "category": "Games",
+    "image": "https://mobidictum.com/wp-content/uploads/2022/07/GX-Games-free-publishing-platform.jpg"
+  },
+  {
+    "name": "Vaquita Valiente",
+    "url": "https://gx.games/games/388dbv/vaquita-valiente",
+    "category": "Games",
+    "image": "https://img.itch.zone/aW1nLzIzNTUwODQ5LnBuZw==/315x250%23c/i%2BdAwF.png"
+  },
+  {
+    "name": "Papa\u2019s Sushiria",
+    "url": "https://www.coolmathgames.com/0-papas-sushiria",
+    "category": "Games",
+    "image": "https://imgs.crazygames.com/auto-covers/papas-sushiria_1x1.png?format=auto&quality=70&metadata=none"
+  },
+  {
+    "name": "A Dark Room",
+    "url": "https://adarkroom.doublespeakgames.com",
+    "category": "Games",
+    "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2460660/capsule_616x353.jpg?t=1720740126"
+  },
+  {
+    "name": "2048",
+    "url": "https://play2048.co",
+    "category": "Games",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/2048_logo.svg/1200px-2048_logo.svg.png"
+  },
+  {
+    "name": "Netflix",
+    "url": "netflix.com",
+    "category": "AV",
+    "image": "https://images.ctfassets.net/y2ske730sjqp/1aONibCke6niZhgPxuiilC/2c401b05a07288746ddf3bd3943fbc76/BrandAssets_Logos_01-Wordmark.jpg?w=940"
+  },
+  {
+    "name": "Paramount+",
+    "url": "https://www.paramountplus.com",
+    "category": "AV",
+    "image": "https://variety.com/wp-content/uploads/2022/03/Paramount-Plus-Logo.png?w=1000&h=627&crop=1"
+  },
+    {
+    "name": "BOTA",
+    "url": "https://www.notion.so/BOTA-10586c3bb6b980dbadddf8e6568086d1",
+    "category": "Stories",
+    "image": "https://i.pinimg.com/736x/f4/48/1c/f4481cf82770782df9da79672f08af7b.jpg"
+  },
+    {
+    "name": "SOMA",
+    "url": "https://www.notion.so/SOMA-23286c3bb6b980ffbeddd4a8cf15d2e6",
+    "category": "Stories",
+    "image": "https://64.media.tumblr.com/2f5722eea371e924e2e22b41c5e0e247/892d9072475e918b-ed/s1280x1920/a6d2af705e3d57d0773d237bc59e0f67ee92a763.png"
+  },
+    {
+    "name": "SOJAIRN",
+    "url": "https://www.notion.so/Sojairn-23686c3bb6b980ef8bb1d8df1e223ba2",
+    "category": "Stories",
+    "image": "https://i.pinimg.com/originals/3e/33/f5/3e33f52196f28070d34be22319a5a811.png"
+  },
+    {
+    "name": "TEETH",
+    "url": "https://www.notion.so/Teeth-25886c3bb6b980839c48c00157c46ca1",
+    "category": "Stories",
+    "image": "https://i.pinimg.com/1200x/16/53/89/165389d0768126e5db086db00247395b.jpg"
+  },
+    {
+    "name": "LYSA",
+    "url": "https://www.notion.so/Lysa-23286c3bb6b980598dd2e7b427af60f1",
+    "category": "Stories",
+    "image": "https://img.notionusercontent.com/ext/https%3A%2F%2Fcdna.artstation.com%2Fp%2Fassets%2Fimages%2Fimages%2F053%2F667%2F938%2Flarge%2Fmlarty-extra-rabies-2.jpg%3F1662736717/size/w=2000?exp=1762491166&sig=7OTasvapTgxHgg7YqDNiGkfA5vGlkWPjLr65oVVSiTA&id=23286c3b-b6b9-8059-8dd2-e7b427af60f1&table=block&userId=7f8423f1-cb7a-4185-bcc6-442a0e66d4a1"
+  },
+    {
+    "name": "Apothecary",
+    "url": "https://www.notion.so/The-Apothecary-1f486c3bb6b980c59cfdccec5869cce8",
+    "category": "Pages",
+    "image": "https://preview.redd.it/r-serbia-sveop%C5%A1ta-diskusija-random-discussion-mar-29-2025-v0-57j76feyppre1.jpeg?width=491&auto=webp&s=7f38e2efea78bddf195420d49a0224b858714681"
+  },
+    {
+    "name": "Custom Tea Hub",
+    "url": "https://www.notion.so/Custom-Tea-Hub-29b86c3bb6b9808bbf9ef2d3295302a0?pvs=25",
+    "category": "Pages",
+    "image": "https://img.notionusercontent.com/ext/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fcc%2F70%2Fbd%2Fcc70bdabd5ef975b4241abbec85c1c12.jpg/size/w=2000?exp=1762491326&sig=fncysjcywIkAbXvBtYpFTBjiLRkSA40FUXiAaVfLiGw&id=29b86c3b-b6b9-808b-bf9e-f2d3295302a0&table=block&userId=7f8423f1-cb7a-4185-bcc6-442a0e66d4a1"
+  },
+    {
+    "name": "Joy Zone",
+    "url": "https://www.notion.so/Joy-Zone-11686c3bb6b980b4b6edc007e3154554?pvs=25",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/1200x/f6/9d/f6/f69df668452e484aa2293abc9bd35fa1.jpg"
+  },
+    {
+    "name": "Work Dashboard",
+    "url": "https://www.notion.so/Joy-Zone-11686c3bb6b980b4b6edc007e3154554?pvs=25",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/736x/fe/f0/4f/fef04f1b5f07ee37318336b96d90332a.jpg"
+  },
+    {
+    "name": "Assignment Tracker",
+    "url": "https://www.notion.so/Assignment-Tracker-0ff86c3bb6b98084964fd8231c214ab9",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/1200x/a6/c9/2d/a6c92deb87b85ee53305473ca699387f.jpg"
+  },
+    {
+    "name": "Art Gallery",
+    "url": "https://www.notion.so/Art-Gallery-d2ffefdba25b45a3a77ba7b3578b4491",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/1200x/03/c4/30/03c430503348ce0a118afbe1af835343.jpg"
+  },
+    {
+    "name": "Games",
+    "url": "https://www.notion.so/Games-10c86c3bb6b980f58da3e1699fb5953e?pvs=25",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/1200x/6b/dd/4b/6bdd4bfdd311dfba1489088ae85138fd.jpg"
+  },
+    {
+    "name": "Radium",
+    "url": "https://www.notion.so/Radium-26886c3bb6b980ea9b59d525925f951b",
+    "category": "Pages",
+    "image": "https://pastramination.com/wp-content/uploads/2025/10/066d2b232fe8303157b332f3566cbef2_original.jpg"
+  },
+    {
+    "name": "Crochet Patterns",
+    "url": "https://www.notion.so/Crochet-Patterns-f78434d3565243479b6bf90bfcb2d015?pvs=25",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/736x/80/f9/64/80f964d3cdb01ad726923aaaa5e1224c.jpg"
+  },
+    {
+    "name": "Recipe Book",
+    "url": "https://www.notion.so/Recipe-Book-25a86c3bb6b980bcafe5f6e7f1148065",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/736x/e0/62/89/e06289a9dfec80531205eb01a18f5bd8.jpg"
+  },
+    {
+    "name": "Wishlist",
+    "url": "https://www.notion.so/Wishlist-25886c3bb6b980138845e8891fd3f5b2",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/1200x/da/02/50/da0250ce2914dc879e4859bbcfb68b71.jpg"
+  },
+    {
+    "name": "Coding Dashboard",
+    "url": "https://www.notion.so/Coding-Dashboard-29486c3bb6b980bfb389d4c1dd821976",
+    "category": "Pages",
+    "image": "https://i.pinimg.com/736x/3a/8e/6b/3a8e6b685fb14c7d31c65c4b1d77f373.jpg"
+  },
+    {
+    "name": "The Archives",
+    "url": "https://www.notion.so/The-Archives-10086c3bb6b9804db597ea2fe7fa07cd",
+    "category": "Pages",
+    "image": "https://64.media.tumblr.com/02ca1a61849271ae5c71dd7fbbd3df48/3234b6ed0dd38d42-ce/s1280x1920/618b55fb0128e4018981d5b24ea5fe5540384031.png"
+  }
+]
