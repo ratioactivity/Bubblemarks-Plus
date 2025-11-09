@@ -1,605 +1,375 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  background: radial-gradient(circle at 15% 20%, #f4f5ff 0%, #f0f1ff 28%, rgba(238, 229, 255, 0.9) 52%, rgba(254, 238, 250, 0.92) 100%);
-  font-family: "Papernotes", system-ui, sans-serif;
-  color: #5f5a7d;
+:root {
+  color-scheme: light;
+  --bubble-purple: #bba7ff;
+  --bubble-pink: #f6bfe7;
+  --bubble-blue: #9fd9ff;
+  --glass-white: rgba(255, 255, 255, 0.6);
+  --glass-outline: rgba(255, 255, 255, 0.2);
+  --ink: rgba(55, 40, 79, 0.75);
+  --stat-track: rgba(255, 255, 255, 0.18);
+  --stat-fill-start: rgba(173, 199, 255, 0.85);
+  --stat-fill-end: rgba(255, 190, 235, 0.9);
+  --button-shadow: rgba(86, 63, 128, 0.25);
+  --button-highlight: rgba(255, 255, 255, 0.55);
+  --frame-shadow: rgba(113, 87, 167, 0.45);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
+  font-family: "Papernotes", system-ui, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(32px, 6vh, 48px) clamp(16px, 6vw, 48px);
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 222, 244, 0.6), transparent 60%),
+    radial-gradient(circle at 80% 10%, rgba(174, 209, 255, 0.4), transparent 65%),
+    #f3f1ff;
 }
 
 #pet-root {
-  width: min(600px, 100%);
+  width: min(600px, 96vw);
   display: flex;
-  align-items: center;
   justify-content: center;
+  padding: 24px;
 }
 
 .pet-container {
   position: relative;
   width: 100%;
-  padding: clamp(30px, 6vw, 44px);
-  border-radius: 30px;
+  background-image: url("assets/background.png");
+  background-size: cover;
+  background-position: center;
+  border-radius: 28px;
+  padding: 36px 32px 60px;
+  box-shadow: 0 28px 55px rgba(61, 44, 109, 0.35);
   overflow: visible;
-  background:
-    linear-gradient(180deg, rgba(248, 244, 255, 0.85) 0%, rgba(235, 228, 255, 0.6) 48%, rgba(222, 218, 255, 0.5) 100%);
-  box-shadow: 0 32px 68px rgba(120, 102, 174, 0.28);
-}
-
-.pet-container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: url("assets/background.png") center/cover no-repeat;
-  opacity: 0.85;
-  filter: blur(10px) saturate(115%);
-  z-index: -2;
+  display: flex;
+  justify-content: center;
+  transition: transform 400ms ease, box-shadow 400ms ease;
 }
 
 .pet-container::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-    inset 0 28px 60px rgba(255, 255, 255, 0.25),
-    inset 0 -32px 70px rgba(124, 105, 180, 0.2);
-  pointer-events: none;
-  z-index: -1;
-}
-
-.pet-stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1756 / 2400;
-  display: grid;
-  place-items: stretch;
-  isolation: isolate;
-  transition: transform 1.8s ease-in-out;
-}
-
-#pet-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 22px 48px rgba(118, 101, 171, 0.38));
-  pointer-events: none;
-  z-index: 3;
-}
-
-.inner-tank {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tank-content {
-  position: absolute;
-  inset: clamp(8%, 7vw, 9%) clamp(8%, 7vw, 9%) clamp(9%, 8vw, 10%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(18px, 3vh, 28px);
-  padding: clamp(20px, 3vw, 30px);
-  text-align: center;
-  border-radius: clamp(30px, 8vw, 44px);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(215, 229, 255, 0.34) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
-    inset 0 28px 58px rgba(255, 255, 255, 0.62),
-    inset 0 -30px 60px rgba(142, 182, 255, 0.26),
-    0 16px 32px rgba(115, 104, 170, 0.18);
-  backdrop-filter: blur(5px);
-  overflow: hidden;
-  z-index: 2;
-}
-
-.tank-content::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 25% 15%, rgba(255, 255, 255, 0.85), transparent 62%),
-    radial-gradient(circle at 80% 12%, rgba(255, 255, 255, 0.4), transparent 55%);
-  opacity: 0.9;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.tank-content::after {
-  content: "";
-  position: absolute;
-  inset: -12% -18% -18%;
-  border-radius: 45px;
-  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.35) 0%, transparent 70%), linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(176, 192, 255, 0.2) 55%, rgba(126, 113, 196, 0.25) 100%);
-  mix-blend-mode: soft-light;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 0;
-  animation: rippleLight 16s ease-in-out infinite alternate;
-  background-size: 120% 160%;
-}
-
-.tank-ambient {
-  position: absolute;
-  inset: -20% -25%;
-  background: radial-gradient(circle at 35% 15%, rgba(255, 255, 255, 0.4) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.25) 0%, transparent 55%);
-  opacity: 0.6;
-  mix-blend-mode: screen;
-  filter: blur(6px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-#pet-header {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  z-index: 1;
-}
-
-.tank-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.pet-meta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.72), rgba(214, 220, 255, 0.52));
-  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.55);
-}
-
-.pet-meta-label {
-  font-size: 13px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(102, 96, 144, 0.72);
-}
-
-.pet-meta-value {
-  font-size: 19px;
-  color: #806ad8;
-}
-
-.pet-nameplate {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 6px 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.58);
-  box-shadow: inset 0 0 22px rgba(255, 255, 255, 0.7);
-}
-
-#pet-name {
-  margin: 0;
-  font-family: "Bigbesty", "Papernotes", cursive;
-  font-size: clamp(34px, 7vw, 46px);
-  letter-spacing: 1.5px;
-  color: #f08dc5;
-  text-shadow: 0 10px 24px rgba(235, 166, 220, 0.55);
-}
-
-.pet-rename {
-  border: 1px dashed rgba(138, 126, 187, 0.7);
-  border-radius: 999px;
-  padding: 6px 18px;
-  background: rgba(255, 255, 255, 0.42);
-  color: #6b5aa3;
-  font-family: "Papernotes", system-ui, sans-serif;
-  font-size: 15px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  box-shadow: 0 10px 18px rgba(154, 144, 205, 0.28);
-}
-
-.pet-rename:hover {
-  background: rgba(255, 255, 255, 0.66);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(154, 144, 205, 0.36);
-}
-
-.pet-rename:active {
-  transform: scale(0.95);
-}
-
-#pet-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 26px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 16px 34px rgba(141, 130, 190, 0.26);
-  font-size: 16px;
-  color: #706a92;
-}
-
-.tank-body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 4vh, 32px);
-  width: 100%;
-  z-index: 1;
-}
-
-#pet-display {
-  position: relative;
-  width: 100%;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pet-tank {
-  position: relative;
-  width: 100%;
-  height: clamp(220px, 38vh, 320px);
-  border-radius: clamp(28px, 7vw, 40px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.75) 0%, rgba(218, 232, 255, 0.35) 55%, rgba(185, 210, 255, 0.15) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-    inset 0 24px 55px rgba(255, 255, 255, 0.45),
-    inset 0 -26px 55px rgba(140, 178, 255, 0.28),
-    0 20px 48px rgba(120, 108, 182, 0.22);
-  overflow: hidden;
-}
-
-.tank-shimmer {
-  position: absolute;
-  inset: -40% -60%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.38) 0%, transparent 60%);
-  animation: shimmer 8s linear infinite;
-  mix-blend-mode: screen;
-  opacity: 0.35;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translate(-10%, -10%) rotate(0deg);
-  }
-  50% {
-    transform: translate(10%, 5%) rotate(10deg);
-  }
-  100% {
-    transform: translate(-10%, -10%) rotate(0deg);
-  }
-}
-
-#pet-sprite {
-  position: relative;
-  max-width: min(58%, 320px);
-  max-height: 40%;
-  width: auto;
-  height: auto;
-  image-rendering: pixelated;
-  z-index: 1;
-}
-
-.pet-stats-panel {
-  position: relative;
-  width: min(520px, 92%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  padding: clamp(18px, 3vw, 24px) clamp(20px, 4vw, 28px) clamp(22px, 4vw, 30px);
-  z-index: 1;
-}
-
-.pet-stats-panel::before {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border-radius: 26px;
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  filter: blur(0.5px);
-  backdrop-filter: blur(8px);
-  z-index: 0;
+  mix-blend-mode: screen;
   pointer-events: none;
-}
-
-.pet-stats-glass {
-  position: absolute;
-  inset: 0;
-  border-radius: 28px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(198, 207, 255, 0.12) 100%);
-  box-shadow: inset 0 -10px 40px rgba(136, 144, 220, 0.28);
-  backdrop-filter: blur(12px);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.pet-stats {
-  position: relative;
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  z-index: 1;
-}
-
-.pet-stat {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 18px;
-}
-
-.pet-stat-label {
-  font-family: "Papernotes", system-ui, sans-serif;
-  font-size: 15px;
-  text-transform: lowercase;
-  letter-spacing: 0.6px;
-  color: rgba(88, 83, 125, 0.85);
-  text-align: left;
-}
-
-.pet-bar {
-  position: relative;
-  width: 100%;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.24);
-  overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(111, 121, 173, 0.18);
-}
-
-.pet-bar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
-  pointer-events: none;
-  z-index: 1;
-}
-
-.pet-bar-fill {
-  position: absolute;
-  inset: 0;
-  width: var(--progress, 50%);
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(255, 188, 228, 0.95) 0%, rgba(173, 203, 255, 0.95) 50%, rgba(162, 236, 255, 0.9) 100%);
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.65);
-  transition: width 0.45s ease;
-  animation: barPulse 6s ease-in-out infinite;
+  filter: blur(1px);
 }
 
-@keyframes barPulse {
-  0% {
-    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.35));
-  }
-  50% {
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6));
-  }
-  100% {
-    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.35));
-  }
+.pet-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 36px 70px rgba(61, 44, 109, 0.38);
 }
 
-#pet-controls {
+.aquarium {
   position: relative;
-  width: 100%;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.32);
-  overflow: hidden;
-  box-shadow: inset 0 2px 6px rgba(111, 121, 173, 0.2);
-}
-
-.pet-bar-fill {
-  position: absolute;
-  inset: 0;
-  width: var(--progress, 50%);
-  background: linear-gradient(90deg, rgba(255, 179, 220, 0.85) 0%, rgba(167, 200, 255, 0.95) 100%);
-  border-radius: inherit;
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.65);
-  transition: width 0.45s ease;
-}
-
-#pet-controls {
+  width: min(520px, 100%);
+  aspect-ratio: 4 / 3;
   display: flex;
   justify-content: center;
+  align-items: stretch;
+  filter: drop-shadow(0 18px 32px var(--frame-shadow));
+}
+
+.aquarium::before {
+  content: "";
+  position: absolute;
+  inset: 6% 7% 10%;
+  border-radius: 32px;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.35), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(199, 201, 255, 0.08) 55%, rgba(139, 152, 255, 0.25) 100%);
+  box-shadow: inset 0 25px 40px rgba(255, 255, 255, 0.3), inset 0 -18px 35px rgba(85, 115, 198, 0.2);
+  opacity: 0.85;
+  pointer-events: none;
   z-index: 1;
 }
 
-#pet-buttons {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-areas:
-    "pet feed swim"
-    "rest . sleep";
-  column-gap: 16px;
-  row-gap: 12px;
-  justify-items: stretch;
-  pointer-events: auto;
-}
-
-#pet-buttons button {
-  border: none;
-  border-radius: 999px;
-  padding: 12px 22px;
-  background: linear-gradient(160deg, rgba(255, 248, 255, 0.96), rgba(210, 224, 255, 0.95));
-  color: #5b5395;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: "Papernotes", system-ui, sans-serif;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -4px 12px rgba(167, 154, 222, 0.3),
-    0 16px 26px rgba(151, 137, 206, 0.22);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  position: relative;
-}
-
-#pet-buttons button::after {
+.aquarium::after {
   content: "";
   position: absolute;
-  inset: 2px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+  inset: 7% 8% 11%;
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(173, 194, 255, 0.18) 38%, rgba(123, 142, 221, 0.22) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.4;
   pointer-events: none;
-}
-
-#pet-buttons button:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    inset 0 -4px 12px rgba(167, 154, 222, 0.35),
-    0 20px 34px rgba(151, 137, 206, 0.32);
-}
-
-#pet-buttons button:active {
-  transform: translateY(1px) scale(0.96);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -2px 10px rgba(167, 154, 222, 0.28),
-    0 12px 18px rgba(151, 137, 206, 0.26);
-}
-
-#pet-buttons button:nth-child(1) {
-  grid-area: pet;
-}
-
-#pet-buttons button:nth-child(2) {
-  grid-area: feed;
-}
-
-#pet-buttons button:nth-child(3) {
-  grid-area: swim;
-}
-
-#pet-buttons button:nth-child(4) {
-  grid-area: rest;
-}
-
-#pet-buttons button:nth-child(5) {
-  grid-area: sleep;
-}
-
-#pet-buttons button:nth-child(4),
-#pet-buttons button:nth-child(5) {
-  justify-self: center;
-  min-width: 70%;
-}
-
-#pet-buttons button:focus-visible {
-  outline: 2px solid rgba(129, 114, 203, 0.65);
-  outline-offset: 2px;
-}
-
-#pet-settings {
-  position: absolute;
-  right: clamp(18px, 7vw, 32px);
-  bottom: clamp(16px, 6vh, 28px);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(200deg, rgba(255, 255, 255, 0.82), rgba(188, 207, 255, 0.92));
-  box-shadow: 0 18px 30px rgba(140, 126, 189, 0.32), inset 0 0 18px rgba(255, 255, 255, 0.8);
-  color: #6a5aa5;
-  font-size: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: transform 0.6s ease, box-shadow 0.3s ease;
-  z-index: 3;
-}
-
-#pet-settings:hover {
-  transform: rotate(180deg) scale(1.05);
-  box-shadow: 0 22px 38px rgba(140, 126, 189, 0.38), inset 0 0 22px rgba(255, 255, 255, 0.88);
-}
-
-#pet-settings:active {
-  transform: scale(0.92);
-}
-
-.pet-container:hover .pet-stage {
-  transform: scale(1.01);
-}
-
-@media (max-width: 560px) {
-  body {
-    padding: clamp(24px, 8vh, 32px) clamp(12px, 6vw, 24px);
-  }
-
-  .pet-container {
-    padding: clamp(22px, 6vw, 30px);
-  }
-
-  .tank-content {
-    inset: clamp(7%, 9vw, 10%) clamp(7%, 9vw, 10%) clamp(10%, 10vw, 12%);
-    padding: clamp(18px, 6vw, 24px);
-    gap: clamp(16px, 5vw, 22px);
-  }
-
-  .pet-stats-panel {
-    width: 100%;
-    padding: clamp(16px, 6vw, 22px);
-  }
-
-  #pet-buttons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      "pet feed"
-      "swim rest"
-      "sleep sleep";
-  }
-
-  #pet-buttons button:nth-child(4) {
-    justify-self: stretch;
-    min-width: 100%;
-  }
-
-  #pet-buttons button:nth-child(5) {
-    justify-self: stretch;
-    min-width: 100%;
-  }
+  z-index: 2;
+  animation: rippleLight 14s linear infinite;
+  background-size: 200% 200%;
 }
 
 @keyframes rippleLight {
   0% {
     background-position: 0% 0%;
   }
+  50% {
+    background-position: 100% 50%;
+  }
   100% {
-    background-position: 100% 100%;
+    background-position: 0% 100%;
+  }
+}
+
+.aquarium-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.tank-content {
+  position: absolute;
+  inset: 9% 11% 14%;
+  padding: 12px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  z-index: 4;
+  color: var(--ink);
+}
+
+.pet-name {
+  margin: 0;
+  font-family: "Bigbesty", "Papernotes", cursive;
+  font-size: clamp(36px, 6vw, 44px);
+  letter-spacing: 0.04em;
+  text-shadow: 0 5px 14px rgba(120, 92, 170, 0.3);
+}
+
+.friendship {
+  margin-top: 4px;
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  font-family: "Papernotes", sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(49, 38, 73, 0.75);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 20px rgba(99, 78, 149, 0.18);
+}
+
+#rename-button {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(210, 199, 255, 0.65));
+  color: rgba(71, 54, 109, 0.78);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 3px 8px rgba(84, 66, 128, 0.2);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+#rename-button:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 4px 12px rgba(84, 66, 128, 0.28);
+}
+
+.status-text {
+  margin-top: 12px;
+  font-size: clamp(16px, 2.8vw, 18px);
+  color: rgba(64, 54, 96, 0.8);
+  text-shadow: 0 2px 6px rgba(117, 90, 164, 0.18);
+}
+
+.pet-sprite-container {
+  margin-top: 16px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.pet-sprite-container::after {
+  content: "";
+  position: absolute;
+  inset: 8% 16%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, rgba(173, 207, 255, 0.05) 65%, transparent 75%);
+  filter: blur(1px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+#pet-sprite {
+  max-width: 70%;
+  max-height: 65%;
+  filter: drop-shadow(0 12px 22px rgba(86, 64, 129, 0.35));
+}
+
+.stats {
+  width: 100%;
+  margin-top: 12px;
+  padding: 16px;
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 22px rgba(79, 65, 128, 0.15);
+  display: grid;
+  gap: 12px;
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  font-family: "Papernotes", sans-serif;
+  text-transform: lowercase;
+  font-size: 16px;
+  color: rgba(59, 48, 92, 0.78);
+}
+
+.stat span:first-child {
+  letter-spacing: 0.08em;
+}
+
+.bar {
+  position: relative;
+  height: 12px;
+  width: 100%;
+  background: var(--stat-track);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(34, 24, 63, 0.22);
+}
+
+.fill {
+  height: 100%;
+  width: 65%;
+  background: linear-gradient(90deg, var(--stat-fill-start), var(--stat-fill-end));
+  border-radius: inherit;
+  box-shadow: 0 0 12px rgba(204, 189, 255, 0.6);
+  animation: statGlow 4s ease-in-out infinite;
+}
+
+@keyframes statGlow {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+#hunger-bar { width: 70%; }
+#sleep-bar { width: 45%; }
+#bored-bar { width: 60%; }
+#overstim-bar { width: 35%; }
+#affection-bar { width: 80%; }
+
+#pet-buttons {
+  margin-top: 18px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  justify-items: center;
+}
+
+#pet-buttons .action-btn {
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-radius: 999px;
+  font-family: "Papernotes", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  text-transform: capitalize;
+  color: rgba(68, 49, 109, 0.85);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(198, 183, 255, 0.68), rgba(255, 203, 238, 0.72));
+  box-shadow: inset 0 1px 0 var(--button-highlight), 0 10px 18px var(--button-shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+}
+
+#pet-buttons .action-btn:nth-child(4) {
+  grid-column: 1 / 3;
+}
+
+#pet-buttons .action-btn:nth-child(5) {
+  grid-column: 2 / 4;
+}
+
+#pet-buttons .action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 14px 24px rgba(77, 56, 120, 0.28);
+}
+
+#pet-buttons .action-btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 8px 16px rgba(74, 53, 114, 0.25);
+}
+
+.settings-btn {
+  position: absolute;
+  right: 32px;
+  bottom: 22px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(190, 182, 255, 0.62));
+  box-shadow: 0 10px 22px rgba(61, 44, 109, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: rgba(66, 50, 109, 0.82);
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 280ms ease, box-shadow 280ms ease;
+}
+
+.settings-btn:hover {
+  transform: rotate(12deg) translateY(-2px);
+  box-shadow: 0 14px 26px rgba(61, 44, 109, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.settings-btn:active {
+  transform: rotate(-8deg) scale(0.96);
+}
+
+@media (max-width: 520px) {
+  #pet-root {
+    padding: 12px;
+  }
+
+  .pet-container {
+    padding: 28px 18px 64px;
+  }
+
+  .aquarium {
+    aspect-ratio: 3 / 2.6;
+  }
+
+  .tank-content {
+    inset: 11% 10% 18%;
+    padding: 10px 18px 18px;
+  }
+
+  .stats {
+    padding: 12px;
+  }
+
+  #pet-buttons .action-btn {
+    font-size: 15px;
   }
 }
