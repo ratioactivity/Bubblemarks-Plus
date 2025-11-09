@@ -2,63 +2,64 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: linear-gradient(180deg, rgba(241, 245, 255, 0.9) 0%, rgba(254, 239, 249, 0.9) 100%);
+  background: radial-gradient(circle at 15% 20%, #f4f5ff 0%, #f0f1ff 28%, rgba(238, 229, 255, 0.9) 52%, rgba(254, 238, 250, 0.92) 100%);
   font-family: "Papernotes", system-ui, sans-serif;
-  color: #5c5a7a;
+  color: #5f5a7d;
 }
 
 body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: clamp(32px, 6vh, 48px) clamp(16px, 6vw, 48px);
 }
 
 #pet-root {
+  width: min(600px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-container {
   position: relative;
-  width: min(520px, 100%);
-  aspect-ratio: 1756 / 2272;
-  border-radius: 46px;
-  overflow: hidden;
-  display: grid;
-  place-items: stretch;
-  filter: drop-shadow(0 24px 45px rgba(141, 118, 184, 0.28));
+  width: 100%;
+  padding: clamp(28px, 6vw, 42px);
+  border-radius: 28px;
+  overflow: visible;
+  background: linear-gradient(180deg, rgba(252, 248, 255, 0.65) 0%, rgba(242, 237, 255, 0.4) 100%);
+  box-shadow: 0 32px 60px rgba(120, 102, 174, 0.26);
 }
 
-#pet-root::before {
+.pet-container::before {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%),
-    linear-gradient(200deg, rgba(183, 204, 255, 0.9), rgba(255, 213, 240, 0.82));
-  mix-blend-mode: screen;
-  opacity: 0.85;
-  z-index: 0;
-}
-
-#pet-root::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+  border-radius: inherit;
   background: url("assets/background.png") center/cover no-repeat;
-  filter: blur(6px) brightness(0.94);
-  z-index: 0;
+  opacity: 0.75;
+  filter: blur(8px) saturate(120%);
+  z-index: -2;
+}
+
+.pet-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), inset 0 -28px 60px rgba(124, 105, 180, 0.18);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .pet-stage {
   position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: clamp(48px, 8%, 64px) clamp(42px, 8vw, 72px) clamp(96px, 12%, 122px);
-  gap: 24px;
-  background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(6px);
-  border-radius: 42px;
-  box-shadow: inset 0 0 32px rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  width: 100%;
+  aspect-ratio: 1756 / 2272;
+  display: grid;
+  place-items: stretch;
+  isolation: isolate;
+  transition: transform 1.8s ease-in-out;
 }
 
 #pet-frame {
@@ -67,11 +68,46 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  filter: drop-shadow(0 22px 48px rgba(118, 101, 171, 0.38));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.inner-tank {
+  position: absolute;
+  inset: clamp(9%, 9vw, 10%) clamp(10%, 10vw, 12%) clamp(13%, 12vw, 14%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(16px, 3vh, 24px);
+  padding: clamp(16px, 3vw, 28px);
+  text-align: center;
+  border-radius: clamp(28px, 8vw, 40px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(215, 229, 255, 0.32) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    inset 0 24px 48px rgba(255, 255, 255, 0.6),
+    inset 0 -20px 46px rgba(165, 193, 255, 0.24);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+.inner-tank::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 25% 15%, rgba(255, 255, 255, 0.75), transparent 65%),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.35), transparent 55%);
+  opacity: 0.9;
   pointer-events: none;
   z-index: 2;
 }
 
 #pet-header {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -87,77 +123,99 @@ body {
 .pet-title {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  z-index: 1;
+}
+
+.tank-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.pet-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.72), rgba(214, 220, 255, 0.52));
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.55);
+}
+
+.pet-meta-label {
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(102, 96, 144, 0.72);
+}
+
+.pet-meta-value {
+  font-size: 19px;
+  color: #806ad8;
+}
+
+.pet-nameplate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 0 22px rgba(255, 255, 255, 0.7);
 }
 
 #pet-name {
   margin: 0;
   font-family: "Bigbesty", "Papernotes", cursive;
-  font-size: clamp(32px, 6vw, 44px);
-  letter-spacing: 1.2px;
-  color: #f28ac1;
-  text-shadow: 0 6px 16px rgba(232, 161, 216, 0.65);
+  font-size: clamp(34px, 7vw, 46px);
+  letter-spacing: 1.5px;
+  color: #f08dc5;
+  text-shadow: 0 10px 24px rgba(235, 166, 220, 0.55);
 }
 
 .pet-rename {
-  border: 1px dashed rgba(138, 126, 187, 0.6);
+  border: 1px dashed rgba(138, 126, 187, 0.7);
   border-radius: 999px;
   padding: 6px 18px;
-  background: rgba(255, 255, 255, 0.35);
-  color: #6a5aa5;
+  background: rgba(255, 255, 255, 0.42);
+  color: #6b5aa3;
   font-family: "Papernotes", system-ui, sans-serif;
   font-size: 15px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  box-shadow: 0 8px 16px rgba(154, 144, 205, 0.24);
+  box-shadow: 0 10px 18px rgba(154, 144, 205, 0.28);
 }
 
 .pet-rename:hover {
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.66);
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(154, 144, 205, 0.32);
+  box-shadow: 0 12px 28px rgba(154, 144, 205, 0.36);
 }
 
 .pet-rename:active {
-  transform: scale(0.96);
-}
-
-.pet-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  padding: 8px 16px;
-  border-radius: 18px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(226, 228, 255, 0.42));
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.6);
-}
-
-.pet-meta-label {
-  font-size: 13px;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
-  color: rgba(102, 96, 144, 0.75);
-}
-
-.pet-meta-value {
-  font-size: 20px;
-  color: #8065d8;
+  transform: scale(0.95);
 }
 
 #pet-status {
-  align-self: flex-start;
-  padding: 10px 22px;
-  border-radius: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 26px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 14px 28px rgba(145, 134, 188, 0.25);
+  box-shadow: 0 16px 34px rgba(141, 130, 190, 0.26);
   font-size: 16px;
-  color: #6f6a93;
-  pointer-events: auto;
+  color: #706a92;
 }
 
 #pet-display {
   position: relative;
+  width: 100%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,55 +224,52 @@ body {
 .pet-tank {
   position: relative;
   width: 100%;
-  height: clamp(200px, 38vh, 280px);
+  height: clamp(220px, 40vh, 320px);
+  border-radius: clamp(28px, 7vw, 40px);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 32px;
-  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.9) 0%, rgba(211, 225, 255, 0.2) 65%, rgba(178, 200, 255, 0));
+  background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.75) 0%, rgba(218, 232, 255, 0.35) 55%, rgba(185, 210, 255, 0.15) 100%);
   box-shadow:
-    inset 0 0 25px rgba(255, 255, 255, 0.65),
-    inset 0 35px 45px rgba(176, 200, 255, 0.35),
-    0 20px 45px rgba(138, 128, 192, 0.18);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    inset 0 24px 55px rgba(255, 255, 255, 0.45),
+    inset 0 -26px 55px rgba(140, 178, 255, 0.28),
+    0 20px 48px rgba(120, 108, 182, 0.22);
   overflow: hidden;
 }
 
-.pet-tank::after {
-  content: "";
+.tank-shimmer {
   position: absolute;
-  inset: 12px;
-  border-radius: 28px;
-  box-shadow: inset 0 0 30px rgba(128, 160, 255, 0.2);
-  pointer-events: none;
+  inset: -40% -60%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.38) 0%, transparent 60%);
+  animation: shimmer 8s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translate(-10%, -10%) rotate(0deg);
+  }
+  50% {
+    transform: translate(10%, 5%) rotate(10deg);
+  }
+  100% {
+    transform: translate(-10%, -10%) rotate(0deg);
+  }
 }
 
 #pet-sprite {
-  max-width: min(70%, 280px);
-  max-height: 80%;
+  position: relative;
+  max-width: min(60%, 320px);
+  max-height: 45%;
+  width: auto;
+  height: auto;
   image-rendering: pixelated;
+  z-index: 1;
 }
 
 .pet-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.pet-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pet-stat-label {
-  font-family: "Papernotes", system-ui, sans-serif;
-  font-size: 15px;
-  color: rgba(102, 96, 144, 0.8);
-  letter-spacing: 0.6px;
-}
-
-.pet-bar {
-  position: relative;
   width: 100%;
   height: 18px;
   border-radius: 999px;
@@ -235,37 +290,91 @@ body {
 
 #pet-controls {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pet-stat {
+  display: flex;
   align-items: center;
-  margin-top: auto;
+  gap: 16px;
+}
+
+.pet-stat-label {
+  flex: 0 0 120px;
+  font-family: "Papernotes", system-ui, sans-serif;
+  font-size: 15px;
+  text-transform: lowercase;
+  letter-spacing: 0.6px;
+  color: rgba(102, 96, 144, 0.78);
+  text-align: left;
+}
+
+.pet-bar {
+  position: relative;
+  flex: 1 1 auto;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(111, 121, 173, 0.22);
+}
+
+.pet-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: var(--progress, 50%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 182, 222, 0.9) 0%, rgba(175, 205, 255, 0.95) 100%);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.6);
+  transition: width 0.45s ease;
+  animation: barPulse 6s ease-in-out infinite;
+}
+
+@keyframes barPulse {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.35));
+  }
+}
+
+#pet-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 #pet-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 14px;
   pointer-events: auto;
 }
 
 #pet-buttons button {
   border: none;
   border-radius: 999px;
-  padding: 10px 22px;
-  background: linear-gradient(160deg, rgba(255, 246, 255, 0.96), rgba(214, 225, 255, 0.95));
+  padding: 12px 20px;
+  background: linear-gradient(160deg, rgba(255, 247, 255, 0.95), rgba(213, 223, 255, 0.95));
   color: #5b5395;
   font-size: 15px;
   font-weight: 600;
   font-family: "Papernotes", system-ui, sans-serif;
   cursor: pointer;
-  box-shadow: 0 16px 24px rgba(151, 137, 206, 0.25);
+  box-shadow: 0 16px 26px rgba(151, 137, 206, 0.25);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 #pet-buttons button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(151, 137, 206, 0.32);
-  background: linear-gradient(160deg, rgba(255, 251, 255, 0.98), rgba(204, 222, 255, 0.98));
+  transform: translateY(-3px);
+  box-shadow: 0 20px 34px rgba(151, 137, 206, 0.32);
+  background: linear-gradient(160deg, rgba(255, 250, 255, 0.97), rgba(203, 218, 255, 0.98));
 }
 
 #pet-buttons button:active {
@@ -275,14 +384,14 @@ body {
 
 #pet-settings {
   position: absolute;
-  right: clamp(32px, 8vw, 52px);
-  bottom: clamp(36px, 9%, 56px);
-  width: 46px;
-  height: 46px;
+  right: clamp(18px, 7vw, 32px);
+  bottom: clamp(16px, 6vh, 28px);
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(200deg, rgba(255, 255, 255, 0.8), rgba(188, 207, 255, 0.95));
-  box-shadow: 0 14px 28px rgba(140, 126, 189, 0.28), inset 0 0 18px rgba(255, 255, 255, 0.75);
+  background: linear-gradient(200deg, rgba(255, 255, 255, 0.82), rgba(188, 207, 255, 0.92));
+  box-shadow: 0 18px 30px rgba(140, 126, 189, 0.32), inset 0 0 18px rgba(255, 255, 255, 0.8);
   color: #6a5aa5;
   font-size: 20px;
   display: inline-flex;
@@ -290,40 +399,43 @@ body {
   justify-content: center;
   cursor: pointer;
   pointer-events: auto;
-  transition: transform 0.5s ease, box-shadow 0.3s ease;
+  transition: transform 0.6s ease, box-shadow 0.3s ease;
+  z-index: 3;
 }
 
 #pet-settings:hover {
-  transform: rotate(180deg) scale(1.04);
-  box-shadow: 0 20px 34px rgba(140, 126, 189, 0.36), inset 0 0 22px rgba(255, 255, 255, 0.85);
+  transform: rotate(180deg) scale(1.05);
+  box-shadow: 0 22px 38px rgba(140, 126, 189, 0.38), inset 0 0 22px rgba(255, 255, 255, 0.88);
 }
 
 #pet-settings:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
 }
 
-@media (max-width: 520px) {
+.pet-container:hover .pet-stage {
+  transform: scale(1.01);
+}
+
+@media (max-width: 560px) {
   body {
-    padding: 24px 12px;
+    padding: clamp(24px, 8vh, 32px) clamp(12px, 6vw, 24px);
   }
 
-  .pet-stage {
-    padding: clamp(40px, 10vw, 56px) clamp(28px, 6vw, 48px) clamp(88px, 16vw, 108px);
+  .pet-container {
+    padding: clamp(20px, 6vw, 28px);
   }
 
-  #pet-buttons button {
-    flex: 1 1 calc(50% - 12px);
-    min-width: 120px;
+  .inner-tank {
+    inset: clamp(8%, 10vw, 12%) clamp(8%, 9vw, 11%) clamp(12%, 12vw, 16%);
+    padding: clamp(16px, 6vw, 24px);
+    gap: clamp(14px, 5vw, 20px);
   }
 
-  .pet-nameplate {
-    flex-direction: column;
-    align-items: flex-start;
+  .pet-stat-label {
+    flex-basis: 96px;
   }
 
-  .pet-meta {
-    align-self: stretch;
-    flex-direction: row;
-    justify-content: space-between;
+  #pet-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
