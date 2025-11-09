@@ -21,17 +21,53 @@
 </head>
 <body>
   <div id="pet-root" role="application" aria-label="Bubble axolotl companion">
-    <img id="pet-frame" src="assets/frame.png" alt="BubblePet frame">
-
-    <div id="pet-ui">
+    <div class="pet-stage">
       <header id="pet-header">
-        <div id="pet-name">Pico</div>
+        <div class="pet-nameplate">
+          <div class="pet-title">
+            <h1 id="pet-name">Pico</h1>
+            <button class="pet-rename" type="button" aria-label="Rename your pet">Rename</button>
+          </div>
+          <div class="pet-meta" aria-label="Friendship level">
+            <span class="pet-meta-label">Friendship</span>
+            <span class="pet-meta-value">72</span>
+          </div>
+        </div>
         <div id="pet-status" role="status" aria-live="polite">Ready to make a splash!</div>
       </header>
 
       <div id="pet-display" aria-label="Axolotl animation">
-        <img id="pet-sprite" src="assets/resting.gif" alt="Axolotl relaxing inside a bubble frame">
+        <div class="pet-tank">
+          <img id="pet-sprite" src="assets/resting.gif" alt="Axolotl relaxing inside a bubble frame">
+        </div>
       </div>
+
+      <section class="pet-stats" aria-label="Pet wellbeing levels">
+        <div class="pet-stat">
+          <span class="pet-stat-label">Hunger</span>
+          <div class="pet-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+            <span class="pet-bar-fill" style="--progress: 70%"></span>
+          </div>
+        </div>
+        <div class="pet-stat">
+          <span class="pet-stat-label">Sleepiness</span>
+          <div class="pet-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="45">
+            <span class="pet-bar-fill" style="--progress: 45%"></span>
+          </div>
+        </div>
+        <div class="pet-stat">
+          <span class="pet-stat-label">Enrichment</span>
+          <div class="pet-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="82">
+            <span class="pet-bar-fill" style="--progress: 82%"></span>
+          </div>
+        </div>
+        <div class="pet-stat">
+          <span class="pet-stat-label">Bonding</span>
+          <div class="pet-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60">
+            <span class="pet-bar-fill" style="--progress: 60%"></span>
+          </div>
+        </div>
+      </section>
 
       <div id="pet-controls">
         <div id="pet-buttons" role="group" aria-label="Axolotl interactions">
@@ -41,9 +77,10 @@
           <button type="button" data-action="rest">Rest</button>
           <button type="button" data-action="sleep">Sleep</button>
         </div>
-        <button id="pet-settings" type="button" aria-label="Open settings">⚙</button>
       </div>
+      <button id="pet-settings" type="button" aria-label="Open settings">⚙</button>
     </div>
+    <img id="pet-frame" src="assets/frame.png" alt="BubblePet frame">
   </div>
 
   <script src="pet.js" defer></script>
