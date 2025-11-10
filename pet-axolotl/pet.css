@@ -161,7 +161,9 @@ img {
   top: -22px;
   left: 6px;
   font-size: 0.95rem;
-  color: #6d4da5;
+  font-family: "Papernotes", sans-serif;
+  color: #5270b3;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.9);
 }
 
 .stat-value {
