@@ -1,224 +1,174 @@
-:root {
-  color-scheme: only light;
+@font-face {
+  font-family: 'Bigbesty';
+  src: url('fonts/Bigbesty.ttf');
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  background: linear-gradient(180deg, #f7f1ff 0%, #fff8fb 100%);
-  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-  color: #5c4b75;
-}
-
-img {
-  display: block;
-  max-width: 100%;
+@font-face {
+  font-family: 'Papernotes';
+  src: url('fonts/Papernotes.ttf');
 }
 
 .pet-container {
   position: relative;
-  width: 90%;
-  max-width: 500px;
+  width: 95%;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 1rem 0 4rem;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #fdf9ff 0%, #f4efff 100%);
+  box-shadow: 0 4px 20px rgba(180, 150, 255, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 30px;
-  background: linear-gradient(#f9f6ff, #f2edfd);
-  box-shadow: 0 0 20px rgba(200, 180, 255, 0.3);
   overflow: hidden;
+  padding-bottom: 3rem;
 }
 
-.top-info {
+/* HEADER */
+.pet-header {
   width: 85%;
+  margin-top: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: "DogicaPixel", sans-serif;
-  color: #915ea6;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
+  font-family: 'Papernotes', sans-serif;
+  color: #7a5cb2;
+  font-size: 1.2rem;
+}
+
+.pet-level {
+  background: rgba(215, 190, 255, 0.6);
+  border-radius: 20px;
+  padding: 0.2rem 0.7rem;
+  font-family: 'DogicaPixel', sans-serif;
+  font-size: 0.8rem;
 }
 
 .pet-name {
-  font-size: 1rem;
+  font-family: 'Bigbesty', sans-serif;
+  font-size: 1.8rem;
+  color: #a06be8;
+  letter-spacing: 1px;
 }
 
+.rename-btn {
+  background: rgba(240, 220, 255, 0.7);
+  border: 1px dashed #bfa0ff;
+  border-radius: 12px;
+  padding: 0.3rem 0.8rem;
+  font-family: 'DogicaPixel', sans-serif;
+  font-size: 0.75rem;
+  color: #7e5eb5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rename-btn:hover {
+  background: rgba(250, 240, 255, 0.9);
+}
+
+/* AQUARIUM */
 .aquarium-window {
   position: relative;
   width: 85%;
-  aspect-ratio: 1.2 / 1;
+  aspect-ratio: 1.2/1;
+  margin-top: 1rem;
   border-radius: 25px;
   overflow: hidden;
-  margin-top: 0.3rem;
-  box-shadow: 0 0 15px rgba(200, 150, 255, 0.25);
-  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(180,140,255,0.25);
 }
 
 .aquarium-bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: inherit;
 }
 
-.axolotl {
-  position: absolute;
-  bottom: 18%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 36%;
-  aspect-ratio: 1 / 1;
-  border-radius: 50% 50% 45% 45%;
-  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.95), rgba(255, 189, 235, 0.65));
-  box-shadow: 0 6px 18px rgba(210, 150, 230, 0.35);
-  opacity: 0.4;
+/* DESCRIPTION */
+.pet-description {
+  width: 80%;
+  text-align: center;
+  margin-top: 1rem;
+  font-family: 'Papernotes', sans-serif;
+  color: #6a4c9c;
+  font-size: 1rem;
+  background: rgba(255,255,255,0.6);
+  border-radius: 10px;
+  padding: 0.4rem 0.6rem;
 }
 
+/* STATUS BARS */
 .status-bars {
-  width: 85%;
-  margin-top: 0.8rem;
+  width: 80%;
+  margin-top: 1rem;
 }
 
 .bar {
   position: relative;
   height: 12px;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255,255,255,0.6);
   border-radius: 6px;
-  margin: 0.9rem 0 0.3rem;
+  margin: 0.6rem 0;
   overflow: hidden;
-}
-
-.bar:first-child {
-  margin-top: 0.6rem;
 }
 
 .bar span {
   position: absolute;
-  left: 5px;
-  top: -1.3rem;
-  font-size: 0.65rem;
-  color: #5c4b75;
-  font-family: "DogicaPixel", sans-serif;
-  letter-spacing: 0.02em;
+  left: 0;
+  top: -1.2rem;
+  font-size: 0.7rem;
+  font-family: 'DogicaPixel', sans-serif;
+  color: #7e66a4;
 }
 
 .bar .fill {
   width: 70%;
   height: 100%;
-  background: linear-gradient(90deg, #b483ff, #ff8ed4);
+  background: linear-gradient(90deg, #b983ff, #ff98e6);
   border-radius: 6px;
 }
 
-.actions {
+/* BUTTONS */
+.action-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.6rem;
-  margin-top: 0.8rem;
-  padding: 0 1rem;
-}
-
-.actions button {
-  background: #e8d5ff;
-  border: none;
-  border-radius: 12px;
-  padding: 0.4rem 0.9rem;
-  font-family: "DogicaPixel", sans-serif;
-  color: #5d4680;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(150, 100, 200, 0.2);
-}
-
-.actions button:hover {
-  background: #f7e8ff;
-  transform: translateY(-2px);
-}
-
-.actions button:focus-visible {
-  outline: 2px solid rgba(180, 120, 255, 0.7);
-  outline-offset: 2px;
-}
-
-.bm-logo {
+  gap: 0.8rem;
   margin-top: 1.5rem;
 }
 
+.action-buttons button {
+  background: linear-gradient(180deg, #e7d6ff 0%, #f4e4ff 100%);
+  border: none;
+  border-radius: 15px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Papernotes', sans-serif;
+  color: #6e4f9b;
+  font-size: 1rem;
+  box-shadow: 0 3px 8px rgba(170,120,255,0.2);
+  transition: all 0.2s ease;
+}
+
+.action-buttons button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #f4e8ff, #ffffff);
+}
+
+/* BM LOGO */
+.bm-logo {
+  margin-top: 1.8rem;
+}
 .bm-logo img {
-  width: 60px;
+  width: 65px;
   opacity: 0.9;
 }
 
+/* STARS */
 .stars {
   position: absolute;
   width: 90px;
   opacity: 0.9;
   pointer-events: none;
 }
-
-.stars.top-left {
-  top: 0;
-  left: 0;
-}
-
-.stars.top-right {
-  top: 0;
-  right: 0;
-}
-
-.stars.btm-left {
-  bottom: 0;
-  left: 0;
-}
-
-.stars.btm-right {
-  bottom: 0;
-  right: 0;
-}
-
-@media (max-width: 520px) {
-  body {
-    padding: 16px;
-  }
-
-  .pet-container {
-    border-radius: 24px;
-  }
-
-  .top-info {
-    font-size: 0.8rem;
-  }
-
-  .actions button {
-    padding: 0.35rem 0.8rem;
-  }
-
-  .stars {
-    width: 70px;
-  }
-}
-
-@media (max-width: 360px) {
-  .top-info {
-    font-size: 0.7rem;
-  }
-
-  .bar span {
-    top: -1.1rem;
-  }
-}
+.stars.top-left { top: 0; left: 0; }
+.stars.top-right { top: 0; right: 0; }
+.stars.btm-left { bottom: 0; left: 0; }
+.stars.btm-right { bottom: 0; right: 0; }
