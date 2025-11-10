@@ -3,19 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pet Axolotl Frame</title>
+    <title>Pet Axolotl</title>
     <link rel="stylesheet" href="pet.css" />
   </head>
   <body>
-    <main class="pet-app">
-      <section class="pet-window">
-        <img src="./assets/background.png" alt="Pink pet window background" class="window-background" />
-        <img src="./assets/stars-top-left.png" alt="Colorful stars top left" class="accent accent-top-left" />
-        <img src="./assets/whitestars-top-right.png" alt="White stars top right" class="accent accent-top-right" />
-        <img src="./assets/whitestars-btm-left.png" alt="White stars bottom left" class="accent accent-bottom-left" />
-        <img src="./assets/stars-btm-right.png" alt="Colorful stars bottom right" class="accent accent-bottom-right" />
-        <img src="./assets/bmlogo.png" alt="Bubblemarks logo" class="bm-logo" />
-      </section>
-    </main>
+    <div class="pet-container">
+      <div class="top-info">
+        <div class="level">Lv. 72</div>
+        <div class="pet-name">Pico</div>
+      </div>
+
+      <div class="aquarium-window">
+        <img src="assets/background.png" class="aquarium-bg" alt="background" />
+        <div class="axolotl" aria-hidden="true"></div>
+      </div>
+
+      <div class="status-bars">
+        <div class="bar">
+          <span>Hunger</span>
+          <div class="fill"></div>
+        </div>
+        <div class="bar">
+          <span>Sleepiness</span>
+          <div class="fill"></div>
+        </div>
+        <div class="bar">
+          <span>Boredom</span>
+          <div class="fill"></div>
+        </div>
+        <div class="bar">
+          <span>Overstim</span>
+          <div class="fill"></div>
+        </div>
+        <div class="bar">
+          <span>Affection</span>
+          <div class="fill"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button">Pet</button>
+        <button type="button">Feed</button>
+        <button type="button">Swim</button>
+        <button type="button">Rest</button>
+        <button type="button">Sleep</button>
+      </div>
+
+      <div class="bm-logo">
+        <img src="assets/bmlogo.png" alt="BM logo" />
+      </div>
+
+      <img src="assets/stars-top-left.png" class="stars top-left" alt="" />
+      <img src="assets/whitestars-top-right.png" class="stars top-right" alt="" />
+      <img src="assets/whitestars-btm-left.png" class="stars btm-left" alt="" />
+      <img src="assets/stars-btm-right.png" class="stars btm-right" alt="" />
+    </div>
   </body>
 </html>
