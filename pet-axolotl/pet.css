@@ -19,7 +19,7 @@ body {
   align-items: center;
   padding: 24px;
   background: linear-gradient(180deg, #f7f1ff 0%, #fff8fb 100%);
-  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Papernotes", "Helvetica Neue", Arial, sans-serif;
   color: #5c4b75;
 }
 
@@ -46,10 +46,10 @@ img {
 .top-info {
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   gap: 1.2rem;
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   color: #915ea6;
   font-size: 0.95rem;
   margin-top: 0.2rem;
@@ -113,7 +113,7 @@ img {
 }
 
 .bar .label {
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   font-size: 0.72rem;
   color: #5c4b75;
   letter-spacing: 0.03em;
@@ -130,7 +130,7 @@ img {
 }
 
 .bar .value {
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   font-size: 0.68rem;
   color: #7a6796;
   letter-spacing: 0.02em;
@@ -158,7 +158,7 @@ img {
   border: none;
   border-radius: 16px;
   padding: 0.65rem 1.6rem;
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   font-size: 0.78rem;
   color: #5d4680;
   cursor: pointer;
@@ -185,7 +185,7 @@ img {
   background: rgba(255, 255, 255, 0.7);
   box-shadow: inset 0 0 0 1px rgba(210, 190, 255, 0.45),
     0 10px 18px rgba(200, 170, 255, 0.25);
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   font-size: 0.7rem;
   color: #6a588c;
   text-align: center;
@@ -201,7 +201,20 @@ img {
   opacity: 0.9;
 }
 
-.stars {
+.bar {
+  position: relative;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  margin: 0.9rem 0 0.3rem;
+  overflow: hidden;
+}
+
+.bar:first-child {
+  margin-top: 0.6rem;
+}
+
+.bar span {
   position: absolute;
   width: 84px;
   opacity: 0.9;
