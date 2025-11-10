@@ -141,8 +141,31 @@ body {
   top: -2px;
   font-size: 0.8rem;
   color: #7a60a8;
-  font-family: "DogicaPixel", sans-serif;
+  font-family: "Papernotes", sans-serif;
   text-transform: capitalize;
+}
+
+.bar {
+  position: relative;
+  height: 14px;
+  margin: 18px 0;
+}
+
+.label {
+  position: absolute;
+  left: -95px;
+  top: -1px;
+  font-family: "Papernotes", sans-serif;
+  color: #765bb0;
+}
+
+.value {
+  position: absolute;
+  right: -65px;
+  top: -1px;
+  font-family: "Papernotes", sans-serif;
+  color: #7b64b5;
+  font-size: 0.85rem;
 }
 
 /* --- ACTION BUTTONS --- */
