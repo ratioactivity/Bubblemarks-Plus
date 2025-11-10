@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pet Axolotl</title>
+    <link
+      rel="preload"
+      href="../fonts/Papernotes.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="../fonts/Bigbesty.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
     <link rel="stylesheet" href="pet.css" />
   </head>
   <body>
@@ -30,47 +44,64 @@
       <div class="status-bars">
         <div class="bar" id="hunger-bar">
           <span class="label">Hunger</span>
-          <div class="track"><div class="fill"></div></div>
-          <div class="value" aria-live="polite">5 / 10</div>
+          <div class="fill"></div>
+          <span class="value" aria-live="polite">5 / 10</span>
         </div>
         <div class="bar" id="sleepiness-bar">
           <span class="label">Sleepiness</span>
-          <div class="track"><div class="fill"></div></div>
-          <div class="value" aria-live="polite">3 / 10</div>
+          <div class="fill"></div>
+          <span class="value" aria-live="polite">3 / 10</span>
         </div>
         <div class="bar" id="boredom-bar">
           <span class="label">Boredom</span>
-          <div class="track"><div class="fill"></div></div>
-          <div class="value" aria-live="polite">4 / 10</div>
+          <div class="fill"></div>
+          <span class="value" aria-live="polite">4 / 10</span>
         </div>
         <div class="bar" id="overstim-bar">
           <span class="label">Overstim</span>
-          <div class="track"><div class="fill"></div></div>
-          <div class="value" aria-live="polite">2 / 10</div>
+          <div class="fill"></div>
+          <span class="value" aria-live="polite">2 / 10</span>
         </div>
         <div class="bar" id="affection-bar">
           <span class="label">Affection</span>
-          <div class="track"><div class="fill"></div></div>
-          <div class="value" aria-live="polite">8 / 10</div>
+          <div class="fill"></div>
+          <span class="value" aria-live="polite">8 / 10</span>
         </div>
       </div>
 
-      <div class="actions" id="pet-buttons">
+      <div id="pet-buttons">
         <button type="button" data-action="pet">Pet</button>
         <button type="button" data-action="feed">Feed</button>
         <button type="button" data-action="swim">Swim</button>
         <button type="button" data-action="rest">Rest</button>
         <button type="button" data-action="sleep">Sleep</button>
+        <button type="button" data-action="roam">Roam</button>
       </div>
 
       <div class="bm-logo">
         <img src="assets/bmlogo.png" alt="BM logo" />
       </div>
 
-      <img src="assets/stars-top-left.png" class="stars top-left" alt="" />
-      <img src="assets/whitestars-top-right.png" class="stars top-right" alt="" />
-      <img src="assets/whitestars-btm-left.png" class="stars btm-left" alt="" />
-      <img src="assets/stars-btm-right.png" class="stars btm-right" alt="" />
+      <img
+        src="assets/stars-top-left.png"
+        class="stars stars-top-left"
+        alt=""
+      />
+      <img
+        src="assets/whitestars-top-right.png"
+        class="stars stars-white-top"
+        alt=""
+      />
+      <img
+        src="assets/whitestars-btm-left.png"
+        class="stars stars-white-bottom"
+        alt=""
+      />
+      <img
+        src="assets/stars-btm-right.png"
+        class="stars stars-btm-right"
+        alt=""
+      />
     </div>
   </body>
 </html>

@@ -293,6 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
       swim: "Pico is splashing around the tank!",
       rest: "Pico is taking a calm breather.",
       sleep: "Pico is drifting off to dreamland...",
+      roam: "Pico is exploring every nook of the tank!",
     };
 
     function setMessage(message) {
@@ -327,6 +328,11 @@ window.addEventListener("DOMContentLoaded", () => {
         case "sleep":
           enterMode("sleep");
           modifyStat("sleepiness", -5);
+          break;
+        case "roam":
+          enterMode("swim");
+          modifyStat("boredom", -5);
+          modifyStat("affection", +1);
           break;
         default:
           enterMode("idle");
