@@ -89,7 +89,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const bar = rootElement.querySelector(`#${key}-bar`);
         if (!bar) continue;
         const fill = bar.querySelector(".fill");
-        const valueText = bar.querySelector(".value");
+        const valueText = bar.querySelector(".stat-value");
         const percent = (stats[key] / STAT_LIMIT) * 100;
         if (fill) {
           fill.style.width = percent + "%";

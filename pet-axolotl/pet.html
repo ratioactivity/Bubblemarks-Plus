@@ -6,14 +6,14 @@
     <title>Pet Axolotl</title>
     <link
       rel="preload"
-      href="../fonts/Papernotes.ttf"
+      href="./fonts/Papernotes.ttf"
       as="font"
       type="font/ttf"
       crossorigin
     />
     <link
       rel="preload"
-      href="../fonts/Bigbesty.ttf"
+      href="./fonts/Bigbesty.ttf"
       as="font"
       type="font/ttf"
       crossorigin
@@ -27,8 +27,8 @@
         <div class="pet-name">Pico</div>
       </div>
 
-      <div class="aquarium-window">
-        <img src="assets/background.png" class="aquarium-bg" alt="background" />
+      <div class="tank-window">
+        <img src="assets/background.png" class="tank-bg" alt="background" />
         <img
           id="pet-sprite"
           src="assets/resting.gif"
@@ -42,30 +42,30 @@
       </div>
 
       <div class="status-bars">
-        <div class="bar" id="hunger-bar">
-          <span class="label">Hunger</span>
+        <div class="stat-bar" id="hunger-bar">
+          <div class="stat-label">Hunger</div>
           <div class="fill"></div>
-          <span class="value" aria-live="polite">5 / 10</span>
+          <div class="stat-value" aria-live="polite">5 / 10</div>
         </div>
-        <div class="bar" id="sleepiness-bar">
-          <span class="label">Sleepiness</span>
+        <div class="stat-bar" id="sleepiness-bar">
+          <div class="stat-label">Sleepiness</div>
           <div class="fill"></div>
-          <span class="value" aria-live="polite">3 / 10</span>
+          <div class="stat-value" aria-live="polite">3 / 10</div>
         </div>
-        <div class="bar" id="boredom-bar">
-          <span class="label">Boredom</span>
+        <div class="stat-bar" id="boredom-bar">
+          <div class="stat-label">Boredom</div>
           <div class="fill"></div>
-          <span class="value" aria-live="polite">4 / 10</span>
+          <div class="stat-value" aria-live="polite">4 / 10</div>
         </div>
-        <div class="bar" id="overstim-bar">
-          <span class="label">Overstim</span>
+        <div class="stat-bar" id="overstim-bar">
+          <div class="stat-label">Overstimulation</div>
           <div class="fill"></div>
-          <span class="value" aria-live="polite">2 / 10</span>
+          <div class="stat-value" aria-live="polite">2 / 10</div>
         </div>
-        <div class="bar" id="affection-bar">
-          <span class="label">Affection</span>
+        <div class="stat-bar" id="affection-bar">
+          <div class="stat-label">Affection</div>
           <div class="fill"></div>
-          <span class="value" aria-live="polite">8 / 10</span>
+          <div class="stat-value" aria-live="polite">8 / 10</div>
         </div>
       </div>
 
