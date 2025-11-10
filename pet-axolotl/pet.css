@@ -127,44 +127,49 @@ img {
   pointer-events: none;
 }
 
-/* STAT BARS */
-.stats-container {
+.status-bars {
   width: 90%;
-  margin: 0 auto;
-  margin-top: 20px;
+  margin: 1.6rem auto 0;
 }
 
 .stat-bar {
   position: relative;
-  height: 16px;
-  margin: 34px 0;
-  background: rgba(255, 255, 255, 0.5);
+  height: 18px;
+  margin: 28px 0;
+  background: rgba(255, 255, 255, 0.4);
   border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(145, 110, 200, 0.18);
 }
 
 .stat-bar .fill {
   height: 100%;
   border-radius: 12px;
-  background: linear-gradient(90deg, #b192f6, #f5aee8);
-  transition: width 0.4s ease;
+  background: linear-gradient(90deg, #9ad8ff, #fbbad1);
+  transition: width 0.4s ease, box-shadow 0.4s ease;
+  width: 0;
+}
+
+.stat-bar .fill[style*="80%"],
+.stat-bar .fill[style*="90%"],
+.stat-bar .fill[style*="100%"] {
+  box-shadow: 0 0 12px rgba(255, 190, 220, 0.8);
 }
 
 .stat-label {
   position: absolute;
-  top: -24px;
-  left: 4px;
-  font-family: 'Papernotes';
-  color: #6e4fa9;
+  top: -22px;
+  left: 6px;
   font-size: 0.95rem;
+  color: #6d4da5;
 }
 
 .stat-value {
   position: absolute;
-  top: -24px;
-  right: 4px;
-  font-family: 'Papernotes';
-  color: #8d6ccf;
+  top: -22px;
+  right: 6px;
   font-size: 0.9rem;
+  color: #8b6fcc;
 }
 
 #pet-buttons {
@@ -178,7 +183,7 @@ img {
 #pet-buttons button {
   height: 55px;
   border-radius: 14px;
-  background: linear-gradient(180deg, #d8c6ff, #f4e4ff);
+  background: linear-gradient(180deg, #a3d7ff, #ffd3e0);
   color: #5e459b;
   border: none;
   font-size: 1.1rem;
@@ -189,7 +194,7 @@ img {
 
 #pet-buttons button:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 12px rgba(150, 120, 255, 0.4);
+  box-shadow: 0 6px 14px rgba(255, 180, 220, 0.4);
 }
 
 #pet-buttons button:focus-visible {
@@ -220,69 +225,28 @@ img {
   opacity: 0.9;
 }
 
-/* STAT BARS */
-.stats-container {
-  width: 90%;
-  margin: 0 auto;
-  margin-top: 20px;
-}
-
-.stat-bar {
-  position: relative;
-  height: 16px;
-  margin: 34px 0;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-}
-
-.stat-bar .fill {
-  height: 100%;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #b192f6, #f5aee8);
-  transition: width 0.4s ease;
-}
-
-.stat-label {
-  position: absolute;
-  top: -24px;
-  left: 4px;
-  font-family: 'Papernotes';
-  color: #6e4fa9;
-  font-size: 0.95rem;
-}
-
-.stat-value {
-  position: absolute;
-  top: -24px;
-  right: 4px;
-  font-family: 'Papernotes';
-  color: #8d6ccf;
-  font-size: 0.9rem;
-}
-
-/* STARS - move to the outermost layer */
 .stars {
   position: absolute;
-  z-index: 999; /* ensures stars appear over everything */
+  z-index: 999;
   opacity: 1;
   pointer-events: none;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,0.7));
+  object-fit: contain;
 }
 
 .stars-top-left {
   top: -40px;
   left: -40px;
-  width: 130px;
+  width: 120px;
 }
 
 .stars-btm-right {
   bottom: -40px;
   right: -40px;
-  width: 130px;
+  width: 120px;
 }
 
 .stars-white-top {
-  top: -20px;
+  top: -25px;
   right: -25px;
   width: 100px;
 }
