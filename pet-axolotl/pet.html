@@ -1,23 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BubblePet</title>
-  <link rel="preload" href="fonts/Bigbesty.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="fonts/Papernotes.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="pet.css">
-  <style>
-    @font-face {
-      font-family: "Bigbesty";
-      src: url("fonts/Bigbesty.ttf") format("truetype");
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "Papernotes";
-      src: url("fonts/Papernotes.ttf") format("truetype");
-      font-display: swap;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BubblePet Aquarium Base</title>
+  <link rel="stylesheet" href="pet.css" />
 </head>
 <body>
   <div id="pet-root" role="application" aria-label="Bubble axolotl companion">
@@ -57,11 +44,8 @@
         </div>
       </div>
 
-      <button class="settings-btn" type="button" aria-label="Open settings">⚙️</button>
-    </div>
-    <img id="pet-frame" src="assets/frame.png" alt="BubblePet frame">
+    <!-- BM logo -->
+    <img src="./assets/bmlogo.png" class="bm-logo" alt="BM logo" />
   </div>
-
-  <script src="pet.js" defer></script>
 </body>
 </html>
