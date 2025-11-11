@@ -105,34 +105,43 @@ img {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 32px;
-  margin: 0 auto;
-  border-radius: 22px;
+  padding: 16px 28px;
+  border-radius: 20px;
   background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
   box-shadow: 0 4px 12px rgba(240, 200, 255, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
-  font-family: "Papernotes", sans-serif;
   color: #4b4275;
+  font-family: "Papernotes", sans-serif;
   box-sizing: border-box;
-  z-index: 5;
+  z-index: 3;
 }
 
-/* if your header is inside a parent with padding, this lets it visually "bleed out" */
+/* Fill container perfectly */
 .pet-container .pet-header {
-  margin-left: -20px;
-  margin-right: -20px;
-  width: calc(100% + 40px);
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* Ensure any decorative stars stay above */
-.stars, .header-stars, .pet-header img.star {
+/* Let stars float freely */
+.stars, .header-stars {
   position: absolute;
-  top: 0;
-  left: 0;
   z-index: 10;
   pointer-events: none;
 }
+
+.stars-top-left {
+  top: -20px;
+  left: -25px;
+  width: 120px;
+}
+
+.stars-white-top {
+  top: -20px;
+  right: -25px;
+  width: 100px;
+}
+
 
 /* Left (Level) */
 .pet-level {
