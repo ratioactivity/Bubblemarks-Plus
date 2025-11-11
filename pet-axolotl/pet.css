@@ -103,71 +103,77 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  padding: 14px 24px;
   background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
   border-radius: 18px;
-  padding: 12px 28px;
   box-shadow: 0 4px 10px rgba(200, 180, 255, 0.25);
-  position: relative;
   font-family: "Papernotes", sans-serif;
+  color: #4b4275;
   backdrop-filter: blur(8px);
-  color: #ffe8fa;
-  width: 100%;                /* makes it span full width */
-  box-sizing: border-box;     /* includes padding in width calc */
+  box-sizing: border-box;
 }
 
-/* Left side: Level */
+/* Level (left side) */
 .pet-level {
   font-size: 1rem;
-  color: #4b4275;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  color: #4b4275;
 }
 
 .pet-level span {
   display: inline-block;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   padding: 2px 10px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #4b4275;
-  text-shadow: 0 1px 3px rgba(60, 40, 90, 0.25);
+  text-shadow: 0 1px 2px rgba(80, 60, 110, 0.25);
 }
 
-/* Center: Name */
+/* Name (center) */
 .pet-name {
-  flex-grow: 1;
+  flex: 1;
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #4b4275;
-  letter-spacing: 1px;
+  font-family: "Bigbesty", sans-serif;
   text-shadow: 0 2px 4px rgba(60, 40, 90, 0.3);
 }
 
-/* Right side: Settings button */
+/* Settings (right side) */
 .pet-settings {
-  background: none;
+  background: rgba(255, 255, 255, 0.8);
   border: none;
+  border-radius: 50%;
   cursor: pointer;
-  padding: 0;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pet-settings:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: rotate(10deg);
 }
 
 .pet-settings img {
-  width: 22px;
-  height: 22px;
-  opacity: 0.7;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
-.pet-settings img:hover {
+.pet-settings:hover img {
   opacity: 1;
-  transform: rotate(15deg);
 }
 
 .tank-window {
