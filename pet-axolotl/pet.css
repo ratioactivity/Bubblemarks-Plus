@@ -44,7 +44,7 @@ body {
   align-items: center;
   padding: 24px;
   background: linear-gradient(180deg, #f7f1ff 0%, #fff8fb 100%);
-  color: #5c4b75;
+  color: #b3728e;
 }
 
 .aquarium-container {
@@ -146,7 +146,7 @@ img {
 
 .pet-name {
   font-size: 1.35rem;
-  color: #4b4275;
+  color: #f7f5ff;
 }
 
 .pet-level {
@@ -154,7 +154,7 @@ img {
   background: rgba(255, 255, 255, 0.8);
   border-radius: 10px;
   padding: 2px 12px;
-  color: #4b4275;
+  color: #f7f5ff;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -325,12 +325,12 @@ img {
 }
 
 .pet-actions button {
-  font-family: "Papernotes", sans-serif;
+  font-family: "Bigbesty", sans-serif;
   border: none;
   border-radius: 18px;
   padding: 10px 0;
   background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
-  color: #4b4275;
+  color: #f7f5ff;
   font-weight: 600;
   font-size: 0.9rem;
   box-shadow: 0 3px 8px rgba(200, 180, 255, 0.25);
