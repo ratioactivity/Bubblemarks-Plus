@@ -88,7 +88,7 @@ window.addEventListener("DOMContentLoaded", () => {
       for (const key in stats) {
         const bar = rootElement.querySelector(`#${key}-bar`);
         if (!bar) continue;
-        const fill = bar.querySelector(".fill");
+        const fill = bar.querySelector(".stat-fill");
         const value = stats[key];
         const percent = Math.min((value / STAT_LIMIT) * 100, 100);
         if (fill) {
