@@ -318,26 +318,28 @@ img {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  margin-top: 10px;
   width: 90%;
-  margin: 8px auto 0;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pet-actions button {
-  background: linear-gradient(180deg, #aee6ff, #f9bcd8);
-  border: none;
-  border-radius: 12px;
-  padding: 8px 0;
   font-family: "Papernotes", sans-serif;
+  border: none;
+  border-radius: 18px;
+  padding: 10px 0;
+  background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
+  color: #4b4275;
+  font-weight: 600;
   font-size: 0.9rem;
-  color: #2a1f5a;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 8px rgba(200, 180, 255, 0.25);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s ease;
 }
 
 .pet-actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: scale(1.04);
 }
 
 .pet-actions button:focus-visible {
