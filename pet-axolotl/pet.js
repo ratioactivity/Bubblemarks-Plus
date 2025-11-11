@@ -6,7 +6,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const spriteEl = rootElement.querySelector("#pet-sprite");
-    const buttons = rootElement.querySelectorAll("#pet-buttons button");
+    const buttons = rootElement.querySelectorAll(".pet-actions button");
     const messageBar = rootElement.querySelector("#message-bar");
 
     if (!spriteEl) {
@@ -15,7 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!buttons.length) {
-      console.error("[BubblePet] Missing #pet-buttons buttons in widget root");
+      console.error("[BubblePet] Missing .pet-actions buttons in widget root");
       return;
     }
 
