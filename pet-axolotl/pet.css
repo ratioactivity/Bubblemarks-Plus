@@ -148,7 +148,6 @@ img {
   font-size: 1.5rem;
   letter-spacing: 0.1em;
   color: #f7f5ff;
-  text-shadow: 2px rgba(151, 83, 139, 0.8);
 }
 
 .pet-level {
@@ -336,7 +335,6 @@ img {
   font-weight: 600;
   font-size: 1rem;
   letter-spacing: 0.2em;
-  text-shadow: 1px rgba(151, 83, 139, 0.8);
   box-shadow: 0 3px 8px rgba(200, 180, 255, 0.25);
   cursor: pointer;
   transition: transform 0.15s ease;
