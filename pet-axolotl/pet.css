@@ -45,27 +45,28 @@ body {
   padding: 24px;
   background: linear-gradient(180deg, #f7f1ff 0%, #fff8fb 100%);
   color: #b3728e;
-}
-
-.aquarium-container {
-  max-width: 720px;
-  height: 720px;
+}.aquarium-container {
   width: 100%;
-  padding-top: 20px;
-  padding-bottom: 0;
+  max-width: 860px; /* give more breathing room */
+  height: auto;
+  padding: 0;
+  margin: 0 auto;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   position: relative;
   overflow: visible !important;
 }
 
 .pet-card {
+  width: 100%;
+  max-width: 720px; /* slightly larger overall card */
   background: radial-gradient(circle at 40% 30%, #ffffff 0%, #fdfbff 80%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7),
-    0 8px 24px rgba(180, 180, 255, 0.1), 0 20px 48px rgba(164, 176, 255, 0.2);
+    0 8px 24px rgba(180, 180, 255, 0.1),
+    0 20px 48px rgba(164, 176, 255, 0.2);
   border-radius: 30px;
-  padding: 20px 28px;
+  padding: 28px 36px;
   height: auto;
   overflow: visible;
   color: #514b69;
@@ -80,10 +81,10 @@ img {
 
 .pet-container {
   position: relative;
-  width: 90%;
-  max-width: 520px;
+  width: 100%;
+  max-width: 680px; /* wider internal limit */
   margin: 0 auto;
-  padding: 1.6rem 1.2rem 2.4rem;
+  padding: 1.4rem 1.4rem 2.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -91,22 +92,24 @@ img {
   background: radial-gradient(
     circle at 45% 20%,
     rgba(255, 255, 255, 0.94) 0%,
-    rgba(246, 250, 255, 0.82) 55%,
-    rgba(237, 245, 255, 0.78) 100%
+    rgba(246, 250, 255, 0.85) 55%,
+    rgba(237, 245, 255, 0.8) 100%
   );
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75),
     0 18px 40px rgba(170, 182, 255, 0.22);
   overflow: visible;
 }
 
+/* Wider header — fills the container nicely */
 .pet-header {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 16px 28px;
-  border-radius: 20px;
+  width: calc(100% + 2.8rem);
+  margin: 0 -1.4rem; /* cancels container padding for full width */
+  padding: 18px 36px;
+  border-radius: 22px;
   background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
   box-shadow: 0 4px 12px rgba(240, 200, 255, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -115,12 +118,6 @@ img {
   font-family: "Papernotes", sans-serif;
   box-sizing: border-box;
   z-index: 3;
-}
-
-/* Fill container perfectly */
-.pet-container .pet-header {
-  width: 100%;
-  margin: 0 auto;
 }
 
 /* Let stars float freely */
