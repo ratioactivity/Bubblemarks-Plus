@@ -349,6 +349,13 @@ img {
   outline-offset: 2px;
 }
 
+.pet-name,
+.pet-actions button {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.6),
+    0 2px 4px rgba(80, 70, 110, 0.3);
+}
+
 .message-bar {
   width: 100%;
   margin: 8px 0;
