@@ -164,7 +164,7 @@ body {
 /* Bottom-right colored cluster — move up slightly */
 .stars-btm-right {
   bottom: 28px;    /* was too low */
-  right: 20px;
+  right: 10px;
   width: 110px;
 }
 
