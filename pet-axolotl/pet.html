@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pet Axolotl</title>
+    <title>BubblePet</title>
     <link
       rel="preload"
       href="./fonts/Papernotes.ttf"
@@ -23,101 +23,52 @@
   <body>
     <div class="aquarium-container">
       <div class="pet-container pet-card">
+
+        <!-- STAR DECORATIONS -->
+        <img src="./assets/stars-top-left.png" class="stars stars-top-left" alt="">
+        <img src="./assets/stars-white-top.png" class="stars stars-white-top" alt="">
+        <img src="./assets/stars-white-bottom.png" class="stars stars-white-bottom" alt="">
+        <img src="./assets/stars-btm-right.png" class="stars stars-btm-right" alt="">
+
+        <!-- HEADER -->
         <div class="pet-header">
-          <div class="pet-header-left">
-            <span class="pet-label">Name</span>
-            <span class="pet-name">Pico</span>
-          </div>
-          <div class="pet-header-right">
-            <div class="pet-level-group">
-              <span class="pet-label">Level</span>
-              <span class="pet-level">72</span>
-            </div>
-            <button class="pet-settings" type="button" aria-label="Pet settings">
-              <img src="assets/gear.svg" alt="Settings" />
-            </button>
-          </div>
+          <span class="pet-level">Lv. 1</span>
+          <span class="pet-name">Pico</span>
+          <button class="pet-settings" type="button" aria-label="Pet settings">
+            <img src="assets/gear.svg" alt="Settings" />
+          </button>
         </div>
 
+        <!-- AQUARIUM -->
         <div class="tank-window">
-          <img src="assets/background.png" class="tank-bg" alt="background" />
-          <img
-            id="pet-sprite"
-            src="assets/resting.gif"
-            alt="Axolotl sprite"
-            class="axolotl"
-          />
+          <img src="./assets/background.png" class="aquarium-bg" alt="tank background">
+          <img id="pet-sprite" src="./assets/resting.gif" alt="pet sprite">
         </div>
 
-        <div class="stats-container">
-          <div class="message-bar" id="message-bar" aria-live="polite">
-            Pico is craving affection.
-          </div>
+        <!-- MESSAGE BAR -->
+        <div class="message-bar">Pico looks happy today!</div>
 
-          <div class="status-bars">
-            <div class="stat">
-              <span class="stat-label">Hunger</span>
-              <div class="stat-bar" id="hunger-bar">
-                <div class="stat-fill"></div>
-              </div>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Sleepiness</span>
-              <div class="stat-bar" id="sleepiness-bar">
-                <div class="stat-fill"></div>
-              </div>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Boredom</span>
-              <div class="stat-bar" id="boredom-bar">
-                <div class="stat-fill"></div>
-              </div>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Overstimulation</span>
-              <div class="stat-bar" id="overstim-bar">
-                <div class="stat-fill"></div>
-              </div>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Affection</span>
-              <div class="stat-bar" id="affection-bar">
-                <div class="stat-fill"></div>
-              </div>
-            </div>
-          </div>
+        <!-- STATS -->
+        <div class="status-bars">
+          <div class="stat"><div class="stat-bar" data-label="Hunger"><div class="stat-fill" style="width: 40%"></div></div></div>
+          <div class="stat"><div class="stat-bar" data-label="Sleepiness"><div class="stat-fill" style="width: 20%"></div></div></div>
+          <div class="stat"><div class="stat-bar" data-label="Boredom"><div class="stat-fill" style="width: 60%"></div></div></div>
+          <div class="stat"><div class="stat-bar" data-label="Overstim."><div class="stat-fill" style="width: 30%"></div></div></div>
+          <div class="stat"><div class="stat-bar" data-label="Affection"><div class="stat-fill" style="width: 90%"></div></div></div>
         </div>
 
+        <!-- ACTION BUTTONS -->
         <div class="pet-actions">
-          <button type="button" data-action="pet">Pet</button>
-          <button type="button" data-action="feed">Feed</button>
-          <button type="button" data-action="swim">Swim</button>
-          <button type="button" data-action="rest">Rest</button>
-          <button type="button" data-action="sleep">Sleep</button>
-          <button type="button" data-action="roam">Roam</button>
+          <button data-action="feed">Feed</button>
+          <button data-action="pet">Pet</button>
+          <button data-action="sleep">Sleep</button>
+          <button data-action="swim">Swim</button>
+          <button data-action="rest">Rest</button>
+          <button data-action="roam">Roam</button>
         </div>
 
-        <img
-          src="assets/stars-top-left.png"
-          class="stars stars-top-left"
-          alt=""
-        />
-        <img
-          src="assets/whitestars-top-right.png"
-          class="stars stars-white-top"
-          alt=""
-        />
-        <img
-          src="assets/whitestars-btm-left.png"
-          class="stars stars-white-bottom"
-          alt=""
-        />
-        <img
-          src="assets/stars-btm-right.png"
-          class="stars stars-btm-right"
-          alt=""
-        />
       </div>
     </div>
+    <script src="pet.js"></script>
   </body>
 </html>
