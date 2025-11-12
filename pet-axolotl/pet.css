@@ -125,6 +125,7 @@ body {
     rgba(221, 237, 255, 0.3)
   );
   border: none;
+  background-size: 115% auto;
 }
 
 /* --- STAR POSITIONING --- */
@@ -138,30 +139,30 @@ body {
 
 /* Top-left cluster */
 .stars-top-left {
-  top: -15px;
-  left: -12px;
-  width: 100px;
+  top: 16px;
+  left: 16px;
+  width: 96px;
 }
 
 /* Bottom-right cluster */
 .stars-btm-right {
-  bottom: -12px;
-  right: -12px;
-  width: 100px;
+  bottom: 24px;
+  right: 8px;
+  width: 96px;
 }
 
 /* White sparkle top-right */
 .stars-white-top {
-  top: -10px;
-  right: -10px;
-  width: 85px;
+  top: 16px;
+  right: 16px;
+  width: 90px;
 }
 
 /* White sparkle bottom-left */
 .stars-white-bottom {
-  bottom: -10px;
-  left: -10px;
-  width: 85px;
+  bottom: 24px;
+  left: 16px;
+  width: 90px;
 }
 
 /* HEADER LAYOUT */
@@ -304,7 +305,7 @@ body {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 220px;
+  width: 176px;
   height: auto;
   image-rendering: pixelated;
   z-index: 2;
@@ -476,7 +477,7 @@ body {
       justify-content: space-between;
     }
 
-  /* Decorative stars */
+/* Decorative stars */
 .stars{
   position:absolute;
   z-index:20;
@@ -488,31 +489,30 @@ body {
 
 /* top-left cluster near the message banner */
 .stars-top-left{
-  /* just under the tank-window, left margin */
-  top: clamp(340px, 36vh, 390px);
-  left: clamp(12px, 2.2vw, 24px);
-  width: clamp(78px, 9vw, 110px);
+  top:16px;
+  left:16px;
+  width:96px;
 }
 
 /* white twinkles at the right end of the message banner */
 .stars-white-top{
-  top: clamp(340px, 36vh, 390px);
-  right: clamp(12px, 2.2vw, 24px);
-  width: clamp(70px, 8vw, 95px);
+  top:16px;
+  right:16px;
+  width:90px;
 }
 
 /* bottom-left flourish by the “Rest” button row */
 .stars-white-bottom{
-  bottom: clamp(14px, 2.4vh, 22px);
-  left: clamp(10px, 2vw, 18px);
-  width: clamp(70px, 8vw, 95px);
+  bottom:24px;
+  left:16px;
+  width:90px;
 }
 
 /* bottom-right flourish by the “Roam” button row */
 .stars-btm-right{
-  bottom: clamp(14px, 2.4vh, 22px);
-  right: clamp(10px, 2vw, 18px);
-  width: clamp(78px, 9vw, 110px);
+  bottom:24px;
+  right:8px;
+  width:96px;
 }
 
 @media (max-width: 360px) {
