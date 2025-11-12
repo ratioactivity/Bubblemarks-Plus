@@ -382,7 +382,14 @@ window.addEventListener("DOMContentLoaded", () => {
       { name: "swimming-sound", src: "sounds/swimming-sound.mp3", volume: 0.45 },
     ];
 
-    audioManager.preload(SOUND_DEFINITIONS);
+    const soundLibrary = SOUND_FILES.reduce((library, name) => {
+      const audio = new Audio(`sounds/${name}.mp3`);
+      audio.volume = 0.45;
+      audio.preload = "auto";
+      audio.load();
+      library[name] = audio;
+      return library;
+    }, {});
 
     const MODE_DURATIONS = {
       pet: 5000,
@@ -393,11 +400,10 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     const BASE_TRANSITION_GRAPH = {
-      rest: new Set(["float", "idle"]),
-      float: new Set(["rest", "sleep", "idle"]),
-      sleep: new Set(["float", "swim"]),
-      swim: new Set(["sleep", "float", "idle"]),
-      idle: new Set(["rest", "float", "swim", "sleep"]),
+      rest: new Set(["rest", "float", "sleep", "swim"]),
+      float: new Set(["rest", "float", "sleep", "swim"]),
+      sleep: new Set(["rest", "float", "sleep", "swim"]),
+      swim: new Set(["rest", "float", "sleep", "swim"]),
     };
 
     function isBaseTransitionAllowed(targetState) {
@@ -427,91 +433,79 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const animationLibrary = {
-      restBase: {
+      resting: {
         asset: "assets/resting.gif",
         layer: "base",
         baseState: "rest",
-      },
-      rest: {
-        base: "restBase",
-        sound: "resting-sound",
-        soundOptions: { volume: 0.32 },
-      },
-      idleRest: {
-        base: "restBase",
-        sound: "resting-sound",
-        soundOptions: { volume: 0.3 },
         duration: 9000,
-        next: "idleFloat",
+        sound: "resting-sound",
         phase: "resting",
       },
-      floatBase: {
+      restToFloat: {
+        asset: "assets/rest-to-float.gif",
+        layer: "base",
+        duration: 2200,
+      },
+      floating: {
         asset: "assets/floating.gif",
         layer: "base",
         baseState: "float",
-      },
-      idleFloat: {
-        base: "floatBase",
+        duration: 8500,
         sound: "float-squeak",
-        soundOptions: { volume: 0.38 },
-        duration: 7000,
-        next: "idleSwim",
         phase: "floating",
       },
-      sleepBase: {
+      floatToSleep: {
+        asset: "assets/float-to-sleep.gif",
+        layer: "base",
+        duration: 2200,
+      },
+      sleeping: {
         asset: "assets/sleeping.gif",
         layer: "base",
         baseState: "sleep",
-      },
-      sleep: {
-        base: "sleepBase",
+        duration: 12000,
         sound: "resting-sound",
-        soundOptions: { volume: 0.28 },
+        phase: "sleeping",
       },
-      swimBase: {
+      floatToSwim: {
+        asset: "assets/float-to-swim.gif",
+        layer: "base",
+        duration: 2200,
+      },
+      swimming: {
         asset: "assets/swimming.gif",
         layer: "base",
         baseState: "swim",
-      },
-      idleSwim: {
-        base: "swimBase",
+        duration: 9000,
         sound: "swimming-sound",
-        soundOptions: { volume: 0.42 },
-        duration: 8000,
-        next: "idleRest",
         phase: "swimming",
       },
-      swim: {
-        base: "swimBase",
-        sound: "swimming-sound",
-        soundOptions: { volume: 0.42 },
+      swimToFloat: {
+        asset: "assets/swim-to-float.gif",
+        layer: "base",
+        duration: 2200,
       },
       fastSwim: {
         asset: "assets/fast-swim.gif",
         layer: "base",
         baseState: "swim",
-        duration: 2500,
-        next: "swim",
+        duration: 2000,
+        next: "swimming",
         sound: "fastswim-squeak",
-        soundOptions: { volume: 0.55 },
       },
       petting: {
         asset: "assets/pet.gif",
         layer: "overlay",
         duration: MODE_DURATIONS.pet,
         sound: "pet-sound",
-        soundOptions: { volume: 0.5 },
         hideOnComplete: true,
-        hideBase: true,
       },
       munching: {
         asset: "assets/munching.gif",
         layer: "overlay",
         duration: MODE_DURATIONS.eat,
         sound: "munch-squeak",
-        soundOptions: { volume: 0.55 },
         hideOnComplete: true,
-        hideBase: true,
       },
     };
 
@@ -519,19 +513,16 @@ window.addEventListener("DOMContentLoaded", () => {
       idle: { type: "idle" },
       rest: {
         type: "base",
-        animation: "rest",
         duration: MODE_DURATIONS.rest,
         baseState: "rest",
       },
       sleep: {
         type: "base",
-        animation: "sleep",
         duration: MODE_DURATIONS.sleep,
         baseState: "sleep",
       },
       swim: {
         type: "base",
-        animation: "swim",
         duration: MODE_DURATIONS.swim,
         baseState: "swim",
       },
@@ -543,6 +534,140 @@ window.addEventListener("DOMContentLoaded", () => {
       base: null,
       overlay: null,
     };
+
+    function runAnimationSequence(sequence, options = {}) {
+      if (!Array.isArray(sequence) || !sequence.length) {
+        if (typeof options.onFinalStart === "function") {
+          options.onFinalStart(null);
+        }
+        return;
+      }
+
+      const layer = options.layer || "base";
+      const onFinalStart =
+        typeof options.onFinalStart === "function" ? options.onFinalStart : null;
+      const durationOverrides =
+        options.durationOverrides && typeof options.durationOverrides === "object"
+          ? options.durationOverrides
+          : null;
+
+      let index = 0;
+      const lastIndex = sequence.length - 1;
+
+      const advance = () => {
+        if (index < 0 || index >= sequence.length) {
+          return;
+        }
+
+        const key = sequence[index];
+        const resolved = resolveAnimation(key);
+        if (!resolved) {
+          return;
+        }
+
+        playAnimation(key, { layer, follow: false });
+
+        if (index === lastIndex) {
+          if (onFinalStart) {
+            onFinalStart(key);
+          }
+          return;
+        }
+
+        const hasOverride =
+          durationOverrides &&
+          Object.prototype.hasOwnProperty.call(durationOverrides, key) &&
+          index !== lastIndex;
+        const overrideValue = hasOverride ? durationOverrides[key] : undefined;
+        const wait =
+          typeof overrideValue === "number" && overrideValue >= 0
+            ? overrideValue
+            : resolved.duration || 0;
+        if (!wait) {
+          index += 1;
+          advance();
+          return;
+        }
+
+        layerTimers[layer] = window.setTimeout(() => {
+          layerTimers[layer] = null;
+          index += 1;
+          advance();
+        }, wait);
+      };
+
+      advance();
+    }
+
+    const BASE_STATE_ANIMATION_KEYS = {
+      rest: "resting",
+      float: "floating",
+      sleep: "sleeping",
+      swim: "swimming",
+    };
+
+    const BASE_TRANSITION_PATHS = {
+      rest: {
+        rest: ["resting"],
+        float: ["restToFloat", "floating"],
+        sleep: ["restToFloat", "floating", "floatToSleep", "sleeping"],
+        swim: ["restToFloat", "floating", "floatToSwim", "swimming"],
+      },
+      float: {
+        rest: ["floatToSleep", "sleeping", "resting"],
+        float: ["floating"],
+        sleep: ["floatToSleep", "sleeping"],
+        swim: ["floatToSwim", "swimming"],
+      },
+      sleep: {
+        rest: ["resting"],
+        float: ["resting", "restToFloat", "floating"],
+        sleep: ["sleeping"],
+        swim: ["resting", "restToFloat", "floating", "floatToSwim", "swimming"],
+      },
+      swim: {
+        rest: ["swimToFloat", "floating", "floatToSleep", "sleeping", "resting"],
+        float: ["swimToFloat", "floating"],
+        sleep: ["swimToFloat", "floating", "floatToSleep", "sleeping"],
+        swim: ["swimming"],
+      },
+    };
+
+    const FAST_TRACK_DURATIONS = {
+      resting: 5000,
+      floating: 3200,
+      sleeping: 5200,
+      swimming: 6500,
+    };
+
+    function transitionToBaseState(targetState, options = {}) {
+      const desired = BASE_STATE_ANIMATION_KEYS[targetState] ? targetState : "rest";
+      const current = BASE_STATE_ANIMATION_KEYS[petState.baseState]
+        ? petState.baseState
+        : "rest";
+      const availablePaths = BASE_TRANSITION_PATHS[current] || BASE_TRANSITION_PATHS.rest;
+      const sequence = (availablePaths && availablePaths[desired]) || [
+        BASE_STATE_ANIMATION_KEYS[desired],
+      ];
+
+      runAnimationSequence(sequence, {
+        layer: options.layer || "base",
+        onFinalStart: options.onFinalStart,
+        durationOverrides:
+          options.durationOverrides || (options.fastTrack ? FAST_TRACK_DURATIONS : null),
+      });
+    }
+
+    const IDLE_SEQUENCES = {
+      rest: ["resting", "restToFloat", "floating", "floatToSleep", "sleeping"],
+      float: ["floating", "floatToSleep", "sleeping", "resting", "restToFloat"],
+      sleep: ["sleeping", "resting", "restToFloat", "floating", "floatToSleep"],
+      swim: ["swimToFloat", "floating", "floatToSleep", "sleeping", "resting"],
+    };
+
+    function idleSequenceForState(state) {
+      return IDLE_SEQUENCES[state] || IDLE_SEQUENCES.rest;
+    }
 
     function resolveAnimation(type, visited = new Set()) {
       if (!type || visited.has(type)) {
@@ -572,9 +697,6 @@ window.addEventListener("DOMContentLoaded", () => {
       if (layer === "overlay" && overlayEl) {
         overlayEl.classList.remove("is-visible");
         overlayEl.removeAttribute("src");
-        if (spriteEl) {
-          spriteEl.classList.remove(BASE_LAYER_HIDDEN_CLASS);
-        }
       }
     }
 
@@ -595,17 +717,9 @@ window.addEventListener("DOMContentLoaded", () => {
         targetEl.src = resolved.asset;
       }
 
-      const hideBaseLayer = options.hideBase ?? resolved.hideBase ?? false;
-
       if (layer === "overlay") {
-        if (hideBaseLayer && spriteEl) {
-          spriteEl.classList.add(BASE_LAYER_HIDDEN_CLASS);
-        }
         overlayEl.classList.add("is-visible");
       } else {
-        if (spriteEl) {
-          spriteEl.classList.remove(BASE_LAYER_HIDDEN_CLASS);
-        }
         petState.currentAnimation = resolved.key || type;
         if (resolved.baseState) {
           petState.baseState = resolved.baseState;
@@ -616,7 +730,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       if (resolved.sound) {
-        playSound(resolved.sound, resolved.soundOptions || {});
+        playSound(resolved.sound);
       }
 
       if (layerTimers[layer]) {
@@ -624,10 +738,12 @@ window.addEventListener("DOMContentLoaded", () => {
         layerTimers[layer] = null;
       }
 
+      const followSequence = options.follow !== false;
       const duration = options.duration ?? resolved.duration;
-      const nextKey = options.next ?? resolved.next;
+      const hasExplicitNext = Object.prototype.hasOwnProperty.call(options, "next");
+      const nextKey = hasExplicitNext ? options.next : resolved.next;
 
-      if (duration && nextKey) {
+      if (followSequence && duration && nextKey) {
         layerTimers[layer] = window.setTimeout(() => {
           layerTimers[layer] = null;
           playAnimation(nextKey, { layer });
@@ -639,7 +755,7 @@ window.addEventListener("DOMContentLoaded", () => {
             clearAnimationLayer("overlay");
           }, duration);
         }
-      } else if (duration && !nextKey) {
+      } else if (followSequence && duration && !nextKey) {
         layerTimers[layer] = window.setTimeout(() => {
           layerTimers[layer] = null;
         }, duration);
@@ -692,44 +808,53 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    function idleStartKeyForState(baseState) {
-      switch (baseState) {
-        case "float":
-          return "idleFloat";
-        case "swim":
-          return "idleSwim";
-        default:
-          return "idleRest";
-      }
-    }
-
     let modeResetTimeout = null;
     let swimBurstInterval = null;
-    let ambientCueTimeout = null;
+    let attentionInterval = null;
 
     const SWIM_BURST_INTERVAL = 9000;
-    const AFFECTION_THRESHOLDS = {
-      low: 45,
-      high: 85,
-    };
-    const AMBIENT_INTERVALS = {
-      low: 4 * 60 * 1000,
-      medium: 7 * 60 * 1000,
-      high: 12 * 60 * 1000,
-    };
+    const ATTENTION_INTERVAL = 10 * 60 * 1000;
 
     function clearIdleCycle() {
       clearAnimationLayer("base");
     }
 
-    function startIdleCycle(startKey) {
+    function startIdleCycle(startState) {
       clearIdleCycle();
       clearAnimationLayer("overlay");
       petState.mode = "idle";
       petState.currentAction = "idle";
       persistState();
-      const idleKey = startKey || idleStartKeyForState(petState.baseState);
-      playAnimation(idleKey);
+      const requestedState = BASE_STATE_ANIMATION_KEYS[startState] ? startState : null;
+      const activeState = requestedState
+        ? requestedState
+        : BASE_STATE_ANIMATION_KEYS[petState.baseState]
+        ? petState.baseState
+        : "rest";
+      const idleSequence = idleSequenceForState(activeState);
+      if (!idleSequence || !idleSequence.length) {
+        transitionToBaseState(activeState);
+        return;
+      }
+      runAnimationSequence(idleSequence, {
+        onFinalStart: (finalKey) => {
+          if (petState.mode !== "idle") {
+            return;
+          }
+          const resolvedFinal = finalKey ? resolveAnimation(finalKey) : null;
+          const wait = resolvedFinal && resolvedFinal.duration ? resolvedFinal.duration : 0;
+          if (!wait) {
+            startIdleCycle();
+            return;
+          }
+          layerTimers.base = window.setTimeout(() => {
+            layerTimers.base = null;
+            if (petState.mode === "idle") {
+              startIdleCycle();
+            }
+          }, wait);
+        },
+      });
     }
 
     function stopSwimBursts() {
@@ -742,7 +867,7 @@ window.addEventListener("DOMContentLoaded", () => {
     function startSwimBursts() {
       stopSwimBursts();
       swimBurstInterval = window.setInterval(() => {
-        if (petState.mode !== "swim") {
+        if (petState.mode !== "swim" || petState.baseState !== "swim") {
           return;
         }
         playAnimation("fastSwim");
@@ -838,9 +963,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
       if (modeType === "idle") {
         stopSwimBursts();
-        const idleKey = typeof config.animation === "string" ? config.animation : undefined;
-        startIdleCycle(idleKey);
-        scheduleAmbientCue();
+        const idleBaseState =
+          typeof config.baseState === "string" && config.baseState.trim().length
+            ? config.baseState
+            : undefined;
+        startIdleCycle(idleBaseState);
         return;
       }
 
@@ -851,7 +978,6 @@ window.addEventListener("DOMContentLoaded", () => {
         petState.currentAction = config.actionName || mode;
         persistState();
         playAnimation(config.animation || mode, { layer: "overlay" });
-        scheduleAmbientCue();
         if (config.duration) {
           scheduleModeReset(mode, config.duration, resumeMode, {
             previousMode: mode,
@@ -859,21 +985,32 @@ window.addEventListener("DOMContentLoaded", () => {
         }
         return;
       }
+      clearAnimationLayer("overlay");
 
       clearIdleCycle();
-      if (mode !== "swim") {
-        stopSwimBursts();
-      }
+      stopSwimBursts();
       clearAnimationLayer("overlay");
 
       petState.mode = mode;
       petState.currentAction = config.actionName || mode;
       persistState();
 
-      playAnimation(config.animation || mode);
+      const targetBaseState =
+        typeof config.baseState === "string" && config.baseState.trim().length
+          ? config.baseState
+          : petState.baseState || "rest";
 
-      if (mode === "swim") {
-        startSwimBursts();
+      transitionToBaseState(targetBaseState, {
+        fastTrack: true,
+        onFinalStart: () => {
+          if (mode === "swim" && petState.mode === "swim") {
+            startSwimBursts();
+          }
+        },
+      });
+
+      if (config.duration) {
+        scheduleModeReset(mode, config.duration, config.nextMode || "idle");
       }
 
       if (config.duration) {
