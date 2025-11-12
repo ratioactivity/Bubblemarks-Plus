@@ -19,25 +19,235 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const petState = {
-      mode: "idle",
-      idlePhase: "resting",
-      soundEnabled: true,
-      attention: 100,
-      level: 1,
-      name: "Axolotl",
+    const STORAGE_KEY = "bubblepet.state.v1";
+    const STAT_LIMIT = 100;
+    const DEFAULT_STATS = {
+      hunger: 25,
+      sleepiness: 20,
+      boredom: 30,
+      overstim: 15,
+      affection: 70,
     };
 
-    const stats = {
-      hunger: 5,
-      sleepiness: 3,
-      boredom: 4,
-      overstim: 2,
-      affection: 8,
-    };
+    function clampStat(value) {
+      const numeric = Number.isFinite(value) ? value : 0;
+      return Math.max(0, Math.min(STAT_LIMIT, numeric));
+    }
 
-    const STAT_LIMIT = 10;
+    function loadState() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return null;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") {
+          return null;
+        }
+        parsed.stats = Object.assign({}, DEFAULT_STATS, parsed.stats || {});
+        parsed.stats = Object.keys(parsed.stats).reduce((acc, key) => {
+          acc[key] = clampStat(Number(parsed.stats[key]));
+          return acc;
+        }, {});
+        return parsed;
+      } catch (error) {
+        console.warn("[BubblePet] Failed to load state:", error);
+        return null;
+      }
+    }
+
+    function createDefaultState() {
+      return {
+        mode: "idle",
+        currentAction: "idle",
+        idlePhase: "resting",
+        soundEnabled: true,
+        attention: 100,
+        level: 1,
+        name: "Axolotl",
+        happiness: 0,
+        nextLevelThreshold: 85,
+        lastTick: Date.now(),
+        stats: Object.assign({}, DEFAULT_STATS),
+      };
+    }
+
+    const petState = Object.assign(createDefaultState(), loadState() || {});
+    petState.stats = Object.assign({}, DEFAULT_STATS, petState.stats || {});
     const SLEEP_HOURS = { start: 4, end: 12 }; // CST
+
+    function persistState() {
+      try {
+        const payload = JSON.stringify({
+          mode: petState.mode,
+          currentAction: petState.currentAction,
+          idlePhase: petState.idlePhase,
+          soundEnabled: petState.soundEnabled,
+          attention: petState.attention,
+          level: petState.level,
+          name: petState.name,
+          happiness: petState.happiness,
+          nextLevelThreshold: petState.nextLevelThreshold,
+          lastTick: petState.lastTick,
+          stats: petState.stats,
+        });
+        window.localStorage.setItem(STORAGE_KEY, payload);
+      } catch (error) {
+        console.warn("[BubblePet] Failed to persist state:", error);
+      }
+    }
+
+    function calculateHappiness() {
+      const { hunger, sleepiness, boredom, overstim, affection } = petState.stats;
+      const positive =
+        STAT_LIMIT - hunger +
+        (STAT_LIMIT - sleepiness) +
+        (STAT_LIMIT - boredom) +
+        (STAT_LIMIT - overstim) +
+        affection;
+      petState.happiness = clampStat(Math.round(positive / 5));
+
+      let leveledUp = false;
+      while (petState.happiness >= petState.nextLevelThreshold) {
+        petState.level += 1;
+        petState.nextLevelThreshold = Math.min(
+          STAT_LIMIT,
+          Math.round(petState.nextLevelThreshold + 5 + petState.level * 2)
+        );
+        petState.stats.affection = clampStat(petState.stats.affection + 5);
+        petState.stats.overstim = clampStat(petState.stats.overstim - 5);
+        petState.stats.boredom = clampStat(petState.stats.boredom - 5);
+        leveledUp = true;
+      }
+
+      if (leveledUp) {
+        const recalculated =
+          STAT_LIMIT - petState.stats.hunger +
+          (STAT_LIMIT - petState.stats.sleepiness) +
+          (STAT_LIMIT - petState.stats.boredom) +
+          (STAT_LIMIT - petState.stats.overstim) +
+          petState.stats.affection;
+        petState.happiness = clampStat(Math.round(recalculated / 5));
+      }
+
+      persistState();
+      updateBars();
+    }
+
+    function applyStatChange(stat, delta, options = {}) {
+      const { silent = false } = options;
+      if (!(stat in petState.stats)) {
+        return false;
+      }
+      const nextValue = clampStat(petState.stats[stat] + delta);
+      if (nextValue === petState.stats[stat]) {
+        return false;
+      }
+      petState.stats[stat] = nextValue;
+      if (silent) {
+        renderStatBar(stat);
+        return true;
+      }
+      calculateHappiness();
+      return true;
+    }
+
+    function updateHunger(delta, options) {
+      return applyStatChange("hunger", delta, options);
+    }
+
+    function updateSleepiness(delta, options) {
+      return applyStatChange("sleepiness", delta, options);
+    }
+
+    function updateBoredom(delta, options) {
+      return applyStatChange("boredom", delta, options);
+    }
+
+    function updateOverstim(delta, options) {
+      return applyStatChange("overstim", delta, options);
+    }
+
+    function updateAffection(delta, options) {
+      return applyStatChange("affection", delta, options);
+    }
+
+    const NATURAL_DRIFT = {
+      hunger: 3,
+      sleepiness: 2,
+      boredom: 3,
+      overstim: 1,
+      affection: -2,
+    };
+
+    const DEFAULT_TICK_MS =
+      typeof window.__bubblepetHourMs === "number"
+        ? window.__bubblepetHourMs
+        : 60 * 60 * 1000;
+
+    let schedulerId = null;
+
+    function applyNaturalDrift(hours = 1, options = {}) {
+      const { timestamp = Date.now() } = options;
+      let changed = false;
+      Object.entries(NATURAL_DRIFT).forEach(([stat, change]) => {
+        const delta = change * hours;
+        if (!delta) {
+          return;
+        }
+        let result = false;
+        switch (stat) {
+          case "hunger":
+            result = updateHunger(delta, { silent: true });
+            break;
+          case "sleepiness":
+            result = updateSleepiness(delta, { silent: true });
+            break;
+          case "boredom":
+            result = updateBoredom(delta, { silent: true });
+            break;
+          case "overstim":
+            result = updateOverstim(delta, { silent: true });
+            break;
+          case "affection":
+            result = updateAffection(delta, { silent: true });
+            break;
+          default:
+            break;
+        }
+        changed = changed || result;
+      });
+      petState.lastTick = timestamp;
+      if (changed) {
+        calculateHappiness();
+      } else {
+        persistState();
+      }
+    }
+
+    function processBackfill() {
+      const now = Date.now();
+      const elapsed = now - (petState.lastTick || now);
+      const hoursElapsed = Math.floor(elapsed / DEFAULT_TICK_MS);
+      if (hoursElapsed > 0) {
+        applyNaturalDrift(hoursElapsed, { timestamp: now });
+      } else {
+        petState.lastTick = now;
+      }
+    }
+
+    function startScheduler(intervalMs = DEFAULT_TICK_MS) {
+      if (schedulerId) {
+        window.clearInterval(schedulerId);
+      }
+      schedulerId = window.setInterval(() => {
+        if (!isSleepTime()) {
+          applyNaturalDrift(1, { timestamp: Date.now() });
+          setMessage("Pico is craving a little attention.");
+        }
+      }, intervalMs);
+      return schedulerId;
+    }
 
     const SOUND_FILES = [
       "attention-squeak",
@@ -84,23 +294,23 @@ window.addEventListener("DOMContentLoaded", () => {
       petState.currentAnimation = name;
     }
 
-    function updateBars() {
-      for (const key in stats) {
-        const bar = rootElement.querySelector(`#${key}-bar`);
-        if (!bar) continue;
-        const fill = bar.querySelector(".stat-fill");
-        const value = stats[key];
-        const percent = Math.min((value / STAT_LIMIT) * 100, 100);
-        if (fill) {
-          fill.style.width = `${percent}%`;
-        }
+    function renderStatBar(stat) {
+      const bar = rootElement.querySelector(`#${stat}-bar`);
+      if (!bar) {
+        return;
+      }
+      const fill = bar.querySelector(".stat-fill");
+      const value = petState.stats[stat];
+      const percent = Math.min((value / STAT_LIMIT) * 100, 100);
+      if (fill) {
+        fill.style.width = `${percent}%`;
       }
     }
 
-    function modifyStat(stat, amount) {
-      if (!(stat in stats)) return;
-      stats[stat] = Math.min(STAT_LIMIT, Math.max(0, stats[stat] + amount));
-      updateBars();
+    function updateBars() {
+      for (const key in petState.stats) {
+        renderStatBar(key);
+      }
     }
 
     function isSleepTime() {
@@ -180,6 +390,8 @@ window.addEventListener("DOMContentLoaded", () => {
     function startIdleCycle(startIndex = 0) {
       clearIdleCycle();
       petState.mode = "idle";
+      petState.currentAction = "idle";
+      persistState();
       idleIndex = startIndex % IDLE_SEQUENCE.length;
       advanceIdleCycle();
     }
@@ -250,6 +462,8 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       petState.mode = mode;
+      petState.currentAction = mode;
+      persistState();
 
       switch (mode) {
         case "pet":
@@ -301,41 +515,46 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     function handleButtonClick(action) {
+      let statsChanged = false;
       switch (action) {
         case "pet":
           enterMode("pet");
-          modifyStat("affection", +2);
-          modifyStat("boredom", -5);
+          statsChanged = updateAffection(+2) || statsChanged;
+          statsChanged = updateBoredom(-5) || statsChanged;
           break;
         case "feed":
           enterMode("eat");
-          modifyStat("hunger", -5);
+          statsChanged = updateHunger(-5) || statsChanged;
           break;
         case "swim":
           enterMode("swim");
-          modifyStat("overstim", +1);
-          modifyStat("boredom", -5);
-          modifyStat("sleepiness", +5);
+          statsChanged = updateOverstim(+1) || statsChanged;
+          statsChanged = updateBoredom(-5) || statsChanged;
+          statsChanged = updateSleepiness(+5) || statsChanged;
           break;
         case "rest":
           enterMode("rest");
-          modifyStat("overstim", -5);
-          modifyStat("boredom", +1);
+          statsChanged = updateOverstim(-5) || statsChanged;
+          statsChanged = updateBoredom(+1) || statsChanged;
           break;
         case "sleep":
           enterMode("sleep");
-          modifyStat("sleepiness", -5);
+          statsChanged = updateSleepiness(-5) || statsChanged;
           break;
         case "roam":
           enterMode("swim");
-          modifyStat("boredom", -5);
-          modifyStat("affection", +1);
+          statsChanged = updateBoredom(-5) || statsChanged;
+          statsChanged = updateAffection(+1) || statsChanged;
           break;
         default:
           enterMode("idle");
       }
 
-      updateBars();
+      petState.currentAction = action || "idle";
+      persistState();
+      if (!statsChanged) {
+        calculateHappiness();
+      }
       setMessage(actionMessages[action] || "Pico is feeling calm and cozy.");
     }
 
@@ -361,19 +580,18 @@ window.addEventListener("DOMContentLoaded", () => {
       }, ATTENTION_INTERVAL);
     }
 
-    function hourlyUpdate() {
-      if (isSleepTime()) return;
-      modifyStat("hunger", +1);
-      modifyStat("boredom", +1);
-      modifyStat("affection", -1);
-      setMessage("Pico is craving a little attention.");
-    }
-
-    setInterval(hourlyUpdate, 3600000); // every hour
-
+    processBackfill();
+    calculateHappiness();
     startIdleCycle();
-    updateBars();
     startAttentionTimer();
+    startScheduler();
+
+    window.__bubblepetState = petState;
+    window.__bubblepetControls = {
+      startScheduler,
+      applyNaturalDrift,
+      calculateHappiness,
+    };
 
     console.log("✅ script validated");
   };
