@@ -195,6 +195,7 @@ img {
   opacity: 1;
 }
 
+/* Fix aquarium window size ratio */
 .tank-window {
   position: relative;
   width: 90%;
