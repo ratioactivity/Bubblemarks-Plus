@@ -140,32 +140,30 @@ body {
 
 /* Top-left cluster — move up significantly */
 .stars-top-left {
-  top: 60px;       /* raised from ~330px */
+  top: 20px;
   left: 20px;
-  width: 110px;
+  width: 96px;
 }
 
-/* Top-right white cluster — ensure visible again */
+/* Bottom-right cluster */
+.stars-btm-right {
+  bottom: 20px;
+  right: 12px;
+  width: 96px;
+}
+
+/* White sparkle top-right */
 .stars-white-top {
-  top: 65px;
-  right: 25px;
-  width: 95px;
-  opacity: 1;
-  display: block;
+  top: 20px;
+  right: 20px;
+  width: 90px;
 }
 
 /* Bottom-left white cluster */
 .stars-white-bottom {
-  bottom: 18px;
-  left: 22px;
-  width: 95px;
-}
-
-/* Bottom-right colored cluster — move up slightly */
-.stars-btm-right {
-  bottom: 28px;    /* was too low */
-  right: 10px;
-  width: 110px;
+  bottom: 20px;
+  left: 20px;
+  width: 90px;
 }
 
 /* HEADER LAYOUT */
