@@ -126,23 +126,41 @@ body {
   border: none;
 }
 
-/* Let stars float freely */
-.stars, .header-stars {
+/* --- STAR POSITIONING --- */
+.stars {
   position: absolute;
-  z-index: 10;
+  z-index: 999;
+  opacity: 1;
   pointer-events: none;
+  object-fit: contain;
 }
 
+/* Top-left cluster */
 .stars-top-left {
-  top: -20px;
-  left: -25px;
-  width: 120px;
+  top: -15px;
+  left: -12px;
+  width: 100px;
 }
 
-.stars-white-top {
-  top: -20px;
-  right: -25px;
+/* Bottom-right cluster */
+.stars-btm-right {
+  bottom: -12px;
+  right: -12px;
   width: 100px;
+}
+
+/* White sparkle top-right */
+.stars-white-top {
+  top: -10px;
+  right: -10px;
+  width: 85px;
+}
+
+/* White sparkle bottom-left */
+.stars-white-bottom {
+  bottom: -10px;
+  left: -10px;
+  width: 85px;
 }
 
 /* HEADER LAYOUT */
@@ -272,8 +290,10 @@ body {
 .aquarium-bg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* was likely 'cover' */
   border-radius: inherit;
+  image-rendering: pixelated;
+  transform: scale(1); /* prevent zoom distortion */
 }
 
 #pet-sprite {
@@ -427,39 +447,6 @@ body {
   font-size: 0.9rem;
   color: #6a588c;
   text-align: center;
-}
-
-
-.stars {
-  position: absolute;
-  z-index: 999;
-  opacity: 1;
-  pointer-events: none;
-  object-fit: contain;
-}
-
-.stars-top-left {
-  top: -8px;
-  left: -8px;
-  width: 110px;
-}
-
-.stars-btm-right {
-  bottom: -8px;
-  right: -8px;
-  width: 110px;
-}
-
-.stars-white-top {
-  top: -8px;
-  right: -8px;
-  width: 95px;
-}
-
-.stars-white-bottom {
-  bottom: -8px;
-  left: -8px;
-  width: 95px;
 }
 
 @media (max-width: 520px) {
