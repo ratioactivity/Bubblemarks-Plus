@@ -200,20 +200,19 @@ body {
   justify-self: flex-start;
 }
 
-/* Center — name */
-.pet-name {
-  justify-self: center;
+/* Header: center name + bigger */
+.pet-name{
+  flex: 1 1 auto;
   text-align: center;
   font-family: "Bigbesty", sans-serif;
-  font-size: 3.4rem; /* bigger and more striking */
-  color: #ffffff;
+  font-size: clamp(2.2rem, 3.2vw + 1.2rem, 3.6rem);
+  line-height: 1;
+  color: #fff;
   font-weight: 900;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-shadow:
-    0 0 4px rgba(255, 255, 255, 0.8),
-    0 3px 6px rgba(70, 40, 110, 0.45),
-    0 0 10px rgba(255, 180, 240, 0.4);
-  white-space: nowrap;
+    0 0 3px rgba(255,255,255,.65),
+    0 3px 8px rgba(70,40,110,.35);
 }
 
 /* Right — gear button */
@@ -287,13 +286,16 @@ body {
   z-index: 1;
 }
 
-.aquarium-bg {
+/* Tank background image – fit without cropping */
+.aquarium-bg{
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* was likely 'cover' */
-  border-radius: inherit;
+  object-fit: contain;      /* key change: no cropping */
   image-rendering: pixelated;
-  transform: scale(1); /* prevent zoom distortion */
+  border-radius: inherit;
+  transform: none !important;
 }
 
 #pet-sprite {
@@ -473,13 +475,43 @@ body {
       justify-content: space-between;
     }
 
-  .pet-name {
-    font-size: 1.2rem;
-  }
+  /* Decorative stars */
+.stars{
+  position:absolute;
+  z-index:20;
+  pointer-events:none;
+  opacity:1;
+  filter: drop-shadow(0 2px 6px rgba(120,100,160,.25));
+  object-fit:contain;
+}
 
-  .stars {
-    width: 70px;
-  }
+/* top-left cluster near the message banner */
+.stars-top-left{
+  /* just under the tank-window, left margin */
+  top: clamp(340px, 36vh, 390px);
+  left: clamp(12px, 2.2vw, 24px);
+  width: clamp(78px, 9vw, 110px);
+}
+
+/* white twinkles at the right end of the message banner */
+.stars-white-top{
+  top: clamp(340px, 36vh, 390px);
+  right: clamp(12px, 2.2vw, 24px);
+  width: clamp(70px, 8vw, 95px);
+}
+
+/* bottom-left flourish by the “Rest” button row */
+.stars-white-bottom{
+  bottom: clamp(14px, 2.4vh, 22px);
+  left: clamp(10px, 2vw, 18px);
+  width: clamp(70px, 8vw, 95px);
+}
+
+/* bottom-right flourish by the “Roam” button row */
+.stars-btm-right{
+  bottom: clamp(14px, 2.4vh, 22px);
+  right: clamp(10px, 2vw, 18px);
+  width: clamp(78px, 9vw, 110px);
 }
 
 @media (max-width: 360px) {
