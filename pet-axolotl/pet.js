@@ -220,6 +220,82 @@ window.addEventListener("DOMContentLoaded", () => {
     transitionTimer = null;
   }
 
+  function performAction(action) {
+    stopAllTimers();
+
+    if (performAction._restartTimer) {
+      window.clearTimeout(performAction._restartTimer);
+      performAction._restartTimer = null;
+    }
+
+    let totalDelay = 0;
+    let handled = true;
+
+    const scheduleRestart = () => {
+      const delay = Math.max(0, totalDelay);
+      if (delay <= 0) {
+        startIdleCycle();
+        return;
+      }
+      performAction._restartTimer = window.setTimeout(() => {
+        performAction._restartTimer = null;
+        startIdleCycle();
+      }, delay);
+    };
+
+    switch (action) {
+      case "pet": {
+        const target =
+          Math.random() < 0.5 && CURRENT_STATE === STATE.RESTING
+            ? STATE.RESTING_BUBBLE
+            : STATE.RESTING;
+        totalDelay += transitionToState(target);
+        break;
+      }
+      case "feed": {
+        totalDelay += transitionToState(STATE.RESTING);
+        console.log("munching later");
+        break;
+      }
+      case "sleep": {
+        totalDelay += transitionToState(STATE.REST_TO_SLEEP);
+        break;
+      }
+      case "swim": {
+        totalDelay += transitionToState(STATE.FLOAT_TO_SWIM);
+        break;
+      }
+      case "rest": {
+        const allowed = ALLOWED_TRANSITIONS[CURRENT_STATE] || [];
+        let target = null;
+        if (allowed.includes(STATE.FLOAT_TO_REST)) {
+          target = STATE.FLOAT_TO_REST;
+        } else if (allowed.includes(STATE.SLEEP_TO_REST)) {
+          target = STATE.SLEEP_TO_REST;
+        } else {
+          target = STATE.RESTING;
+        }
+        totalDelay += transitionToState(target);
+        break;
+      }
+      case "roam": {
+        console.log("roam later");
+        break;
+      }
+      default:
+        handled = false;
+        break;
+    }
+
+    if (!handled) {
+      console.warn("Unknown action:", action);
+      startIdleCycle();
+      return;
+    }
+
+    scheduleRestart();
+  }
+
   function scheduleIdleStep(delayMs) {
     stopIdleTimer();
     const safeDelay = Number.isFinite(delayMs) ? delayMs : getStateDuration(CURRENT_STATE);
