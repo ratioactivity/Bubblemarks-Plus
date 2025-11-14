@@ -71,6 +71,7 @@ const stateMachine = {
     transitioning: false,
     queue: [],
     autoTimer: null,
+    loopTimers: {},
     priorityMap: {
         transition: 0,
         action: 1,
@@ -80,27 +81,33 @@ const stateMachine = {
     states: {
         resting: {
             gif: SPRITES.resting,
-            loop: true
+            loop: true,
+            idleEligible: true
         },
         restingbubble: {
             gif: SPRITES.restingbubble,
-            loop: true
+            loop: true,
+            idleEligible: true
         },
         floating: {
             gif: SPRITES.floating,
-            loop: true
+            loop: true,
+            idleEligible: true
         },
         swimming: {
             gif: SPRITES.swimming,
-            loop: true
+            loop: true,
+            idleEligible: false
         },
         "fast-swim": {
             gif: SPRITES["fast-swim"],
-            loop: true
+            loop: true,
+            idleEligible: false
         },
         sleeping: {
             gif: SPRITES.sleeping,
-            loop: true
+            loop: true,
+            idleEligible: false
         },
         munching: {
             gif: SPRITES.munching,
@@ -185,6 +192,12 @@ const stateMachine = {
         }
 
         if (this.currentState === targetState) {
+            const config = this.states[targetState];
+            if (!config?.transitional && config?.loop) {
+                this._flushQueue();
+                return;
+            }
+
             this._applyState(targetState);
             if (!this.transitioning) {
                 this._flushQueue();
@@ -228,6 +241,8 @@ const stateMachine = {
         pet.state = name;
         this.transitioning = Boolean(config.transitional);
 
+        this._handleLoopTimers(name, config);
+
         if (spriteEl && config.gif) {
             spriteEl.src = config.gif;
         }
@@ -235,7 +250,11 @@ const stateMachine = {
         if (config.transitional || !config.loop) {
             stopIdleLoop();
         } else if (!this.transitioning) {
-            startIdleLoop();
+            if (config.idleEligible === false) {
+                stopIdleLoop();
+            } else {
+                startIdleLoop();
+            }
         }
 
         if (config.auto) {
@@ -325,6 +344,32 @@ const stateMachine = {
     },
     _priorityValue(key) {
         return this.priorityMap[key] ?? this.priorityMap.normal;
+    },
+    _handleLoopTimers(name, config) {
+        Object.values(this.loopTimers).forEach(timerId => clearTimeout(timerId));
+        this.loopTimers = {};
+
+        if (!config.loop || config.transitional) {
+            return;
+        }
+
+        if (name === "swimming") {
+            this.loopTimers.fastSwim = setTimeout(() => {
+                if (this.currentState !== "swimming" || this.transitioning) {
+                    return;
+                }
+                this.go("fast-swim", { priority: "normal" });
+            }, 4000 + Math.random() * 4000);
+        }
+
+        if (name === "fast-swim") {
+            this.loopTimers.returnToSwim = setTimeout(() => {
+                if (this.currentState !== "fast-swim" || this.transitioning) {
+                    return;
+                }
+                this.go("swimming", { priority: "normal" });
+            }, 2500 + Math.random() * 2000);
+        }
     }
 };
 
