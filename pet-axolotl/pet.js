@@ -71,6 +71,12 @@ const stateMachine = {
     transitioning: false,
     queue: [],
     autoTimer: null,
+    priorityMap: {
+        transition: 0,
+        action: 1,
+        normal: 2,
+        idle: 3
+    },
     states: {
         resting: {
             gif: SPRITES.resting,
@@ -157,14 +163,16 @@ const stateMachine = {
             auto: { state: "floating", delay: DEFAULT_TRANSITION_DELAY }
         }
     },
-    go(targetState) {
+    go(targetState, options = {}) {
         if (!this.states[targetState]) {
             console.warn("Unknown state:", targetState);
             return;
         }
 
+        const priorityKey = this._resolvePriorityKey(targetState, options.priority);
+
         if (this.transitioning) {
-            this.queue.push(targetState);
+            this._enqueue(targetState, priorityKey);
             return;
         }
 
@@ -193,7 +201,7 @@ const stateMachine = {
         const nextState = path[1];
 
         if (nextState !== targetState) {
-            this._enqueueFront(targetState);
+            this._enqueue(targetState, priorityKey);
         }
 
         this._applyState(nextState);
@@ -224,11 +232,17 @@ const stateMachine = {
             spriteEl.src = config.gif;
         }
 
+        if (config.transitional || !config.loop) {
+            stopIdleLoop();
+        } else if (!this.transitioning) {
+            startIdleLoop();
+        }
+
         if (config.auto) {
             const delay = config.auto.delay ?? DEFAULT_TRANSITION_DELAY;
             this.autoTimer = setTimeout(() => {
                 this.transitioning = false;
-                this.go(config.auto.state);
+                this.go(config.auto.state, { priority: "transition" });
             }, delay);
         } else if (!config.transitional) {
             this.transitioning = false;
@@ -236,8 +250,9 @@ const stateMachine = {
     },
     _flushQueue() {
         if (!this.queue.length) return;
-        const next = this.queue.shift();
-        this.go(next);
+        const next = this._dequeue();
+        if (!next) return;
+        this.go(next.state, { priority: next.priorityKey });
     },
     _findPath(start, target) {
         if (start === target) {
@@ -269,12 +284,47 @@ const stateMachine = {
 
         return null;
     },
-    _enqueueFront(state) {
-        if (this.queue[0] === state) {
-            return;
+    _enqueue(state, priorityKey) {
+        const key = priorityKey || this._resolvePriorityKey(state);
+        this.queue.push({
+            state,
+            priorityKey: key,
+            priorityValue: this._priorityValue(key)
+        });
+    },
+    _dequeue() {
+        if (!this.queue.length) {
+            return null;
         }
 
-        this.queue.unshift(state);
+        let bestIndex = 0;
+        for (let i = 1; i < this.queue.length; i += 1) {
+            if (this.queue[i].priorityValue < this.queue[bestIndex].priorityValue) {
+                bestIndex = i;
+            }
+        }
+
+        const [entry] = this.queue.splice(bestIndex, 1);
+        return entry;
+    },
+    _resolvePriorityKey(state, explicit) {
+        if (explicit) {
+            return explicit;
+        }
+
+        const config = this.states[state];
+        if (config?.transitional) {
+            return "transition";
+        }
+
+        if (!config?.loop) {
+            return "action";
+        }
+
+        return "normal";
+    },
+    _priorityValue(key) {
+        return this.priorityMap[key] ?? this.priorityMap.normal;
     }
 };
 
@@ -282,7 +332,7 @@ const stateMachine = {
 // IDLE BEHAVIOR
 // -------------------------------
 function startIdleLoop() {
-    clearInterval(pet.idleTimer);
+    if (pet.idleTimer) return;
 
     pet.idleTimer = setInterval(() => {
 
@@ -293,14 +343,20 @@ function startIdleLoop() {
         const roll = Math.random();
 
         if (roll < 0.10) {
-            stateMachine.go("floating");
+            stateMachine.go("floating", { priority: "idle" });
         } else if (roll < 0.20) {
-            stateMachine.go("restingbubble");
+            stateMachine.go("restingbubble", { priority: "idle" });
         } else {
-            stateMachine.go("resting");
+            stateMachine.go("resting", { priority: "idle" });
         }
 
     }, 7000);
+}
+
+function stopIdleLoop() {
+    if (!pet.idleTimer) return;
+    clearInterval(pet.idleTimer);
+    pet.idleTimer = null;
 }
 
 // -------------------------------
@@ -311,6 +367,8 @@ function performAction(action) {
     pet.actionCooldown = true;
 
     setTimeout(() => (pet.actionCooldown = false), 1200);
+
+    stopIdleLoop();
 
     switch (action) {
         case "feed":
@@ -341,45 +399,45 @@ function performAction(action) {
 // --------------------------------
 
 function doFeed() {
-    stateMachine.go("munching");
+    stateMachine.go("munching", { priority: "action" });
     messageBar.textContent = "Pico munches happily!";
     pet.hunger = Math.max(0, pet.hunger - 5);
 }
 
 function doPet() {
-    stateMachine.go("petting");
+    stateMachine.go("petting", { priority: "action" });
     messageBar.textContent = "Pico wiggles happily ❤️";
     pet.affection = Math.min(10, pet.affection + 5);
 }
 
 function doSleep() {
     // Enforce rest-to-sleep transition chain
-    stateMachine.go("rest-to-sleep");
+    stateMachine.go("rest-to-sleep", { priority: "action" });
     messageBar.textContent = "Pico is sleeping...";
 }
 
 function doSwim() {
     // Float before swimming when necessary
     if (stateMachine.currentState === "floating") {
-        stateMachine.go("float-to-swim");
+        stateMachine.go("float-to-swim", { priority: "action" });
     } else if (stateMachine.currentState === "swimming" || stateMachine.currentState === "fast-swim") {
-        stateMachine.go("swimming");
+        stateMachine.go("swimming", { priority: "action" });
     } else {
-        stateMachine.go("float-to-swim");
+        stateMachine.go("float-to-swim", { priority: "action" });
     }
     messageBar.textContent = "Pico is swimming!";
 }
 
 function doRest() {
     // Transitions handled by state machine
-    stateMachine.go("resting");
+    stateMachine.go("resting", { priority: "action" });
     messageBar.textContent = "Pico calms down.";
 }
 
 function doRoam() {
-    stateMachine.go("floating");
+    stateMachine.go("floating", { priority: "action" });
     messageBar.textContent = "Pico wanders off...";
-    clearInterval(pet.idleTimer);
+    stopIdleLoop();
 }
 
 // --------------------------------
