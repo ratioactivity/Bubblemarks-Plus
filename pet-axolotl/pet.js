@@ -359,6 +359,14 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     spriteElement = foundSprite;
+
+    const buttons = rootElement.querySelectorAll("[data-action]");
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.action;
+        performAction(action);
+      });
+    });
     startIdleCycle();
     setupDebugAPI();
 
@@ -378,13 +386,5 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  document.querySelectorAll("[data-action]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const action = btn.getAttribute("data-action");
-      performAction(action);
-    });
-  });
-
-  window.initPetWidget(document.body);
   console.log("✅ script validated");
 });
