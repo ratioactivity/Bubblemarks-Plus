@@ -97,7 +97,7 @@ const stateMachine = {
         swimming: {
             gif: SPRITES.swimming,
             loop: true,
-            idleEligible: false
+            idleEligible: true
         },
         "fast-swim": {
             gif: SPRITES["fast-swim"],
@@ -353,22 +353,13 @@ const stateMachine = {
             return;
         }
 
-        if (name === "swimming") {
-            this.loopTimers.fastSwim = setTimeout(() => {
-                if (this.currentState !== "swimming" || this.transitioning) {
-                    return;
-                }
-                this.go("fast-swim", { priority: "normal" });
-            }, 4000 + Math.random() * 4000);
-        }
-
         if (name === "fast-swim") {
             this.loopTimers.returnToSwim = setTimeout(() => {
                 if (this.currentState !== "fast-swim" || this.transitioning) {
                     return;
                 }
                 this.go("swimming", { priority: "normal" });
-            }, 2500 + Math.random() * 2000);
+            }, 3000);
         }
     }
 };
@@ -380,21 +371,50 @@ function startIdleLoop() {
     if (pet.idleTimer) return;
 
     pet.idleTimer = setInterval(() => {
-
-        // 80% = stay resting
-        // 10% = resting bubble alt
-        // 10% = floating variation
-
-        const roll = Math.random();
-
-        if (roll < 0.10) {
-            stateMachine.go("floating", { priority: "idle" });
-        } else if (roll < 0.20) {
-            stateMachine.go("restingbubble", { priority: "idle" });
-        } else {
-            stateMachine.go("resting", { priority: "idle" });
+        if (stateMachine.transitioning) {
+            return;
         }
 
+        const current = stateMachine.currentState;
+        const currentConfig = stateMachine.states[current];
+
+        if (!currentConfig || currentConfig.transitional || !currentConfig.loop) {
+            return;
+        }
+
+        const hasPendingPriority = stateMachine.queue.some(entry => {
+            return entry.priorityValue <= stateMachine.priorityMap.action;
+        });
+
+        if (hasPendingPriority) {
+            return;
+        }
+
+        const roll = Math.random();
+        let target = "resting";
+
+        // Idle distribution:
+        // 0.0 - 0.7  => resting (70%)
+        // 0.7 - 0.8  => restingbubble (10%)
+        // 0.8 - 0.9  => floating (10%)
+        // 0.9 - 1.0  => fast-swim when currently swimming (10%)
+        if (roll < 0.7) {
+            target = "resting";
+        } else if (roll < 0.8) {
+            target = "restingbubble";
+        } else if (roll < 0.9) {
+            target = "floating";
+        } else if (current === "swimming") {
+            target = "fast-swim";
+        } else {
+            target = "resting";
+        }
+
+        if (target === current) {
+            return;
+        }
+
+        stateMachine.go(target, { priority: "idle" });
     }, 7000);
 }
 
