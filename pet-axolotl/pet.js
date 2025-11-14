@@ -27,21 +27,37 @@ const SPRITES = {
     restingbubble: "assets/restingbubble.gif",
     floating: "assets/floating.gif",
     swimming: "assets/swimming.gif",
-    fastswim: "assets/fast-swim.gif",
+    "fast-swim": "assets/fast-swim.gif",
     sleeping: "assets/sleeping.gif",
     munching: "assets/munching.gif",
     petting: "assets/pet.gif",
+    "rest-to-float": "assets/rest-to-float.gif",
+    "float-to-rest": "assets/float-to-rest.gif",
+    "rest-to-sleep": "assets/rest-to-sleep.gif",
+    "float-to-sleep": "assets/float-to-sleep.gif",
+    "float-to-swim": "assets/float-to-swim.gif",
+    "sleep-to-rest": "assets/sleep-to-rest.gif",
+    "sleep-to-float": "assets/sleep-to-float.gif",
+    "swim-to-float": "assets/swim-to-float.gif"
+};
 
-    // transitions
-    rest_to_float: "assets/rest-to-float.gif",
-    float_to_swim: "assets/float-to-swim.gif",
-    float_to_sleep: "assets/float-to-sleep.gif",
-    float_to_rest: "assets/float-to-rest.gif",
-    swim_to_float: "assets/swim-to-float.gif",
-    rest_to_sleep: "assets/rest-to-sleep.gif",
-
-    // free roam (future)
-    roam: "assets/roam.gif"
+const TRANSITION_GRAPH = {
+    resting: ["resting", "restingbubble", "rest-to-float", "rest-to-sleep", "munching", "petting"],
+    restingbubble: ["restingbubble", "resting"],
+    floating: ["floating", "float-to-rest", "float-to-sleep", "float-to-swim"],
+    swimming: ["swimming", "fast-swim", "swim-to-float"],
+    "fast-swim": ["fast-swim", "swimming"],
+    sleeping: ["sleeping", "sleep-to-rest", "sleep-to-float"],
+    "rest-to-float": ["floating"],
+    "float-to-rest": ["resting"],
+    "rest-to-sleep": ["sleeping"],
+    "float-to-sleep": ["sleeping"],
+    "float-to-swim": ["swimming"],
+    "sleep-to-rest": ["resting"],
+    "sleep-to-float": ["floating"],
+    "swim-to-float": ["floating"],
+    munching: ["resting"],
+    petting: ["resting"]
 };
 
 // -------------------------------
@@ -58,115 +74,87 @@ const stateMachine = {
     states: {
         resting: {
             gif: SPRITES.resting,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"],
-            transitionTo: {
-                floating: "rest_to_float",
-                sleeping: "rest_to_sleep"
-            }
+            loop: true
         },
         restingbubble: {
             gif: SPRITES.restingbubble,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"],
-            transitionTo: {
-                floating: "rest_to_float",
-                sleeping: "rest_to_sleep"
-            }
+            loop: true
         },
         floating: {
             gif: SPRITES.floating,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"],
-            transitionTo: {
-                swimming: "float_to_swim",
-                sleeping: "float_to_sleep",
-                resting: "float_to_rest"
-            }
+            loop: true
         },
         swimming: {
             gif: SPRITES.swimming,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"],
-            transitionTo: {
-                resting: "swim_to_float",
-                sleeping: "rest_to_sleep"
-            }
+            loop: true
         },
-        fastswim: {
-            gif: SPRITES.fastswim,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"],
-            transitionTo: {
-                resting: "swim_to_float",
-                sleeping: "rest_to_sleep"
-            }
+        "fast-swim": {
+            gif: SPRITES["fast-swim"],
+            loop: true
         },
         sleeping: {
             gif: SPRITES.sleeping,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"]
+            loop: true
         },
         munching: {
             gif: SPRITES.munching,
             loop: false,
-            allowed: ["resting"],
             transitional: true,
             auto: { state: "resting", delay: DEFAULT_TRANSITION_DELAY }
         },
         petting: {
             gif: SPRITES.petting,
             loop: false,
-            allowed: ["resting"],
             transitional: true,
             auto: { state: "resting", delay: DEFAULT_TRANSITION_DELAY }
         },
-        roam: {
-            gif: SPRITES.roam,
-            loop: true,
-            allowed: ["resting", "restingbubble", "floating", "swimming", "fastswim", "sleeping", "munching", "petting", "roam"]
-        },
-        rest_to_float: {
-            gif: SPRITES.rest_to_float,
+        "rest-to-float": {
+            gif: SPRITES["rest-to-float"],
             loop: false,
-            allowed: ["floating"],
             transitional: true,
             auto: { state: "floating", delay: DEFAULT_TRANSITION_DELAY }
         },
-        float_to_swim: {
-            gif: SPRITES.float_to_swim,
+        "float-to-rest": {
+            gif: SPRITES["float-to-rest"],
             loop: false,
-            allowed: ["swimming"],
+            transitional: true,
+            auto: { state: "resting", delay: DEFAULT_TRANSITION_DELAY }
+        },
+        "rest-to-sleep": {
+            gif: SPRITES["rest-to-sleep"],
+            loop: false,
+            transitional: true,
+            auto: { state: "sleeping", delay: DEFAULT_TRANSITION_DELAY }
+        },
+        "float-to-sleep": {
+            gif: SPRITES["float-to-sleep"],
+            loop: false,
+            transitional: true,
+            auto: { state: "sleeping", delay: DEFAULT_TRANSITION_DELAY }
+        },
+        "float-to-swim": {
+            gif: SPRITES["float-to-swim"],
+            loop: false,
             transitional: true,
             auto: { state: "swimming", delay: DEFAULT_TRANSITION_DELAY }
         },
-        float_to_sleep: {
-            gif: SPRITES.float_to_sleep,
+        "sleep-to-rest": {
+            gif: SPRITES["sleep-to-rest"],
             loop: false,
-            allowed: ["sleeping"],
-            transitional: true,
-            auto: { state: "sleeping", delay: DEFAULT_TRANSITION_DELAY }
-        },
-        float_to_rest: {
-            gif: SPRITES.float_to_rest,
-            loop: false,
-            allowed: ["resting"],
             transitional: true,
             auto: { state: "resting", delay: DEFAULT_TRANSITION_DELAY }
         },
-        swim_to_float: {
-            gif: SPRITES.swim_to_float,
+        "sleep-to-float": {
+            gif: SPRITES["sleep-to-float"],
             loop: false,
-            allowed: ["resting"],
             transitional: true,
-            auto: { state: "resting", delay: DEFAULT_TRANSITION_DELAY }
+            auto: { state: "floating", delay: DEFAULT_TRANSITION_DELAY }
         },
-        rest_to_sleep: {
-            gif: SPRITES.rest_to_sleep,
+        "swim-to-float": {
+            gif: SPRITES["swim-to-float"],
             loop: false,
-            allowed: ["sleeping"],
             transitional: true,
-            auto: { state: "sleeping", delay: DEFAULT_TRANSITION_DELAY }
+            auto: { state: "floating", delay: DEFAULT_TRANSITION_DELAY }
         }
     },
     go(targetState) {
@@ -180,18 +168,34 @@ const stateMachine = {
             return;
         }
 
-        const currentConfig = this.currentState ? this.states[this.currentState] : null;
-        const nextFromTransition = currentConfig?.transitionTo?.[targetState] || null;
-
-        if (currentConfig && !nextFromTransition) {
-            const allowed = currentConfig.allowed || [];
-            if (!allowed.includes(targetState) && this.currentState !== targetState) {
-                console.warn(`Invalid transition from ${this.currentState} to ${targetState}`);
-                return;
+        if (!this.currentState) {
+            this._applyState(targetState);
+            if (!this.transitioning) {
+                this._flushQueue();
             }
+            return;
         }
 
-        const nextState = nextFromTransition || targetState;
+        if (this.currentState === targetState) {
+            this._applyState(targetState);
+            if (!this.transitioning) {
+                this._flushQueue();
+            }
+            return;
+        }
+
+        const path = this._findPath(this.currentState, targetState);
+        if (!path || path.length < 2) {
+            console.warn(`No allowed path from ${this.currentState} to ${targetState}`);
+            return;
+        }
+
+        const nextState = path[1];
+
+        if (nextState !== targetState) {
+            this._enqueueFront(targetState);
+        }
+
         this._applyState(nextState);
 
         if (!this.transitioning) {
@@ -234,6 +238,43 @@ const stateMachine = {
         if (!this.queue.length) return;
         const next = this.queue.shift();
         this.go(next);
+    },
+    _findPath(start, target) {
+        if (start === target) {
+            return [start];
+        }
+
+        const visited = new Set([start]);
+        const queue = [[start]];
+
+        while (queue.length) {
+            const path = queue.shift();
+            const current = path[path.length - 1];
+            const neighbors = TRANSITION_GRAPH[current] || [];
+
+            for (const neighbor of neighbors) {
+                if (visited.has(neighbor)) {
+                    continue;
+                }
+
+                const nextPath = [...path, neighbor];
+                if (neighbor === target) {
+                    return nextPath;
+                }
+
+                visited.add(neighbor);
+                queue.push(nextPath);
+            }
+        }
+
+        return null;
+    },
+    _enqueueFront(state) {
+        if (this.queue[0] === state) {
+            return;
+        }
+
+        this.queue.unshift(state);
     }
 };
 
@@ -330,7 +371,7 @@ function doRest() {
 }
 
 function doRoam() {
-    stateMachine.go("roam");
+    stateMachine.go("floating");
     messageBar.textContent = "Pico wanders off...";
     clearInterval(pet.idleTimer);
 }
