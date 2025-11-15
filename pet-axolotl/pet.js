@@ -7,6 +7,7 @@ let spriteEl = null;
 let messageBar = null;
 let animationTimer = null;
 let isTransitioning = false;
+let buttonActionActive = false;
 
 // Core pet state
 const pet = {
@@ -239,20 +240,29 @@ const stateMachine = {
         }
     },
     go(targetState, options = {}) {
+        const source = options.source || "normal";
+
         if (!this.states[targetState]) {
             console.warn("Unknown state:", targetState);
+            if (source === "action") {
+                buttonActionActive = false;
+            }
             return;
+        }
+
+        if (source === "action") {
+            buttonActionActive = true;
         }
 
         const priorityKey = this._resolvePriorityKey(targetState, options.priority);
 
         if (this.transitioning) {
-            this._enqueue(targetState, priorityKey);
+            this._enqueue(targetState, priorityKey, source);
             return;
         }
 
         if (!this.currentState) {
-            this._applyState(targetState);
+            this._applyState(targetState, source);
             if (!this.transitioning) {
                 this._flushQueue();
             }
@@ -262,11 +272,14 @@ const stateMachine = {
         if (this.currentState === targetState) {
             const config = this.states[targetState];
             if (!config?.transitional && config?.loop) {
+                if (source === "action") {
+                    buttonActionActive = false;
+                }
                 this._flushQueue();
                 return;
             }
 
-            this._applyState(targetState);
+            this._applyState(targetState, source);
             if (!this.transitioning) {
                 this._flushQueue();
             }
@@ -276,22 +289,25 @@ const stateMachine = {
         const path = this._findPath(this.currentState, targetState);
         if (!path || path.length < 2) {
             console.warn(`No allowed path from ${this.currentState} to ${targetState}`);
+            if (source === "action") {
+                buttonActionActive = false;
+            }
             return;
         }
 
         const nextState = path[1];
 
         if (nextState !== targetState) {
-            this._enqueue(targetState, priorityKey);
+            this._enqueue(targetState, priorityKey, source);
         }
 
-        this._applyState(nextState);
+        this._applyState(nextState, source);
 
         if (!this.transitioning) {
             this._flushQueue();
         }
     },
-    _applyState(name) {
+    _applyState(name, source = "normal") {
         const config = this.states[name];
         if (!config) {
             console.warn("State config missing:", name);
@@ -321,7 +337,7 @@ const stateMachine = {
             if (config.auto) {
                 this.transitioning = false;
                 isTransitioning = false;
-                this.go(config.auto.state, { priority: "transition" });
+                this.go(config.auto.state, { priority: "transition", source });
                 return;
             }
 
@@ -348,12 +364,24 @@ const stateMachine = {
             this.transitioning = false;
             isTransitioning = false;
         }
+
+        if (
+            source === "action" &&
+            buttonActionActive &&
+            !config.transitional &&
+            config.loop
+        ) {
+            const hasPendingAction = this.queue.some(entry => entry.source === "action");
+            if (!hasPendingAction && !this.transitioning) {
+                buttonActionActive = false;
+            }
+        }
     },
     _flushQueue() {
         if (!this.queue.length) return;
         const next = this._dequeue();
         if (!next) return;
-        this.go(next.state, { priority: next.priorityKey });
+        this.go(next.state, { priority: next.priorityKey, source: next.source });
     },
     _findPath(start, target) {
         if (start === target) {
@@ -385,12 +413,13 @@ const stateMachine = {
 
         return null;
     },
-    _enqueue(state, priorityKey) {
+    _enqueue(state, priorityKey, source = "normal") {
         const key = priorityKey || this._resolvePriorityKey(state);
         this.queue.push({
             state,
             priorityKey: key,
-            priorityValue: this._priorityValue(key)
+            priorityValue: this._priorityValue(key),
+            source
         });
     },
     _dequeue() {
@@ -489,53 +518,76 @@ const stateMachine = {
 // -------------------------------
 function startIdleLoop() {
     if (pet.idleTimer) return;
+    scheduleIdleCycle();
+}
 
-    pet.idleTimer = setInterval(() => {
-        if (stateMachine.transitioning || isTransitioning) {
-            return;
-        }
+function scheduleIdleCycle() {
+    const delay = 6000 + Math.random() * 4000;
+    pet.idleTimer = setTimeout(runIdleCycle, delay);
+}
 
-        const current = stateMachine.currentState;
-        const currentConfig = stateMachine.states[current];
+function runIdleCycle() {
+    pet.idleTimer = null;
 
-        if (!currentConfig || currentConfig.transitional || !currentConfig.loop) {
-            return;
-        }
+    if (stateMachine.transitioning || isTransitioning || buttonActionActive) {
+        scheduleIdleCycle();
+        return;
+    }
 
-        const hasPendingPriority = stateMachine.queue.some(entry => {
-            return entry.priorityValue <= stateMachine.priorityMap.action;
-        });
+    const current = stateMachine.currentState;
+    if (current === "sleeping") {
+        scheduleIdleCycle();
+        return;
+    }
 
-        if (hasPendingPriority) {
-            return;
-        }
+    const currentConfig = stateMachine.states[current];
 
-        const roll = Math.random();
-        let target = "resting";
+    if (!currentConfig || currentConfig.transitional || !currentConfig.loop) {
+        scheduleIdleCycle();
+        return;
+    }
 
-        // Idle distribution:
-        // 0.0 - 0.7  => resting (70%)
-        // 0.7 - 0.8  => restingbubble (10%)
-        // 0.8 - 0.9  => floating (10%)
-        // 0.9 - 1.0  => fast-swim when currently swimming (10%)
-        if (roll < 0.7) {
+    const hasPendingPriority = stateMachine.queue.some(entry => {
+        return entry.priorityValue <= stateMachine.priorityMap.action;
+    });
+
+    if (hasPendingPriority) {
+        scheduleIdleCycle();
+        return;
+    }
+
+    const roll = Math.random();
+    let target = null;
+
+    if (roll < 0.65) {
+        if (current !== "resting") {
             target = "resting";
-        } else if (roll < 0.8) {
-            target = "restingbubble";
-        } else if (roll < 0.9) {
+        }
+    } else if (roll < 0.75) {
+        target = "restingbubble";
+    } else if (roll < 0.95) {
+        target = "floating";
+    } else {
+        target = "rest-to-float";
+    }
+
+    if (target) {
+        if (target === "rest-to-float" && current === "floating") {
             target = "floating";
-        } else if (current === "swimming") {
-            target = "fast-swim";
-        } else {
-            target = "resting";
         }
 
-        if (target === current) {
-            return;
+        if (target !== current) {
+            stateMachine.go(target, { priority: "idle", source: "idle" });
         }
+    }
 
-        stateMachine.go(target, { priority: "idle" });
-    }, 7000);
+    scheduleIdleCycle();
+}
+
+function stopIdleLoop() {
+    if (!pet.idleTimer) return;
+    clearTimeout(pet.idleTimer);
+    pet.idleTimer = null;
 }
 
 function stopIdleLoop() {
@@ -584,43 +636,43 @@ function performAction(action) {
 // --------------------------------
 
 function doFeed() {
-    stateMachine.go("munching", { priority: "action" });
+    stateMachine.go("munching", { priority: "action", source: "action" });
     messageBar.textContent = "Pico munches happily!";
     pet.hunger = Math.max(0, pet.hunger - 5);
 }
 
 function doPet() {
-    stateMachine.go("petting", { priority: "action" });
+    stateMachine.go("petting", { priority: "action", source: "action" });
     messageBar.textContent = "Pico wiggles happily ❤️";
     pet.affection = Math.min(10, pet.affection + 5);
 }
 
 function doSleep() {
     // Enforce rest-to-sleep transition chain
-    stateMachine.go("rest-to-sleep", { priority: "action" });
+    stateMachine.go("rest-to-sleep", { priority: "action", source: "action" });
     messageBar.textContent = "Pico is sleeping...";
 }
 
 function doSwim() {
     // Float before swimming when necessary
     if (stateMachine.currentState === "floating") {
-        stateMachine.go("float-to-swim", { priority: "action" });
+        stateMachine.go("float-to-swim", { priority: "action", source: "action" });
     } else if (stateMachine.currentState === "swimming" || stateMachine.currentState === "fast-swim") {
-        stateMachine.go("swimming", { priority: "action" });
+        stateMachine.go("swimming", { priority: "action", source: "action" });
     } else {
-        stateMachine.go("float-to-swim", { priority: "action" });
+        stateMachine.go("float-to-swim", { priority: "action", source: "action" });
     }
     messageBar.textContent = "Pico is swimming!";
 }
 
 function doRest() {
     // Transitions handled by state machine
-    stateMachine.go("resting", { priority: "action" });
+    stateMachine.go("resting", { priority: "action", source: "action" });
     messageBar.textContent = "Pico calms down.";
 }
 
 function doRoam() {
-    stateMachine.go("floating", { priority: "action" });
+    stateMachine.go("floating", { priority: "action", source: "action" });
     messageBar.textContent = "Pico wanders off...";
     stopIdleLoop();
 }
