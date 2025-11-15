@@ -674,6 +674,26 @@ function runIdleCycle() {
         if (target === "rest-to-float" && current === "floating") {
             target = "floating";
         }
+    } else if (roll < 0.75) {
+        target = "restingbubble";
+    } else if (roll < 0.95) {
+        target = "floating";
+    } else {
+        target = "rest-to-float";
+    }
+
+    if (target) {
+        if (target === "rest-to-float" && current === "floating") {
+            target = "floating";
+        }
+
+        if (target !== current) {
+            stateMachine.go(target, { priority: "idle", source: "idle" });
+        }
+    }
+
+    scheduleIdleCycle();
+}
 
         if (target !== current) {
             stateMachine.go(target, { priority: "idle", source: "idle" });
