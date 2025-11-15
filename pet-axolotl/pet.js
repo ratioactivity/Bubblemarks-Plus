@@ -358,16 +358,6 @@ const stateMachine = {
 
         playAnimation(animationName, shouldLoop, shouldLoop ? null : handleComplete);
 
-        if (config.transitional || !config.loop) {
-            stopIdleLoop();
-        } else if (!this.transitioning) {
-            if (config.idleEligible === false) {
-                stopIdleLoop();
-            } else {
-                startIdleLoop();
-            }
-        }
-
         if (!config.transitional) {
             this.transitioning = false;
             isTransitioning = false;
@@ -383,6 +373,20 @@ const stateMachine = {
             if (!hasPendingAction && !this.transitioning) {
                 buttonActionActive = false;
             }
+        }
+
+        const shouldKeepIdlePaused =
+            config.transitional ||
+            !config.loop ||
+            config.idleEligible === false ||
+            buttonActionActive ||
+            this.transitioning ||
+            isTransitioning;
+
+        if (shouldKeepIdlePaused) {
+            stopIdleLoop();
+        } else {
+            startIdleLoop();
         }
     },
     _flushQueue() {
