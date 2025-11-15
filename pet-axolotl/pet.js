@@ -352,23 +352,19 @@ const stateMachine = {
             resumeIdleAfter = minimalResumeDelay;
         }
 
-        const queueHasPendingTransitions = this.queue.some(entry => {
-            const entryConfig = this.states[entry.state];
-            return entryConfig?.transitional;
-        });
+        const queueHasPendingTransitions = this._hasPendingTransitions();
+
+        this.transitioning = Boolean(config.transitional);
+        isTransitioning = this.transitioning || queueHasPendingTransitions;
 
         if (!config.transitional && config.loop && queueHasPendingTransitions) {
             idleEnabled = false;
-            this.transitioning = false;
-            isTransitioning = true;
             stopIdleLoop();
+            this._flushQueue();
             return;
         }
 
-        this.transitioning = Boolean(config.transitional);
-        isTransitioning = this.transitioning;
-
-        if (config.transitional) {
+        if (config.transitional || name === "sleeping") {
             idleEnabled = false;
         } else if (this.queue.length === 0) {
             idleEnabled = true;
@@ -389,14 +385,14 @@ const stateMachine = {
 
             if (config.auto) {
                 this.transitioning = false;
-                isTransitioning = false;
+                isTransitioning = this._hasPendingTransitions();
                 this.go(config.auto.state, { priority: "transition", source });
                 return;
             }
 
             if (!config.loop) {
                 this.transitioning = false;
-                isTransitioning = false;
+                isTransitioning = this._hasPendingTransitions();
                 this._flushQueue();
             }
         };
@@ -405,7 +401,7 @@ const stateMachine = {
 
         if (!config.transitional) {
             this.transitioning = false;
-            isTransitioning = false;
+            isTransitioning = this._hasPendingTransitions();
         }
 
         if (
@@ -523,6 +519,12 @@ const stateMachine = {
             return seconds * 1000;
         }
         return DEFAULT_TRANSITION_DELAY;
+    },
+    _hasPendingTransitions() {
+        return this.queue.some(entry => {
+            const entryConfig = this.states[entry.state];
+            return entryConfig?.transitional;
+        });
     },
     _handleLoopTimers(name, config) {
         Object.values(this.loopTimers).forEach(timerId => clearTimeout(timerId));
