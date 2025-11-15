@@ -9,6 +9,7 @@ let animationTimer = null;
 let currentAnimationId = 0;
 let isTransitioning = false;
 let buttonActionActive = false;
+let resumeIdleAfter = 0;
 
 // Core pet state
 const pet = {
@@ -329,6 +330,19 @@ const stateMachine = {
         this.previousState = this.currentState;
         this.currentState = name;
         pet.state = name;
+        resumeIdleAfter = performance.now() + 200;
+
+        const hasPendingTransition = this.queue.some(entry => {
+            const entryConfig = this.states[entry.state];
+            return entryConfig?.transitional;
+        });
+
+        if (!config.transitional && config.loop && hasPendingTransition) {
+            this.transitioning = false;
+            isTransitioning = true;
+            stopIdleLoop();
+            return;
+        }
 
         this.transitioning = Boolean(config.transitional);
         isTransitioning = this.transitioning;
@@ -375,13 +389,20 @@ const stateMachine = {
             }
         }
 
+        const queueHasPendingTransitions = this.queue.some(entry => {
+            const entryConfig = this.states[entry.state];
+            return entryConfig?.transitional;
+        });
+
         const shouldKeepIdlePaused =
             config.transitional ||
             !config.loop ||
             config.idleEligible === false ||
             buttonActionActive ||
             this.transitioning ||
-            isTransitioning;
+            isTransitioning ||
+            queueHasPendingTransitions ||
+            performance.now() < resumeIdleAfter;
 
         if (shouldKeepIdlePaused) {
             stopIdleLoop();
@@ -530,6 +551,16 @@ const stateMachine = {
 // -------------------------------
 function startIdleLoop() {
     if (pet.idleTimer) return;
+
+    const now = performance.now();
+    if (now < resumeIdleAfter) {
+        pet.idleTimer = setTimeout(() => {
+            pet.idleTimer = null;
+            startIdleLoop();
+        }, Math.max(resumeIdleAfter - now, 0));
+        return;
+    }
+
     scheduleIdleCycle();
 }
 
@@ -541,7 +572,17 @@ function scheduleIdleCycle() {
 function runIdleCycle() {
     pet.idleTimer = null;
 
-    if (stateMachine.transitioning || isTransitioning || buttonActionActive) {
+    if (performance.now() < resumeIdleAfter) {
+        scheduleIdleCycle();
+        return;
+    }
+
+    if (
+        stateMachine.transitioning ||
+        isTransitioning ||
+        buttonActionActive ||
+        stateMachine.queue.length > 0
+    ) {
         scheduleIdleCycle();
         return;
     }
