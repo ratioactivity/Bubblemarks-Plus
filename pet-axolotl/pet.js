@@ -6,6 +6,7 @@
 let spriteEl = null;
 let messageBar = null;
 let animationTimer = null;
+let currentAnimationId = 0;
 let isTransitioning = false;
 let buttonActionActive = false;
 
@@ -93,6 +94,8 @@ const playAnimation = (name, loop = false, onComplete = null) => {
         animationTimer = null;
     }
 
+    const animationId = ++currentAnimationId;
+
     if (spriteEl) {
         spriteEl.src = `./assets/${name}.gif`;
     }
@@ -104,14 +107,19 @@ const playAnimation = (name, loop = false, onComplete = null) => {
     const durationSeconds = ANIMATION_LENGTHS[name];
     if (typeof durationSeconds !== "number" || Number.isNaN(durationSeconds)) {
         console.warn(`Missing animation length for ${name}`);
-        if (typeof onComplete === "function") {
+        if (typeof onComplete === "function" && animationId === currentAnimationId) {
             onComplete();
         }
         return;
     }
 
     animationTimer = setTimeout(() => {
+        if (animationId !== currentAnimationId) {
+            return;
+        }
+
         animationTimer = null;
+
         if (typeof onComplete === "function") {
             onComplete();
         }
