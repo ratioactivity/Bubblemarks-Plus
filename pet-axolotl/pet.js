@@ -1,864 +1,499 @@
-// ===============================
-// BUBBLEPET – CLEAN STATE MACHINE
-// ===============================
+// BubblePet Axolotl – clean advanced state machine
+// Replace your entire pet.js file with this.
 
-// DOM references assigned on init
-let spriteEl = null;
-let messageBar = null;
-let currentTimeout = null;
-let currentAnimationId = 0;
-let idleEnabled = true;
-let isTransitioning = false;
-let buttonActionActive = false;
-let resumeIdleAfter = 0;
+document.addEventListener("DOMContentLoaded", () => {
+  const root = document.querySelector(".pet-container");
+  if (!root) {
+    console.error("[BubblePet] .pet-container not found");
+    return;
+  }
 
-// Core pet state
-const pet = {
-    state: "resting",      // current animation/state
-    level: 1,
-    hunger: 4,
-    sleepiness: 2,
-    boredom: 6,
-    overstim: 3,
-    affection: 5,
-    idleTimer: null,
-    actionCooldown: false
-};
+  const spriteEl = root.querySelector("#pet-sprite");
+  const messageEl = root.querySelector(".message-bar");
+  const levelEl = root.querySelector(".pet-level");
+  const nameEl = root.querySelector(".pet-name");
+  const buttons = Array.from(root.querySelectorAll(".pet-actions button"));
 
-// -------------------------------
-// SPRITE SOURCES (edit freely)
-// -------------------------------
-const SPRITES = {
+  if (!spriteEl || !messageEl || !levelEl || !nameEl || !buttons.length) {
+    console.error("[BubblePet] Missing core DOM elements");
+    return;
+  }
+
+  // --- CONFIG -------------------------------------------------------------
+
+  const SPRITES = {
     resting: "assets/resting.gif",
-    restingbubble: "assets/restingbubble.gif",
+    restingBubble: "assets/restingbubble.gif",
+    restToFloat: "assets/rest-to-float.gif",
+    floatToRest: "assets/float-to-rest.gif",
+    restToSleep: "assets/rest-to-sleep.gif",
+    sleepToRest: "assets/sleep-to-rest.gif",
+    floatToSleep: "assets/float-to-sleep.gif",
+    sleepToFloat: "assets/sleep-to-float.gif",
+    floatToSwim: "assets/float-to-swim.gif",
+    swimToFloat: "assets/swim-to-float.gif",
     floating: "assets/floating.gif",
-    swimming: "assets/swimming.gif",
-    "fast-swim": "assets/fast-swim.gif",
     sleeping: "assets/sleeping.gif",
+    swimming: "assets/swimming.gif",
+    fastSwim: "assets/fast-swim.gif",
     munching: "assets/munching.gif",
     petting: "assets/pet.gif",
-    "rest-to-float": "assets/rest-to-float.gif",
-    "float-to-rest": "assets/float-to-rest.gif",
-    "rest-to-sleep": "assets/rest-to-sleep.gif",
-    "float-to-sleep": "assets/float-to-sleep.gif",
-    "float-to-swim": "assets/float-to-swim.gif",
-    "sleep-to-rest": "assets/sleep-to-rest.gif",
-    "sleep-to-float": "assets/sleep-to-float.gif",
-    "swim-to-float": "assets/swim-to-float.gif"
-};
+  };
 
-const ANIMATION_LENGTHS = {
-  "fast-swim": 1.08,
-  "floating": 1.68,
-  "float-to-rest": 1.43,
-  "float-to-sleep": 2.04,
-  "float-to-swim": 0.96,
-  "munching": 0.96,
-  "pet": 2.34,
-  "resting": 0.78,
-  "restingbubble": 2.34,
-  "rest-to-float": 1.32,
-  "rest-to-sleep": 1.82,
-  "sleeping": 1.92,
-  "sleep-to-float": 2.47,
-  "sleep-to-rest": 1.82,
-  "swimming": 1.44,
-  "swim-to-float": 1.44
-};
+  // Durations in ms – from your chart (seconds × 1000, rounded)
+  const DURATIONS = {
+    fastSwim: 1080,
+    floating: 1680,
+    floatToRest: 1430,
+    floatToSleep: 2040,
+    floatToSwim: 960,
+    munching: 960,
+    petting: 2340,
+    resting: 780,
+    restingBubble: 2340,
+    restToFloat: 1320,
+    restToSleep: 1820,
+    sleeping: 1920,
+    sleepToFloat: 2470,
+    sleepToRest: 1820,
+    swimming: 1440,
+    swimToFloat: 1440,
+  };
 
-const TRANSITION_GRAPH = {
-    resting: ["rest-to-sleep", "rest-to-float", "restingbubble", "munching", "petting"],
-    restingbubble: ["resting"],
-    floating: ["float-to-rest", "float-to-sleep", "float-to-swim"],
-    swimming: ["fast-swim", "swim-to-float", "float-to-sleep"],
-    "fast-swim": ["swimming"],
-    sleeping: ["sleep-to-rest", "sleep-to-float"],
-    "rest-to-float": ["floating"],
-    "float-to-rest": ["resting"],
-    "rest-to-sleep": ["sleeping"],
-    "float-to-sleep": ["sleeping"],
-    "float-to-swim": ["swimming"],
-    "sleep-to-rest": ["resting"],
-    "sleep-to-float": ["floating"],
-    "swim-to-float": ["floating"],
-    munching: ["resting"],
-    petting: ["resting"]
-};
+  // Animation → sound map
+  const ANIM_SOUNDS = {
+    resting: "resting-sound",
+    restingBubble: "resting-sound",
+    floating: "float-squeak",
+    swimming: "swimming-sound",
+    fastSwim: "fastswim-squeak",
+    munching: "munch-squeak",
+    petting: "pet-sound",
+  };
 
-// -------------------------------
-// STATE MACHINE
-// -------------------------------
-const DEFAULT_TRANSITION_DELAY = 1000;
+  const SOUND_FILES = [
+    "attention-squeak",
+    "fastswim-squeak",
+    "float-squeak",
+    "happy-squeak",
+    "munch-squeak",
+    "pet-sound",
+    "resting-sound",
+    "swimming-sound",
+  ];
 
-const playAnimation = (name, loop = false, onComplete = null) => {
-    const animationId = ++currentAnimationId;
+  // --- AUDIO --------------------------------------------------------------
 
-    if (currentTimeout) {
-        clearTimeout(currentTimeout);
-        currentTimeout = null;
+  const sounds = {};
+  SOUND_FILES.forEach((name) => {
+    const audio = new Audio(`sounds/${name}.mp3`);
+    audio.preload = "auto";
+    audio.volume = 0.45;
+    sounds[name] = audio;
+  });
+
+  function playSound(name) {
+    const a = sounds[name];
+    if (!a) return;
+    try {
+      a.pause();
+      a.currentTime = 0;
+      a.play().catch(() => {});
+    } catch {
+      // ignore audio edge cases
+    }
+  }
+
+  // --- STATE --------------------------------------------------------------
+
+  const petState = {
+    mode: "idle", // "idle" | "action" | "sleep" | "swim" | "roam"
+    currentAnim: "resting",
+    busy: false,
+    level: 1,
+    name: nameEl.textContent.trim() || "Pico",
+  };
+
+  let animTimer = null;
+
+  function setMessage(text) {
+    messageEl.textContent = text;
+  }
+
+  function updateLevelDisplay() {
+    levelEl.textContent = `Lv. ${petState.level}`;
+  }
+
+  updateLevelDisplay();
+
+  // --- ANIMATION CORE -----------------------------------------------------
+
+  function clearAnimTimer() {
+    if (animTimer !== null) {
+      clearTimeout(animTimer);
+      animTimer = null;
+    }
+  }
+
+  /**
+   * Play a single animation by key (e.g., "resting", "restToFloat").
+   * options:
+   *   onDone: callback when the animation is finished.
+   */
+  function playAnim(key, options = {}) {
+    const src = SPRITES[key];
+    if (!src) {
+      console.warn("[BubblePet] Missing sprite for animation:", key);
+      return;
     }
 
-    if (spriteEl) {
-        spriteEl.src = `./assets/${name}.gif`;
+    clearAnimTimer();
+    petState.currentAnim = key;
+    spriteEl.src = src;
+
+    // sound per animation
+    const soundName = ANIM_SOUNDS[key];
+    if (soundName) {
+      playSound(soundName);
     }
 
-    if (loop) {
-        currentTimeout = null;
-        return;
+    const duration = DURATIONS[key] ?? 1000;
+    animTimer = setTimeout(() => {
+      animTimer = null;
+      if (typeof options.onDone === "function") {
+        options.onDone();
+      }
+    }, duration);
+  }
+
+  /**
+   * Run a sequence of animations in order.
+   * sequence: [ "restToFloat", "floating", "floatToSwim" ]
+   */
+  function runSequence(sequence, finalCallback) {
+    if (!sequence || sequence.length === 0) {
+      if (typeof finalCallback === "function") finalCallback();
+      return;
     }
 
-    const durationSeconds = ANIMATION_LENGTHS[name];
-    if (typeof durationSeconds !== "number" || Number.isNaN(durationSeconds)) {
-        console.warn(`Missing animation length for ${name}`);
-        if (typeof onComplete === "function" && animationId === currentAnimationId) {
-            onComplete();
-        }
-        return;
-    }
-
-    currentTimeout = setTimeout(() => {
-        if (animationId !== currentAnimationId) {
-            return;
-        }
-
-        currentTimeout = null;
-
-        if (typeof onComplete === "function") {
-            onComplete();
-        }
-    }, durationSeconds * 1000);
-};
-
-const stateMachine = {
-    currentState: null,
-    previousState: null,
-    transitioning: false,
-    queue: [],
-    loopTimers: {},
-    priorityMap: {
-        transition: 0,
-        action: 1,
-        normal: 2,
-        idle: 3
-    },
-    states: {
-        resting: {
-            gif: SPRITES.resting,
-            loop: true,
-            idleEligible: true,
-            durationKey: "resting"
-        },
-        restingbubble: {
-            gif: SPRITES.restingbubble,
-            loop: true,
-            idleEligible: true,
-            durationKey: "restingbubble"
-        },
-        floating: {
-            gif: SPRITES.floating,
-            loop: true,
-            idleEligible: true,
-            durationKey: "floating"
-        },
-        swimming: {
-            gif: SPRITES.swimming,
-            loop: true,
-            idleEligible: true,
-            durationKey: "swimming"
-        },
-        "fast-swim": {
-            gif: SPRITES["fast-swim"],
-            loop: true,
-            idleEligible: false,
-            durationKey: "fast-swim"
-        },
-        sleeping: {
-            gif: SPRITES.sleeping,
-            loop: true,
-            idleEligible: false,
-            durationKey: "sleeping"
-        },
-        munching: {
-            gif: SPRITES.munching,
-            loop: false,
-            transitional: true,
-            durationKey: "munching",
-            auto: { state: "resting" }
-        },
-        petting: {
-            gif: SPRITES.petting,
-            loop: false,
-            transitional: true,
-            durationKey: "pet",
-            animationName: "pet",
-            auto: { state: "resting" }
-        },
-        "rest-to-float": {
-            gif: SPRITES["rest-to-float"],
-            loop: false,
-            transitional: true,
-            durationKey: "rest-to-float",
-            auto: { state: "floating" }
-        },
-        "float-to-rest": {
-            gif: SPRITES["float-to-rest"],
-            loop: false,
-            transitional: true,
-            durationKey: "float-to-rest",
-            auto: { state: "resting" }
-        },
-        "rest-to-sleep": {
-            gif: SPRITES["rest-to-sleep"],
-            loop: false,
-            transitional: true,
-            durationKey: "rest-to-sleep",
-            auto: { state: "sleeping" }
-        },
-        "float-to-sleep": {
-            gif: SPRITES["float-to-sleep"],
-            loop: false,
-            transitional: true,
-            durationKey: "float-to-sleep",
-            auto: { state: "sleeping" }
-        },
-        "float-to-swim": {
-            gif: SPRITES["float-to-swim"],
-            loop: false,
-            transitional: true,
-            durationKey: "float-to-swim",
-            auto: { state: "swimming" }
-        },
-        "sleep-to-rest": {
-            gif: SPRITES["sleep-to-rest"],
-            loop: false,
-            transitional: true,
-            durationKey: "sleep-to-rest",
-            auto: { state: "resting" }
-        },
-        "sleep-to-float": {
-            gif: SPRITES["sleep-to-float"],
-            loop: false,
-            transitional: true,
-            durationKey: "sleep-to-float",
-            auto: { state: "floating" }
-        },
-        "swim-to-float": {
-            gif: SPRITES["swim-to-float"],
-            loop: false,
-            transitional: true,
-            durationKey: "swim-to-float",
-            auto: { state: "floating" }
-        }
-    },
-    go(targetState, options = {}) {
-        const source = options.source || "normal";
-
-        if (!this.states[targetState]) {
-            console.warn("Unknown state:", targetState);
-            if (source === "action") {
-                buttonActionActive = false;
-            }
-            return;
-        }
-
-        if (source === "action") {
-            buttonActionActive = true;
-        }
-
-        const priorityKey = this._resolvePriorityKey(targetState, options.priority);
-
-        if (this.transitioning) {
-            this._enqueue(targetState, priorityKey, source);
-            return;
-        }
-
-        if (!this.currentState) {
-            this._applyState(targetState, source);
-            if (!this.transitioning) {
-                this._flushQueue();
-            }
-            return;
-        }
-
-        if (this.currentState === targetState) {
-            const config = this.states[targetState];
-            if (!config?.transitional && config?.loop) {
-                if (source === "action") {
-                    buttonActionActive = false;
-                }
-
-                if (this.queue.length === 0) {
-                    idleEnabled = true;
-                    const shouldKeepIdlePaused =
-                        config.idleEligible === false ||
-                        buttonActionActive ||
-                        this.transitioning ||
-                        isTransitioning;
-
-                    if (shouldKeepIdlePaused) {
-                        stopIdleLoop();
-                    } else {
-                        startIdleLoop();
-                    }
-                }
-
-                this._flushQueue();
-                return;
-            }
-
-            this._applyState(targetState, source);
-            if (!this.transitioning) {
-                this._flushQueue();
-            }
-            return;
-        }
-
-        const path = this._findPath(this.currentState, targetState);
-        if (!path || path.length < 2) {
-            console.warn(`No allowed path from ${this.currentState} to ${targetState}`);
-            if (source === "action") {
-                buttonActionActive = false;
-            }
-            return;
-        }
-
-        const nextState = path[1];
-
-        if (nextState !== targetState) {
-            this._enqueue(targetState, priorityKey, source);
-        }
-
-        this._applyState(nextState, source);
-
-        if (!this.transitioning) {
-            this._flushQueue();
-        }
-    },
-    _applyState(name, source = "normal") {
-        const config = this.states[name];
-        if (!config) {
-            console.warn("State config missing:", name);
-            return;
-        }
-
-        if (!SPRITES[name] && !config.gif) {
-            console.warn("Missing sprite for state:", name);
-        }
-
-        this.previousState = this.currentState;
-        this.currentState = name;
-        pet.state = name;
-        const minimalResumeDelay = performance.now() + 200;
-        if (minimalResumeDelay > resumeIdleAfter) {
-            resumeIdleAfter = minimalResumeDelay;
-        }
-
-        const queueHasPendingTransitions = this._hasPendingTransitions();
-
-        this.transitioning = Boolean(config.transitional);
-        isTransitioning = this.transitioning || queueHasPendingTransitions;
-
-        if (!config.transitional && config.loop && queueHasPendingTransitions) {
-            idleEnabled = false;
-            stopIdleLoop();
-            this._flushQueue();
-            return;
-        }
-
-        if (config.transitional || name === "sleeping") {
-            idleEnabled = false;
-        } else if (this.queue.length === 0) {
-            idleEnabled = true;
-        }
-
-        this._handleLoopTimers(name, config);
-
-        const animationName = config.animationName || name;
-        const shouldLoop = Boolean(config.loop);
-        const handleComplete = () => {
-            if (this.currentState !== name) {
-                return;
-            }
-
-            if (config.transitional) {
-                resumeIdleAfter = performance.now() + 500;
-            }
-
-            if (config.auto) {
-                this.transitioning = false;
-                isTransitioning = this._hasPendingTransitions();
-                this.go(config.auto.state, { priority: "transition", source });
-                return;
-            }
-
-            if (!config.loop) {
-                this.transitioning = false;
-                isTransitioning = this._hasPendingTransitions();
-                this._flushQueue();
-            }
-        };
-
-        playAnimation(animationName, shouldLoop, shouldLoop ? null : handleComplete);
-
-        if (!config.transitional) {
-            this.transitioning = false;
-            isTransitioning = this._hasPendingTransitions();
-        }
-
-        if (
-            source === "action" &&
-            buttonActionActive &&
-            !config.transitional &&
-            config.loop
-        ) {
-            const hasPendingAction = this.queue.some(entry => entry.source === "action");
-            if (!hasPendingAction && !this.transitioning) {
-                buttonActionActive = false;
-            }
-        }
-
-        const shouldKeepIdlePaused =
-            config.transitional ||
-            !config.loop ||
-            config.idleEligible === false ||
-            buttonActionActive ||
-            this.transitioning ||
-            isTransitioning ||
-            queueHasPendingTransitions ||
-            !idleEnabled;
-
-        if (shouldKeepIdlePaused) {
-            stopIdleLoop();
+    const [head, ...tail] = sequence;
+    playAnim(head, {
+      onDone: () => {
+        if (tail.length === 0) {
+          if (typeof finalCallback === "function") finalCallback();
         } else {
-            startIdleLoop();
+          runSequence(tail, finalCallback);
         }
-    },
-    _flushQueue() {
-        if (!this.queue.length) return;
-        const next = this._dequeue();
-        if (!next) return;
-        this.go(next.state, { priority: next.priorityKey, source: next.source });
-    },
-    _findPath(start, target) {
-        if (start === target) {
-            return [start];
-        }
-
-        const visited = new Set([start]);
-        const queue = [[start]];
-
-        while (queue.length) {
-            const path = queue.shift();
-            const current = path[path.length - 1];
-            const neighbors = TRANSITION_GRAPH[current] || [];
-
-            for (const neighbor of neighbors) {
-                if (visited.has(neighbor)) {
-                    continue;
-                }
-
-                const nextPath = [...path, neighbor];
-                if (neighbor === target) {
-                    return nextPath;
-                }
-
-                visited.add(neighbor);
-                queue.push(nextPath);
-            }
-        }
-
-        return null;
-    },
-    _enqueue(state, priorityKey, source = "normal") {
-        const key = priorityKey || this._resolvePriorityKey(state);
-        this.queue.push({
-            state,
-            priorityKey: key,
-            priorityValue: this._priorityValue(key),
-            source
-        });
-    },
-    _dequeue() {
-        if (!this.queue.length) {
-            return null;
-        }
-
-        let bestIndex = 0;
-        for (let i = 1; i < this.queue.length; i += 1) {
-            if (this.queue[i].priorityValue < this.queue[bestIndex].priorityValue) {
-                bestIndex = i;
-            }
-        }
-
-        const [entry] = this.queue.splice(bestIndex, 1);
-        return entry;
-    },
-    _resolvePriorityKey(state, explicit) {
-        if (explicit) {
-            return explicit;
-        }
-
-        const config = this.states[state];
-        if (config?.transitional) {
-            return "transition";
-        }
-
-        if (!config?.loop) {
-            return "action";
-        }
-
-        return "normal";
-    },
-    _priorityValue(key) {
-        return this.priorityMap[key] ?? this.priorityMap.normal;
-    },
-    _durationFor(name) {
-        const config = this.states[name];
-        const key = config?.durationKey || name;
-        const seconds = ANIMATION_LENGTHS[key];
-        if (typeof seconds === "number" && !Number.isNaN(seconds)) {
-            return seconds * 1000;
-        }
-        return DEFAULT_TRANSITION_DELAY;
-    },
-    _hasPendingTransitions() {
-        return this.queue.some(entry => {
-            const entryConfig = this.states[entry.state];
-            return entryConfig?.transitional;
-        });
-    },
-    _handleLoopTimers(name, config) {
-        Object.values(this.loopTimers).forEach(timerId => clearTimeout(timerId));
-        this.loopTimers = {};
-
-        if (!config.loop || config.transitional) {
-            return;
-        }
-
-        if (name === "swimming") {
-            const checkDelay = this._durationFor(name);
-            const scheduleFastSwimCheck = () => {
-                if (this.currentState !== "swimming" || this.transitioning || isTransitioning) {
-                    return;
-                }
-
-                const hasPendingPriority = this.queue.some(entry => {
-                    return entry.priorityValue <= this.priorityMap.action;
-                });
-
-                if (hasPendingPriority) {
-                    this.loopTimers.fastSwimTrigger = setTimeout(scheduleFastSwimCheck, checkDelay);
-                    return;
-                }
-
-                if (Math.random() < 0.2) {
-                    this.go("fast-swim", { priority: "normal" });
-                    return;
-                }
-
-                this.loopTimers.fastSwimTrigger = setTimeout(scheduleFastSwimCheck, checkDelay);
-            };
-
-            this.loopTimers.fastSwimTrigger = setTimeout(scheduleFastSwimCheck, checkDelay);
-            return;
-        }
-
-        if (name === "fast-swim") {
-            const fastSwimDuration = this._durationFor(name) * 2;
-            this.loopTimers.returnToSwim = setTimeout(() => {
-                if (this.currentState !== "fast-swim" || this.transitioning) {
-                    return;
-                }
-                this.go("swimming", { priority: "normal" });
-            }, fastSwimDuration);
-        }
-    }
-};
-
-const FLOAT_GATED_IDLE_TARGETS = new Set(["floating", "rest-to-float"]);
-
-// -------------------------------
-// IDLE BEHAVIOR
-// -------------------------------
-function startIdleLoop() {
-    if (!idleEnabled) return;
-    if (pet.idleTimer) return;
-
-    const now = performance.now();
-    if (now < resumeIdleAfter) {
-        pet.idleTimer = setTimeout(() => {
-            pet.idleTimer = null;
-            startIdleLoop();
-        }, Math.max(resumeIdleAfter - now, 0));
-        return;
-    }
-
-    scheduleIdleCycle();
-}
-
-function scheduleIdleCycle() {
-    if (!idleEnabled) return;
-    const delay = 6000 + Math.random() * 4000;
-    pet.idleTimer = setTimeout(runIdleCycle, delay);
-}
-
-function runIdleCycle() {
-    pet.idleTimer = null;
-
-    if (!idleEnabled) {
-        return;
-    }
-
-    if (performance.now() < resumeIdleAfter) {
-        scheduleIdleCycle();
-        return;
-    }
-
-    if (
-        stateMachine.transitioning ||
-        isTransitioning ||
-        buttonActionActive ||
-        stateMachine.queue.length > 0
-    ) {
-        scheduleIdleCycle();
-        return;
-    }
-
-    const current = stateMachine.currentState;
-    if (current === "sleeping") {
-        scheduleIdleCycle();
-        return;
-    }
-
-    const currentConfig = stateMachine.states[current];
-
-    if (!currentConfig || currentConfig.transitional || !currentConfig.loop) {
-        scheduleIdleCycle();
-        return;
-    }
-
-    const hasPendingPriority = stateMachine.queue.some(entry => {
-        return entry.priorityValue <= stateMachine.priorityMap.action;
+      },
     });
+  }
 
-    if (hasPendingPriority) {
-        scheduleIdleCycle();
-        return;
-    }
+  function getPoseGroup() {
+    const a = petState.currentAnim || "resting";
+    if (a.includes("swim")) return "swim";
+    if (a.includes("sleep")) return "sleep";
+    if (a.includes("float")) return "float";
+    return "rest";
+  }
 
-    const roll = Math.random();
-    let target = null;
+  // --- IDLE LOOP ----------------------------------------------------------
 
-    if (roll < 0.65) {
-        if (current !== "resting") {
-            target = "resting";
-        }
-    } else if (roll < 0.75) {
-        target = "restingbubble";
-    } else if (roll < 0.95) {
-        target = "floating";
-    } else {
-        target = "rest-to-float";
-    }
-
-    if (target) {
-        const actionOrTransitionActive =
-            buttonActionActive ||
-            stateMachine.transitioning ||
-            isTransitioning;
-
-        if (actionOrTransitionActive && FLOAT_GATED_IDLE_TARGETS.has(target)) {
-            target = null;
-        }
-
-        if (target === "rest-to-float" && current === "floating") {
-            target = "floating";
-        }
-    } else if (roll < 0.75) {
-        target = "restingbubble";
-    } else if (roll < 0.95) {
-        target = "floating";
-    } else {
-        target = "rest-to-float";
-    }
-
-    if (target) {
-        if (target === "rest-to-float" && current === "floating") {
-            target = "floating";
-        }
-
-        if (target !== current) {
-            stateMachine.go(target, { priority: "idle", source: "idle" });
-        }
-    }
-
+  function startIdle() {
+    petState.mode = "idle";
+    petState.busy = false;
     scheduleIdleCycle();
-}
+  }
 
-        if (target !== current) {
-            stateMachine.go(target, { priority: "idle", source: "idle" });
+  function scheduleIdleCycle() {
+    if (petState.mode !== "idle") return;
+
+    const r = Math.random();
+    // 0.0–0.5  : resting
+    // 0.5–0.8  : restingbubble
+    // 0.8–1.0  : float cycle
+    if (r < 0.5) {
+      playAnim("resting", {
+        onDone: () => {
+          if (petState.mode === "idle") scheduleIdleCycle();
+        },
+      });
+    } else if (r < 0.8) {
+      playAnim("restingBubble", {
+        onDone: () => {
+          if (petState.mode === "idle") scheduleIdleCycle();
+        },
+      });
+    } else {
+      runSequence(["restToFloat", "floating", "floatToRest"], () => {
+        if (petState.mode === "idle") scheduleIdleCycle();
+      });
+    }
+  }
+
+  // --- SLEEP LOOP ---------------------------------------------------------
+
+  function startSleepLoop() {
+    petState.mode = "sleep";
+    petState.busy = false;
+    loopSleep();
+  }
+
+  function loopSleep() {
+    if (petState.mode !== "sleep") return;
+    playAnim("sleeping", {
+      onDone: () => {
+        if (petState.mode === "sleep") {
+          loopSleep();
         }
-    }
-
-    scheduleIdleCycle();
-}
-
-function stopIdleLoop() {
-    if (!pet.idleTimer) return;
-    clearTimeout(pet.idleTimer);
-    pet.idleTimer = null;
-}
-
-// -------------------------------
-// ACTION SYSTEM
-// -------------------------------
-function performAction(action) {
-    if (pet.actionCooldown || isTransitioning) return;
-    pet.actionCooldown = true;
-
-    setTimeout(() => (pet.actionCooldown = false), 1200);
-
-    stopIdleLoop();
-
-    switch (action) {
-        case "feed":
-            doFeed();
-            break;
-        case "pet":
-            doPet();
-            break;
-        case "sleep":
-            doSleep();
-            break;
-        case "swim":
-            doSwim();
-            break;
-        case "rest":
-            doRest();
-            break;
-        case "roam":
-            doRoam();
-            break;
-        default:
-            console.warn("Unknown action:", action);
-    }
-}
-
-// --------------------------------
-// ACTION HANDLERS
-// --------------------------------
-
-function queueActionSequence(states) {
-    states.forEach(state => {
-        stateMachine.go(state, { priority: "action", source: "action" });
+      },
     });
-}
+  }
 
-function normalizeStateForRouting(state) {
-    if (state === "fast-swim") {
-        return "swimming";
-    }
+  // --- SWIM LOOP ----------------------------------------------------------
 
-    if (state === "restingbubble") {
-        return "resting";
-    }
+  function startSwimLoop() {
+    petState.mode = "swim";
+    petState.busy = false;
+    loopSwim();
+  }
 
-    return state;
-}
-
-function doFeed() {
-    queueActionSequence(["munching", "rest-to-float", "floating", "resting"]);
-    messageBar.textContent = "Pico munches happily!";
-    pet.hunger = Math.max(0, pet.hunger - 5);
-}
-
-function doPet() {
-    queueActionSequence(["petting", "rest-to-float", "floating", "resting"]);
-    messageBar.textContent = "Pico wiggles happily ❤️";
-    pet.affection = Math.min(10, pet.affection + 5);
-}
-
-function doSleep() {
-    const current = normalizeStateForRouting(stateMachine.currentState);
-    if (current === "sleeping") {
-        queueActionSequence(["sleeping"]);
-    } else if (current === "floating") {
-        queueActionSequence(["float-to-sleep", "sleeping"]);
-    } else if (current === "swimming") {
-        queueActionSequence(["swim-to-float", "float-to-sleep", "sleeping"]);
+  function loopSwim() {
+    if (petState.mode !== "swim") return;
+    const r = Math.random();
+    // most of the time: just swim
+    // sometimes: swim -> fast-swim -> swim
+    if (r < 0.7) {
+      playAnim("swimming", {
+        onDone: () => {
+          if (petState.mode === "swim") loopSwim();
+        },
+      });
     } else {
-        queueActionSequence(["rest-to-sleep", "sleeping"]);
+      runSequence(["swimming", "fastSwim", "swimming"], () => {
+        if (petState.mode === "swim") loopSwim();
+      });
     }
-    messageBar.textContent = "Pico is sleeping...";
-}
+  }
 
-function doSwim() {
-    const current = normalizeStateForRouting(stateMachine.currentState);
-    if (current === "floating") {
-        queueActionSequence(["float-to-swim", "swimming"]);
-    } else if (current === "swimming") {
-        queueActionSequence(["swimming"]);
-    } else if (current === "sleeping") {
-        queueActionSequence(["sleep-to-float", "float-to-swim", "swimming"]);
-    } else {
-        queueActionSequence(["rest-to-float", "float-to-swim", "swimming"]);
+  // --- ROAM MODE (placeholder) --------------------------------------------
+
+  function startRoam() {
+    petState.mode = "roam";
+    petState.busy = false;
+    spriteEl.style.opacity = "0";
+    setMessage(`${petState.name} is roaming around Bubblemarks!`);
+    // In the future, tie this into the main app's roaming axolotl.
+  }
+
+  function recallFromRoam() {
+    if (petState.mode === "roam") {
+      spriteEl.style.opacity = "1";
+      setMessage(`${petState.name} swims back to the tank.`);
+      petState.mode = "idle";
     }
-    messageBar.textContent = "Pico is swimming!";
-}
+  }
 
-function doRest() {
-    const current = normalizeStateForRouting(stateMachine.currentState);
-    if (current === "floating") {
-        queueActionSequence(["float-to-rest", "resting"]);
-    } else if (current === "swimming") {
-        queueActionSequence(["swim-to-float", "float-to-rest", "resting"]);
-    } else if (current === "sleeping") {
-        queueActionSequence(["sleep-to-rest", "resting"]);
-    } else if (current === "resting") {
-        queueActionSequence(["resting"]);
-    } else {
-        queueActionSequence(["resting"]);
+  // --- ACTION HELPERS -----------------------------------------------------
+
+  function beginAction(description) {
+    recallFromRoam();
+    petState.busy = true;
+    petState.mode = "action";
+    clearAnimTimer();
+    setMessage(description);
+  }
+
+  function endActionToIdle() {
+    petState.busy = false;
+    startIdle();
+  }
+
+  // FEED: follow your transition logic
+  function handleFeed() {
+    if (petState.busy) return;
+    beginAction(`${petState.name} is munching happily.`);
+
+    const pose = getPoseGroup();
+    let seq;
+
+    switch (pose) {
+      case "float":
+        seq = ["floatToRest", "munching", "resting"];
+        break;
+      case "sleep":
+        seq = ["sleepToRest", "munching", "resting"];
+        break;
+      case "swim":
+        seq = ["swimToFloat", "floatToRest", "munching", "resting"];
+        break;
+      default: // rest
+        seq = ["munching", "resting"];
     }
-    messageBar.textContent = "Pico calms down.";
-}
 
-function doRoam() {
-    messageBar.textContent = "Pico looks around, but nothing happens yet.";
-    startIdleLoop();
-}
+    runSequence(seq, endActionToIdle);
+  }
 
-// --------------------------------
-// INITIALIZATION
-// --------------------------------
-function initPetWidget(root) {
-    spriteEl = root.querySelector("#pet-sprite");
-    messageBar = root.querySelector(".message-bar");
+  // PET
+  function handlePet() {
+    if (petState.busy) return;
+    beginAction(`You pet ${petState.name}.`);
 
-    if (!spriteEl) {
-        console.error("Sprite element not found.");
+    const pose = getPoseGroup();
+    let seq;
+
+    switch (pose) {
+      case "float":
+        seq = ["floatToRest", "petting", "resting"];
+        break;
+      case "sleep":
+        seq = ["sleepToRest", "petting", "resting"];
+        break;
+      case "swim":
+        seq = ["swimToFloat", "floatToRest", "petting", "resting"];
+        break;
+      default:
+        seq = ["petting", "resting"];
+    }
+
+    runSequence(seq, endActionToIdle);
+  }
+
+  // REST – bring him gently back to chill mode
+  function handleRest() {
+    if (petState.busy) return;
+    beginAction(`${petState.name} is taking a break.`);
+
+    const pose = getPoseGroup();
+    let seq;
+
+    switch (pose) {
+      case "float":
+        seq = ["floatToRest", "resting"];
+        break;
+      case "sleep":
+        seq = ["sleepToRest", "resting"];
+        break;
+      case "swim":
+        seq = ["swimToFloat", "floatToRest", "resting"];
+        break;
+      default:
+        seq = ["resting"];
+    }
+
+    runSequence(seq, endActionToIdle);
+  }
+
+  // SLEEP
+  function handleSleep() {
+    if (petState.busy) return;
+    beginAction(`${petState.name} is getting sleepy...`);
+
+    const pose = getPoseGroup();
+    let seq;
+
+    switch (pose) {
+      case "float":
+        seq = ["floatToSleep"];
+        break;
+      case "sleep":
+        // already sleeping – just restart sleep loop cleanly
+        startSleepLoop();
         return;
+      case "swim":
+        seq = ["swimToFloat", "floatToSleep"];
+        break;
+      default: // rest
+        seq = ["restToSleep"];
+        break;
     }
 
-    // Buttons
-    const buttons = root.querySelectorAll("[data-action]");
-    buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const action = btn.dataset.action;
-            performAction(action);
-        });
+    runSequence(seq, () => {
+      setMessage(`${petState.name} is sleeping.`);
+      startSleepLoop();
     });
+  }
 
-    // Start default animation
-    stateMachine.go("resting");
+  // SWIM
+  function handleSwim() {
+    if (petState.busy) return;
+    beginAction(`${petState.name} goes for a swim!`);
 
-    // Start idle cycle
-    startIdleLoop();
-}
+    const pose = getPoseGroup();
+    let seq;
 
-// Expose globally
-window.initPetWidget = initPetWidget;
+    switch (pose) {
+      case "float":
+        seq = ["floatToSwim"];
+        break;
+      case "sleep":
+        seq = ["sleepToFloat", "floatToSwim"];
+        break;
+      case "swim":
+        // already swimming, just restart loop
+        startSwimLoop();
+        return;
+      default: // rest
+        seq = ["restToFloat", "floatToSwim"];
+        break;
+    }
 
-window.addEventListener("DOMContentLoaded", () => {
-    initPetWidget(document);
-    console.log("✅ script validated");
+    runSequence(seq, () => {
+      setMessage(`${petState.name} is happily swimming.`);
+      startSwimLoop();
+    });
+  }
+
+  // ROAM
+  function handleRoam() {
+    if (petState.busy) return;
+    startRoam();
+  }
+
+  // --- BUTTON WIRING ------------------------------------------------------
+
+  const ACTIONS = {
+    feed: handleFeed,
+    pet: handlePet,
+    sleep: handleSleep,
+    swim: handleSwim,
+    rest: handleRest,
+    roam: handleRoam,
+  };
+
+  buttons.forEach((btn) => {
+    const action = btn.dataset.action;
+    const handler = ACTIONS[action];
+    if (!handler) return;
+    btn.addEventListener("click", () => {
+      handler();
+    });
+  });
+
+  // --- ATTENTION / HAPPY NOISES (simple version) --------------------------
+
+  // Basic attention ping every 10 minutes (can be replaced with full stat logic later)
+  const TEN_MIN = 10 * 60 * 1000;
+  setInterval(() => {
+    if (petState.mode === "sleep") return;
+    // For now, just alternate between attention + happy for vibes
+    const r = Math.random();
+    if (r < 0.5) {
+      playSound("attention-squeak");
+      setMessage(`${petState.name} wants attention.`);
+    } else {
+      playSound("happy-squeak");
+      setMessage(`${petState.name} chirps happily.`);
+    }
+  }, TEN_MIN);
+
+  // --- INIT ---------------------------------------------------------------
+
+  // Start with idle loop from resting
+  playAnim("resting", {
+    onDone: () => {
+      startIdle();
+    },
+  });
+
+  console.log("[BubblePet] Axolotl state machine initialized.");
 });
