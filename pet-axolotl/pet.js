@@ -219,16 +219,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (petState.mode !== "idle") return;
 
     const r = Math.random();
-    // 0.0–0.65 : resting
-    // 0.65–0.8 : restingbubble (reduced chance)
-    // 0.8–1.0  : float cycle
-    if (r < 0.65) {
+    // 0.0–0.85 : resting
+    // 0.85–0.9 : restingbubble (further reduced chance)
+    // 0.9–1.0  : float cycle
+    if (r < 0.85) {
       playAnim("resting", {
         onDone: () => {
           if (petState.mode === "idle") scheduleIdleCycle();
         },
       });
-    } else if (r < 0.8) {
+    } else if (r < 0.9) {
       playAnim("restingBubble", {
         onDone: () => {
           if (petState.mode === "idle") scheduleIdleCycle();
