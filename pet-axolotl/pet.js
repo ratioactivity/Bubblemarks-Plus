@@ -118,6 +118,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let animTimer = null;
+  const GIFS_REQUIRING_RESTART = new Set(["sleeping"]);
+
+  function setSpriteSource(src, forceRestart = false) {
+    if (!forceRestart) {
+      spriteEl.src = src;
+      return;
+    }
+    spriteEl.src = "";
+    requestAnimationFrame(() => {
+      spriteEl.src = src;
+    });
+  }
 
   function setMessage(text) {
     messageEl.textContent = text;
@@ -152,7 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     clearAnimTimer();
     petState.currentAnim = key;
-    spriteEl.src = src;
+    const requiresRestart = GIFS_REQUIRING_RESTART.has(key);
+    setSpriteSource(src, requiresRestart);
 
     // sound per animation
     const soundName = ANIM_SOUNDS[key];
