@@ -7,10 +7,23 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const isDev = !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
+function registerDefaultProtocolClient() {
+  const appPath = process.execPath;
+  const args = isDev ? [path.resolve(process.argv[1])] : undefined;
+
+  if (isDev) {
+    app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL, appPath, args);
+    return;
+  }
+
+  app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+}
+
 app.on("will-finish-launching", () => {
-  app.setAsDefaultProtocolClient("bubblemarks");
+  registerDefaultProtocolClient();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -270,6 +283,30 @@ function createWindow() {
     shell.openExternal(url);
     return { action: "deny" };
   });
+
+  const handleSpotifyNavigation = (event, url) => {
+    if (!url || typeof url !== "string") {
+      return;
+    }
+
+    const normalizedUrl = url.trim().toLowerCase();
+    const isSpotifyCallbackNavigation = normalizedUrl.includes("spotify-callback");
+
+    if (!isSpotifyCallbackNavigation) {
+      return;
+    }
+
+    event.preventDefault();
+    forwardSpotifyCallback(url);
+
+    const currentUrl = mainWindow.webContents.getURL();
+    if (!currentUrl.startsWith(`${BUBBLEMARKS_PROTOCOL}://index.html`)) {
+      mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
+    }
+  };
+
+  mainWindow.webContents.on("will-redirect", handleSpotifyNavigation);
+  mainWindow.webContents.on("will-navigate", handleSpotifyNavigation);
 }
 
   app.whenReady().then(() => {
@@ -280,7 +317,7 @@ function createWindow() {
     registerBubblemarksProtocol();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
-      app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+      registerDefaultProtocolClient();
     }
 
     createWindow();
@@ -290,16 +327,9 @@ function createWindow() {
       forwardSpotifyCallback(startupDeepLink);
     }
   });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
-
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-  });
