@@ -9,8 +9,6 @@ const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
-const gotLock = app.requestSingleInstanceLock();
-
 app.on("will-finish-launching", () => {
   app.setAsDefaultProtocolClient("bubblemarks");
 });
@@ -147,6 +145,29 @@ function registerBubblemarksProtocol() {
       const hostSegment = url.hostname ? url.hostname : "";
       const rawPath = decodeURIComponent(url.pathname);
       const trimmedPath = rawPath.startsWith("/") ? rawPath.slice(1) : rawPath;
+      const requestUrlLower = (request.url || "").toLowerCase();
+      const pathCandidates = [hostSegment, trimmedPath, rawPath, url.pathname]
+        .map((value) => (typeof value === "string" ? value.toLowerCase() : ""))
+        .filter(Boolean);
+      const isSpotifyCallbackRequest = [requestUrlLower, ...pathCandidates].some((value) =>
+        value.includes("spotify-callback")
+      );
+      const normalizedCallbackPath = [hostSegment, trimmedPath].filter(Boolean).join("/");
+
+      const serveSpotifyCallbackResponse = () => {
+        forwardSpotifyCallback(request.url);
+        callback({
+          data: Buffer.from(
+            "<html><body><p>Spotify login received. You can return to Bubblemarks.</p></body></html>",
+            "utf8"
+          ),
+          mimeType: "text/html",
+        });
+      };
+
+      if (isSpotifyCallbackRequest || normalizedCallbackPath.startsWith("spotify-callback")) {
+        return serveSpotifyCallbackResponse();
+      }
 
       const normalizedPath = path
         .posix
@@ -168,6 +189,10 @@ function registerBubblemarksProtocol() {
 
         return normalizedPath;
       })();
+
+      if (resolvedTarget.startsWith("spotify-callback")) {
+        return serveSpotifyCallbackResponse();
+      }
 
       const appBasePath = path.normalize(app.getAppPath() + path.sep);
       const resourceBasePath = path.normalize(process.resourcesPath + path.sep);
@@ -204,8 +229,6 @@ function registerBubblemarksProtocol() {
     }
   });
 }
-
-let mainWindow;
 
 function createWindow() {
   const targetDisplay = resolveTargetDisplay();
@@ -271,9 +294,8 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
-    mainWindow.webContents.send("spotify-oauth-callback", url);
   });
-}
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

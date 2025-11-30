@@ -6,10 +6,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   window.navigateMusicPlayer = navigateMusicPlayer;
 
-  window.spotifyConfig = {
-    clientId: "<your-client-id>",
-    redirectUri: "bubblemarks://spotify-callback",
-  };
+  if (!window.spotifyConfig) {
+    window.spotifyConfig = {};
+  }
 
   const widgetHost = document.getElementById("music-player-widget");
   if (!widgetHost) {
@@ -328,9 +327,29 @@ window.addEventListener("DOMContentLoaded", () => {
     redirectUri: "bubblemarks://spotify-callback",
   };
 
-  const providedSpotifyConfig = {
-    ...(window.spotifyConfig || window.SPOTIFY_CONFIG || {}),
+  const sanitizeSpotifyConfig = (rawConfig = {}) => {
+    const config = { ...rawConfig };
+
+    const isPlaceholder = (value) => typeof value === "string" && value.includes("<your-client-id>");
+
+    if (!config.clientId || isPlaceholder(config.clientId)) {
+      delete config.clientId;
+    } else if (typeof config.clientId === "string") {
+      config.clientId = config.clientId.trim();
+    }
+
+    if (typeof config.redirectUri === "string") {
+      config.redirectUri = config.redirectUri.trim();
+    }
+
+    if (typeof config.scopes === "string") {
+      config.scopes = config.scopes.trim();
+    }
+
+    return config;
   };
+
+  const providedSpotifyConfig = sanitizeSpotifyConfig(window.spotifyConfig || window.SPOTIFY_CONFIG || {});
 
   window.spotifyConfig = { ...spotifyConfigDefaults, ...providedSpotifyConfig };
 
