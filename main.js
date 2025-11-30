@@ -7,6 +7,8 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 
+const gotLock = app.requestSingleInstanceLock();
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "bubblemarks",
@@ -132,6 +134,8 @@ function registerBubblemarksProtocol() {
   });
 }
 
+let mainWindow;
+
 function createWindow() {
   const targetDisplay = resolveTargetDisplay();
   const { bounds, size, scaleFactor } = targetDisplay;
@@ -142,7 +146,7 @@ function createWindow() {
     `[Bubblemarks] targeting display ${targetDisplay.id} (${width}x${height}@${scaleFactor}x)`
   );
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     x: bounds.x,
     y: bounds.y,
     width: bounds.width,
@@ -173,16 +177,39 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  registerBubblemarksProtocol();
-  createWindow();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.whenReady().then(() => {
+    app.setAsDefaultProtocolClient("bubblemarks");
+    registerBubblemarksProtocol();
+    createWindow();
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  });
+
+  app.on("second-instance", (event, commandLine) => {
+    const deepLink = commandLine.find((arg) => arg.startsWith("bubblemarks://"));
+    if (deepLink) {
+      if (!mainWindow) {
+        createWindow();
+      }
+      mainWindow.webContents.send("spotify-oauth-callback", deepLink);
     }
   });
-});
+
+  app.on("open-url", (event, url) => {
+    event.preventDefault();
+    if (!mainWindow) {
+      createWindow();
+    }
+    mainWindow.webContents.send("spotify-oauth-callback", url);
+  });
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

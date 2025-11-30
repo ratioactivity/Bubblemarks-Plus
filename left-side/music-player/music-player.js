@@ -1,4 +1,9 @@
 window.addEventListener("DOMContentLoaded", () => {
+  window.spotifyConfig = {
+    clientId: "<your-client-id>",
+    redirectUri: "bubblemarks://spotify-callback",
+  };
+
   const widgetHost = document.getElementById("music-player-widget");
   if (!widgetHost) {
     console.log("✅ script validated");
@@ -402,22 +407,60 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const handleRedirectURL = async (url) => {
+    try {
+      const parsed = new URL(url);
+      const code = parsed.searchParams.get("code");
+      const state = parsed.searchParams.get("state");
+      const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
+
+      if (!code) {
+        return false;
+      }
+
+      if (expectedState && expectedState !== state) {
+        return false;
+      }
+
+      const exchanged = await exchangeCodeForTokens(code);
+
+      if (!exchanged) {
+        return exchanged;
+      }
+
+      if (typeof refreshSpotifyNowPlayingFromApi === "function") {
+        await refreshSpotifyNowPlayingFromApi();
+      }
+      if (typeof toggleSpotifyAuthVisibility === "function") {
+        toggleSpotifyAuthVisibility(!hasValidAccessToken());
+      }
+      if (typeof setSpotifyStatus === "function") {
+        setSpotifyStatus("Spotify connected.");
+      }
+      musicController.setMode("spotify");
+      refreshNowPlaying(true);
+
+      return exchanged;
+    } catch (err) {
+      console.error("Failed to handle Spotify redirect URL:", err);
+      return false;
+    }
+  };
+
+  if (typeof MusicController === "function") {
+    MusicController.spotify = MusicController.spotify || {};
+    MusicController.spotify.handleRedirectURL = handleRedirectURL;
+  }
+
+  if (typeof window.MusicController === "function") {
+    window.MusicController.spotify = window.MusicController.spotify || {};
+    window.MusicController.spotify.handleRedirectURL = handleRedirectURL;
+  }
+
   const handleSpotifyRedirect = async () => {
     const search = window.location.search || window.location.hash.replace(/^#/, "?");
-    const params = new URLSearchParams(search);
-    const code = params.get("code");
-    const state = params.get("state");
-    const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
-
-    if (!code || !state) {
-      return false;
-    }
-
-    if (expectedState && expectedState !== state) {
-      return false;
-    }
-
-    return exchangeCodeForTokens(code);
+    const currentUrl = `${window.location.origin}${window.location.pathname}${search}`;
+    return handleRedirectURL(currentUrl);
   };
 
   const bootstrapSpotifyTokens = async () => {
@@ -917,6 +960,16 @@ window.addEventListener("DOMContentLoaded", () => {
       openExternal(fallbackUrl);
       setSpotifyStatus("Couldn't control Spotify; opened playlist instead.");
     };
+
+    if (window.spotifyAPI && typeof window.spotifyAPI.onOAuthCallback === "function") {
+      window.spotifyAPI.onOAuthCallback((url) => {
+        if (MusicController?.spotify?.handleRedirectURL) {
+          MusicController.spotify.handleRedirectURL(url);
+        } else {
+          handleRedirectURL(url);
+        }
+      });
+    }
 
     await bootstrapSpotifyTokens();
     toggleSpotifyAuthVisibility(!hasValidAccessToken());
