@@ -154,27 +154,20 @@ window.addEventListener("DOMContentLoaded", () => {
     return defaultCoverArt;
   };
 
-  const readStoredAccessToken = () => {
-    try {
-      return localStorage.getItem("spotifyAccessToken");
-    } catch (error) {
-      console.warn("[Bubblemarks] Unable to read stored Spotify token:", error);
-      return null;
-    }
-  };
+  const SPOTIFY_TOKEN_KEY = "spotifyAuthEncrypted";
+  const SPOTIFY_VERIFIER_KEY = "spotifyCodeVerifier";
+  const SPOTIFY_STATE_KEY = "spotifyAuthState";
+  const ENCRYPTION_SECRET = "bubblemarks-spotify-lock";
 
   const spotifyDefaults = {
     openUri: "spotify:",
     fallbackUrl: "https://open.spotify.com/search/Baby%20Whiplash",
+    scopes: "user-read-playback-state user-modify-playback-state user-read-currently-playing",
   };
 
   const spotifySettings = {
     ...(window.spotifyConfig || window.SPOTIFY_CONFIG || {}),
   };
-
-  if (!spotifySettings.accessToken) {
-    spotifySettings.accessToken = readStoredAccessToken();
-  }
 
   if (!spotifySettings.playlistUrl) {
     spotifySettings.playlistUrl = spotifyDefaults.fallbackUrl;
@@ -184,18 +177,273 @@ window.addEventListener("DOMContentLoaded", () => {
     spotifySettings.babyWhiplashUrl = spotifyDefaults.fallbackUrl;
   }
 
-  const spotifyHeaders = () => {
-    if (!spotifySettings.accessToken) {
-      return {};
+  if (!spotifySettings.scopes) {
+    spotifySettings.scopes = spotifyDefaults.scopes;
+  }
+
+  const textEncoder = new TextEncoder();
+  const base64UrlEncode = (buffer) => {
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  };
+
+  const base64UrlDecode = (value) => {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const binary = atob(normalized);
+    const output = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      output[index] = binary.charCodeAt(index);
     }
-    return {
-      Authorization: `Bearer ${spotifySettings.accessToken}`,
-      "Content-Type": "application/json",
+    return output;
+  };
+
+  const getEncryptionKey = async () => {
+    const secretBytes = textEncoder.encode(ENCRYPTION_SECRET);
+    const secretHash = await crypto.subtle.digest("SHA-256", secretBytes);
+    return crypto.subtle.importKey("raw", secretHash, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  };
+
+  const encryptTokenPayload = async (payload) => {
+    try {
+      const key = await getEncryptionKey();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, textEncoder.encode(payload));
+      return `${base64UrlEncode(iv)}.${base64UrlEncode(new Uint8Array(encrypted))}`;
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to encrypt Spotify token", error);
+      return null;
+    }
+  };
+
+  const decryptTokenPayload = async (value) => {
+    try {
+      const [ivPart, cipherPart] = value.split(".");
+      if (!ivPart || !cipherPart) {
+        return null;
+      }
+      const key = await getEncryptionKey();
+      const iv = base64UrlDecode(ivPart);
+      const cipherBytes = base64UrlDecode(cipherPart);
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherBytes);
+      return new TextDecoder().decode(decrypted);
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to decrypt Spotify token", error);
+      return null;
+    }
+  };
+
+  let tokenState = {
+    accessToken: null,
+    refreshToken: null,
+    expiresAt: 0,
+  };
+
+  const persistTokenState = async (state) => {
+    tokenState = state;
+    try {
+      const serialized = JSON.stringify(state);
+      const encrypted = await encryptTokenPayload(serialized);
+      if (encrypted) {
+        localStorage.setItem(SPOTIFY_TOKEN_KEY, encrypted);
+      }
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to persist Spotify tokens:", error);
+    }
+  };
+
+  const hydrateTokensFromStorage = async () => {
+    try {
+      const stored = localStorage.getItem(SPOTIFY_TOKEN_KEY);
+      if (!stored) {
+        return null;
+      }
+      const decrypted = await decryptTokenPayload(stored);
+      if (!decrypted) {
+        return null;
+      }
+      const parsed = JSON.parse(decrypted);
+      if (!parsed || typeof parsed !== "object") {
+        return null;
+      }
+      const hydrated = {
+        accessToken: parsed.accessToken || null,
+        refreshToken: parsed.refreshToken || null,
+        expiresAt: Number(parsed.expiresAt) || 0,
+      };
+      tokenState = hydrated;
+      spotifySettings.accessToken = hydrated.accessToken;
+      return hydrated;
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to load Spotify tokens:", error);
+      return null;
+    }
+  };
+
+  const hasValidAccessToken = () => {
+    if (!tokenState.accessToken || !tokenState.expiresAt) {
+      return false;
+    }
+    const bufferMs = 45 * 1000;
+    return Date.now() + bufferMs < tokenState.expiresAt;
+  };
+
+  const updateSpotifyTokens = async ({ access_token, refresh_token, expires_in }) => {
+    if (!access_token && !tokenState.accessToken) {
+      return null;
+    }
+    const expiresAt = Date.now() + (Number(expires_in) || 3600) * 1000;
+    const nextState = {
+      accessToken: access_token || tokenState.accessToken,
+      refreshToken: refresh_token || tokenState.refreshToken,
+      expiresAt,
     };
+    spotifySettings.accessToken = nextState.accessToken;
+    await persistTokenState(nextState);
+    return nextState;
+  };
+
+  const refreshAccessToken = async () => {
+    if (!tokenState.refreshToken || !spotifySettings.clientId) {
+      return false;
+    }
+
+    try {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: tokenState.refreshToken,
+          client_id: spotifySettings.clientId,
+        }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const payload = await response.json();
+      await updateSpotifyTokens(payload);
+      return true;
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to refresh Spotify token:", error);
+      return false;
+    }
+  };
+
+  const ensureSpotifyAccessToken = async () => {
+    if (hasValidAccessToken()) {
+      return tokenState.accessToken;
+    }
+
+    const refreshed = await refreshAccessToken();
+    if (refreshed && tokenState.accessToken) {
+      return tokenState.accessToken;
+    }
+
+    return null;
+  };
+
+  const generateCodeVerifier = () => {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(64));
+    return base64UrlEncode(randomBytes);
+  };
+
+  const generateCodeChallenge = async (verifier) => {
+    const digest = await crypto.subtle.digest("SHA-256", textEncoder.encode(verifier));
+    return base64UrlEncode(new Uint8Array(digest));
+  };
+
+  const clearAuthParamsFromUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("code");
+    url.searchParams.delete("state");
+    url.searchParams.delete("error");
+    const cleaned = `${url.pathname}${url.hash}` || window.location.pathname;
+    window.history.replaceState({}, document.title, cleaned);
+  };
+
+  const exchangeCodeForTokens = async (code) => {
+    const verifier = sessionStorage.getItem(SPOTIFY_VERIFIER_KEY);
+    if (!verifier || !spotifySettings.clientId || !spotifySettings.redirectUri) {
+      return false;
+    }
+
+    try {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: spotifySettings.redirectUri,
+          client_id: spotifySettings.clientId,
+          code_verifier: verifier,
+        }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const payload = await response.json();
+      await updateSpotifyTokens(payload);
+      sessionStorage.removeItem(SPOTIFY_VERIFIER_KEY);
+      sessionStorage.removeItem(SPOTIFY_STATE_KEY);
+      clearAuthParamsFromUrl();
+      return true;
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to exchange Spotify auth code:", error);
+      return false;
+    }
+  };
+
+  const handleSpotifyRedirect = async () => {
+    const search = window.location.search || window.location.hash.replace(/^#/, "?");
+    const params = new URLSearchParams(search);
+    const code = params.get("code");
+    const state = params.get("state");
+    const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
+
+    if (!code || !state) {
+      return false;
+    }
+
+    if (expectedState && expectedState !== state) {
+      return false;
+    }
+
+    return exchangeCodeForTokens(code);
+  };
+
+  const bootstrapSpotifyTokens = async () => {
+    if (!tokenState.accessToken) {
+      await hydrateTokensFromStorage();
+    }
+
+    if (!hasValidAccessToken()) {
+      await handleSpotifyRedirect();
+    }
+
+    if (!hasValidAccessToken() && tokenState.refreshToken) {
+      await refreshAccessToken();
+    }
+
+    if (!tokenState.accessToken && spotifySettings.accessToken) {
+      await updateSpotifyTokens({
+        access_token: spotifySettings.accessToken,
+        refresh_token: spotifySettings.refreshToken,
+        expires_in: 3600,
+      });
+    }
   };
 
   const isSpotifyConfigured = () => {
-    return Boolean(spotifySettings.accessToken && spotifySettings.accessToken.trim());
+    return Boolean(spotifySettings.clientId && (tokenState.accessToken || tokenState.refreshToken));
   };
 
   const openExternal = (url) => {
@@ -366,6 +614,8 @@ window.addEventListener("DOMContentLoaded", () => {
     const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
     const spotifyCover = widgetHost.querySelector("[data-spotify-cover]");
     const spotifyStatus = widgetHost.querySelector("[data-spotify-status]");
+    const spotifyAuthPanel = widgetHost.querySelector("[data-spotify-auth]");
+    const spotifyLoginButton = widgetHost.querySelector("[data-spotify-login]");
     const spotifyOpenButton = widgetHost.querySelector("[data-spotify-open]");
     const spotifyPlayBabyButton = widgetHost.querySelector("[data-spotify-play-baby]");
     const spotifyControlButtons = Array.from(
@@ -394,6 +644,12 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       });
       updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
+    };
+
+    const toggleSpotifyAuthVisibility = (visible) => {
+      if (spotifyAuthPanel) {
+        spotifyAuthPanel.style.display = visible ? "block" : "none";
+      }
     };
 
     const applySpotifyNowPlaying = (track) => {
@@ -443,16 +699,57 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    const requestSpotify = async (path, options = {}) => {
-      if (!isSpotifyConfigured()) {
+    const startSpotifyLogin = async () => {
+      if (!spotifySettings.clientId || !spotifySettings.redirectUri) {
+        setSpotifyStatus("Add your Spotify client ID and redirect URI to log in.");
+        return;
+      }
+
+      const verifier = generateCodeVerifier();
+      const challenge = await generateCodeChallenge(verifier);
+      const state = `bubblemarks-${Math.random().toString(36).slice(2)}`;
+
+      sessionStorage.setItem(SPOTIFY_VERIFIER_KEY, verifier);
+      sessionStorage.setItem(SPOTIFY_STATE_KEY, state);
+
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: spotifySettings.clientId,
+        redirect_uri: spotifySettings.redirectUri,
+        code_challenge_method: "S256",
+        code_challenge: challenge,
+        scope: spotifySettings.scopes,
+        state,
+      });
+
+      window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    };
+
+    const requestSpotify = async (path, options = {}, tokenOverride = null) => {
+      const token = tokenOverride || (await ensureSpotifyAccessToken());
+      if (!token) {
         return null;
       }
 
-      try {
-        const response = await fetch(`https://api.spotify.com/v1${path}`, {
+      const performRequest = async (bearerToken) => {
+        return fetch(`https://api.spotify.com/v1${path}`, {
           ...options,
-          headers: { ...spotifyHeaders(), ...(options.headers || {}) },
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+            ...(options.headers || {}),
+            ...(options.body ? { "Content-Type": "application/json" } : {}),
+          },
         });
+      };
+
+      try {
+        let response = await performRequest(token);
+        if (response && response.status === 401) {
+          const refreshed = await refreshAccessToken();
+          if (refreshed && tokenState.accessToken) {
+            response = await performRequest(tokenState.accessToken);
+          }
+        }
         return response;
       } catch (error) {
         console.warn("[Bubblemarks] Spotify request failed:", error);
@@ -461,14 +758,25 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     const refreshSpotifyNowPlayingFromApi = async () => {
-      if (!isSpotifyConfigured()) {
+      if (!spotifySettings.clientId) {
         applySpotifyNowPlaying(null);
+        toggleSpotifyAuthVisibility(false);
         updateSpotifyControls(false);
-        setSpotifyStatus("Spotify API not configured. Buttons will open Spotify instead.");
+        setSpotifyStatus("Add Spotify credentials to enable the widget.");
         return;
       }
 
-      const response = await requestSpotify("/me/player/currently-playing");
+      const token = await ensureSpotifyAccessToken();
+      if (!token) {
+        applySpotifyNowPlaying(null);
+        updateSpotifyControls(false);
+        toggleSpotifyAuthVisibility(true);
+        setSpotifyStatus("Login to Spotify to enable controls.");
+        return;
+      }
+
+      toggleSpotifyAuthVisibility(false);
+      const response = await requestSpotify("/me/player/currently-playing", {}, token);
 
       if (!response) {
         updateSpotifyControls(false);
@@ -511,9 +819,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const controlSpotifyPlayback = async (action) => {
       const fallbackUrl = spotifySettings.playlistUrl || spotifyDefaults.fallbackUrl;
-      if (!isSpotifyConfigured()) {
+      if (!spotifySettings.clientId) {
         openExternal(fallbackUrl);
         setSpotifyStatus("Opening Spotify since controls are offline.");
+        return;
+      }
+
+      const token = await ensureSpotifyAccessToken();
+      if (!token) {
+        toggleSpotifyAuthVisibility(true);
+        setSpotifyStatus("Login to Spotify to send playback controls.");
         return;
       }
 
@@ -536,7 +851,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const response = await requestSpotify(endpoint.path, { method: endpoint.method });
+      const response = await requestSpotify(endpoint.path, { method: endpoint.method }, token);
       if (response && (response.ok || response.status === 204)) {
         spotifyPlaybackState.isPlaying = mappedAction !== "pause";
         updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
@@ -552,7 +867,20 @@ window.addEventListener("DOMContentLoaded", () => {
       const fallbackUrl =
         spotifySettings.babyWhiplashUrl || spotifySettings.playlistUrl || spotifyDefaults.fallbackUrl;
 
-      if (!isSpotifyConfigured() || !spotifySettings.babyWhiplashUri) {
+      if (!spotifySettings.clientId) {
+        openExternal(fallbackUrl);
+        setSpotifyStatus("Opening Baby Whiplash in Spotify.");
+        return;
+      }
+
+      const token = await ensureSpotifyAccessToken();
+      if (!token) {
+        toggleSpotifyAuthVisibility(true);
+        setSpotifyStatus("Login to Spotify to play this track.");
+        return;
+      }
+
+      if (!spotifySettings.babyWhiplashUri) {
         openExternal(fallbackUrl);
         setSpotifyStatus("Opening Baby Whiplash in Spotify.");
         return;
@@ -565,7 +893,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const response = await requestSpotify("/me/player/play", {
         method: "PUT",
         body: JSON.stringify(body),
-      });
+      }, token);
 
       if (response && (response.ok || response.status === 204)) {
         spotifyPlaybackState.isPlaying = true;
@@ -578,6 +906,16 @@ window.addEventListener("DOMContentLoaded", () => {
       openExternal(fallbackUrl);
       setSpotifyStatus("Couldn't control Spotify; opened playlist instead.");
     };
+
+    await bootstrapSpotifyTokens();
+    toggleSpotifyAuthVisibility(!hasValidAccessToken());
+    if (!hasValidAccessToken()) {
+      setSpotifyStatus(
+        spotifySettings.clientId
+          ? "Login to Spotify to sync playback."
+          : "Add Spotify credentials to enable the widget."
+      );
+    }
 
     applyTrack(currentTrackIndex);
     refreshNowPlaying(true);
@@ -609,6 +947,12 @@ window.addEventListener("DOMContentLoaded", () => {
         const openUri = spotifySettings.openUri || spotifyDefaults.openUri;
         openExternal(openUri);
         setSpotifyStatus("Opening Spotify...");
+      });
+    }
+
+    if (spotifyLoginButton) {
+      spotifyLoginButton.addEventListener("click", () => {
+        startSpotifyLogin();
       });
     }
 
