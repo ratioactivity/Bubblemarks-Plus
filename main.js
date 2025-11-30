@@ -9,6 +9,10 @@ const APP_ID = "com.bubblemarks.sidebar";
 
 const gotLock = app.requestSingleInstanceLock();
 
+app.on("will-finish-launching", () => {
+  app.setAsDefaultProtocolClient("bubblemarks");
+});
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "bubblemarks",
@@ -169,7 +173,7 @@ function createWindow() {
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL("bubblemarks://index.html");
+  mainWindow.loadFile("index.html");
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);

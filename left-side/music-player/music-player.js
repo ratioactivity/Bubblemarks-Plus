@@ -377,6 +377,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      const redirectUri =
+        (window.spotifyConfig && window.spotifyConfig.redirectUri) || spotifySettings.redirectUri;
       const response = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: {
@@ -385,7 +387,7 @@ window.addEventListener("DOMContentLoaded", () => {
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
-          redirect_uri: spotifySettings.redirectUri,
+          redirect_uri: redirectUri,
           client_id: spotifySettings.clientId,
           code_verifier: verifier,
         }),
