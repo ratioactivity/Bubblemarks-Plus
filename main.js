@@ -272,27 +272,22 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  if (!gotSingleInstanceLock) {
-    return;
-  }
+  app.whenReady().then(() => {
+    if (!gotSingleInstanceLock) {
+      return;
+    }
 
-  registerBubblemarksProtocol();
+    registerBubblemarksProtocol();
 
-  if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
-    app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
-  }
+    if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
+      app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+    }
 
-  createWindow();
+    createWindow();
 
-  const startupDeepLink = extractBubblemarksUrl(process.argv);
-  if (startupDeepLink) {
-    forwardSpotifyCallback(startupDeepLink);
-  }
-
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+    const startupDeepLink = extractBubblemarksUrl(process.argv);
+    if (startupDeepLink) {
+      forwardSpotifyCallback(startupDeepLink);
     }
   });
 });
@@ -302,3 +297,9 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
