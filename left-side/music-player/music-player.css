@@ -364,6 +364,27 @@
   padding: 0.6rem 0.75rem;
 }
 
+.spotify-auth {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(244, 248, 255, 0.92), rgba(224, 234, 255, 0.92));
+  border: 1px dashed rgba(117, 138, 182, 0.3);
+  text-align: center;
+}
+
+.spotify-auth__title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  color: #3a4d70;
+}
+
+.spotify-auth__hint {
+  margin: 0 0 10px;
+  color: #4f678e;
+  font-size: 0.95rem;
+}
+
 .music-player-card--spotify .music-btn {
   width: 100%;
   min-height: 44px;
