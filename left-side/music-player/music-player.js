@@ -409,12 +409,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const handleRedirectURL = async (url) => {
     try {
-      const parsedUrl = new URL(url);
-      const code = parsedUrl.searchParams.get("code");
-      const state = parsedUrl.searchParams.get("state");
+      const parsed = new URL(url);
+      const code = parsed.searchParams.get("code");
+      const state = parsed.searchParams.get("state");
       const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
 
-      if (!code || !state) {
+      if (!code) {
         return false;
       }
 
@@ -441,8 +441,8 @@ window.addEventListener("DOMContentLoaded", () => {
       refreshNowPlaying(true);
 
       return exchanged;
-    } catch (error) {
-      console.warn("[Bubblemarks] Unable to handle Spotify redirect:", error);
+    } catch (err) {
+      console.error("Failed to handle Spotify redirect URL:", err);
       return false;
     }
   };
