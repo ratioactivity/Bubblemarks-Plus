@@ -17,6 +17,12 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const stopLocalPlayback = () => {
+    if (musicController && typeof musicController.stop === "function") {
+      musicController.stop();
+    }
+  };
+
   const musicController =
     window.musicController || (typeof window.MusicController === "function" ? new window.MusicController() : null);
 
@@ -185,6 +191,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const titleEl = widgetHost.querySelector(".music-player-title");
     const artistEl = widgetHost.querySelector(".music-player-artist");
     const artEl = widgetHost.querySelector(".music-player-art");
+    stopLocalPlayback();
     if (titleEl) {
       titleEl.textContent = track.title;
     }
@@ -807,6 +814,7 @@ window.addEventListener("DOMContentLoaded", () => {
             artist: "Orcasound live",
             listenerCount: station.listenerCount,
           };
+          stopLocalPlayback();
           musicController.playHydrophone(station.streamUrl, metadata);
           refreshNowPlaying(true);
         });
@@ -826,7 +834,15 @@ window.addEventListener("DOMContentLoaded", () => {
         throw new Error("Unable to load music widget");
       }
       const markup = await response.text();
-      widgetHost.innerHTML = markup;
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString(markup, "text/html");
+      const importedPlayer = parsed.getElementById("music-player");
+
+      if (importedPlayer) {
+        widgetHost.replaceChildren(importedPlayer);
+      } else {
+        widgetHost.innerHTML = markup;
+      }
     } catch (error) {
       widgetHost.innerHTML = `<p class="music-player-fallback">Music nook is stretching... (${error.message})</p>`;
       console.log("✅ script validated");
@@ -925,6 +941,7 @@ window.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
+          stopLocalPlayback();
           musicController.playDisc(source, {
             loop: false,
             metadata: { id: discName, title: discName, artist: "BubblePet", cover: cover.src },
@@ -1003,21 +1020,15 @@ window.addEventListener("DOMContentLoaded", () => {
       updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
     };
 
-      const toggleSpotifyAuthVisibility = (visible) => {
-        if (spotifyAuthPanel) {
-          spotifyAuthPanel.style.display = visible ? "block" : "none";
-        }
-      };
+    const toggleSpotifyAuthVisibility = (visible) => {
+      if (spotifyAuthPanel) {
+        spotifyAuthPanel.style.display = visible ? "block" : "none";
+      }
+    };
 
-      const stopLocalPlayback = () => {
-        if (musicController && typeof musicController.stop === "function") {
-          musicController.stop();
-        }
-      };
-
-      const applySpotifyNowPlaying = (track) => {
-        const shouldUpdateMode =
-          musicController.mode === "spotify" || !musicController.currentSource;
+    const applySpotifyNowPlaying = (track) => {
+      const shouldUpdateMode =
+        musicController.mode === "spotify" || !musicController.currentSource;
 
       const coverValue = track?.cover || defaultAccent;
       const titleValue = track?.title || "Spotify idle";
@@ -1043,14 +1054,14 @@ window.addEventListener("DOMContentLoaded", () => {
         spotifyCover.style.backgroundPosition = "center";
       }
 
-        if (track && shouldUpdateMode) {
-          if (musicController.mode !== "spotify") {
-            stopLocalPlayback();
-          }
-          musicController.setMode("spotify");
-          musicController.currentMetadata = track;
-          musicController.currentSource = track.id;
-        } else if (shouldUpdateMode && !track) {
+      if (track && shouldUpdateMode) {
+        if (musicController.mode !== "spotify") {
+          stopLocalPlayback();
+        }
+        musicController.setMode("spotify");
+        musicController.currentMetadata = track;
+        musicController.currentSource = track.id;
+      } else if (shouldUpdateMode && !track) {
         musicController.setMode("idle");
         musicController.currentMetadata = null;
         musicController.currentSource = null;
