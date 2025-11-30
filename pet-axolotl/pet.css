@@ -881,6 +881,23 @@ body.pet-scroll-disabled {
   box-shadow: 0 10px 18px rgba(96, 72, 140, 0.24);
 }
 
+.disc-open-player-btn {
+  padding: 9px 10px;
+  background: linear-gradient(135deg, #f7f6ff, #eef4ff);
+  border: 1px solid rgba(102, 124, 216, 0.18);
+  border-radius: 12px;
+  color: #3f3c6b;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(96, 72, 140, 0.14);
+  transition: all 0.2s ease;
+}
+
+.disc-open-player-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(96, 72, 140, 0.18);
+}
+
 .disc-entry {
   display: grid;
   grid-template-columns: auto 1fr auto;
