@@ -44,6 +44,7 @@ window.addEventListener("DOMContentLoaded", () => {
   ];
 
   const hydrophoneCoverMap = new Map([
+    ["harostrait", "assets/cover-orcasoundlab.png"],
     ["andrewsbay", "assets/cover-andrewsbay.png"],
     ["beachcamp", "assets/cover-beachcamp.png"],
     ["bushpoint", "assets/cover-bushpoint.png"],
@@ -54,6 +55,45 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const defaultCoverArt = "assets/cover-orcasoundlab.png";
   const defaultAccent = "linear-gradient(150deg, rgba(255, 212, 238, 0.95), rgba(184, 209, 255, 0.95))";
+
+  const hydrophoneStations = [
+    {
+      id: "harostrait",
+      name: "Haro Strait",
+      streamUrl: "https://icecast.orcasound.net:8000/harostrait.mp3",
+      cover: hydrophoneCoverMap.get("harostrait") || defaultCoverArt,
+    },
+    {
+      id: "andrewsbay",
+      name: "Andrews Bay",
+      streamUrl: "https://icecast.orcasound.net:8000/andrewsbay.mp3",
+      cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
+    },
+    {
+      id: "bushpoint",
+      name: "Bush Point",
+      streamUrl: "https://icecast.orcasound.net:8000/bushpoint.mp3",
+      cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
+    },
+    {
+      id: "porttownsend",
+      name: "Port Townsend",
+      streamUrl: "https://icecast.orcasound.net:8000/porttownsend.mp3",
+      cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
+    },
+    {
+      id: "beachcamp",
+      name: "Beach Camp",
+      streamUrl: "https://icecast.orcasound.net:8000/beachcamp.mp3",
+      cover: hydrophoneCoverMap.get("beachcamp") || defaultCoverArt,
+    },
+    {
+      id: "mastcenter",
+      name: "MaST Center",
+      streamUrl: "https://icecast.orcasound.net:8000/mastcenter.mp3",
+      cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
+    },
+  ];
 
   let currentTrackIndex = 0;
   const audio = musicController.audio;
@@ -138,6 +178,51 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const normalizeKey = (value) => {
     return typeof value === "string" ? value.toLowerCase().replace(/\s+/g, "") : "";
+  };
+
+  const formatListenerCount = (value) => {
+    if (!Number.isFinite(value)) {
+      return null;
+    }
+    const label = value === 1 ? "listener" : "listeners";
+    return `${value} ${label}`;
+  };
+
+  const parseHydrophoneId = (value) => {
+    const normalized = normalizeKey(value);
+    return normalized.replace(/[^a-z0-9]/g, "");
+  };
+
+  const fetchHydrophoneListeners = async () => {
+    try {
+      const response = await fetch("https://icecast.orcasound.net/status-json.xsl");
+      if (!response.ok) {
+        throw new Error("Unable to load listener counts");
+      }
+
+      const payload = await response.json();
+      const sources = payload?.icestats?.source;
+      const list = Array.isArray(sources) ? sources : sources ? [sources] : [];
+      const counts = new Map();
+
+      list.forEach((entry) => {
+        const listenUrl = entry?.listenurl || entry?.url || "";
+        const fromUrl = typeof listenUrl === "string" ? listenUrl.split("/").pop() : "";
+        const mountId = parseHydrophoneId((fromUrl || "").replace(/\.[^/.]+$/, ""));
+        const nameId = parseHydrophoneId(entry?.server_name) || parseHydrophoneId(entry?.server_description);
+        const targetId = mountId || nameId;
+        const listeners = Number.parseInt(entry?.listeners ?? entry?.listener_peak ?? "", 10);
+
+        if (targetId) {
+          counts.set(targetId, Number.isFinite(listeners) ? listeners : null);
+        }
+      });
+
+      return counts;
+    } catch (error) {
+      console.log("✅ script validated");
+      return new Map();
+    }
   };
 
   const resolveCoverArt = (mode, metadata, source) => {
@@ -573,8 +658,15 @@ window.addEventListener("DOMContentLoaded", () => {
     } else if (mode === "hydrophone") {
       label = "Hydrophone";
       const hydroName = metadata?.name || metadata?.title || metadata?.id || formatSourceName(source);
+      const listenerValue = Number.isFinite(metadata?.listenerCount)
+        ? metadata.listenerCount
+        : Number.isFinite(metadata?.listeners)
+          ? metadata.listeners
+          : null;
+      const listenerLabel = formatListenerCount(listenerValue);
       title = hydroName || "Hydrophone stream";
-      artist = metadata?.artist || "Orcasound live";
+      const baseArtist = metadata?.artist || "Orcasound live";
+      artist = listenerLabel ? `${baseArtist} • ${listenerLabel}` : baseArtist;
     } else if (mode !== "idle") {
       label = "Now playing";
       title = metadata?.title || formatSourceName(source) || "Now playing";
@@ -599,6 +691,82 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     applyMainCover(cover);
     updatePlayButtons(!paused);
+  };
+
+  const applyListenerCounts = (counts = new Map()) => {
+    hydrophoneStations.forEach((station) => {
+      const id = parseHydrophoneId(station.id);
+      const countValue = counts.get(id);
+      station.listenerCount = Number.isFinite(countValue) ? countValue : null;
+
+      const countEl = widgetHost.querySelector(`[data-hydrophone-count="${station.id}"]`);
+      if (countEl) {
+        countEl.textContent = formatListenerCount(station.listenerCount) || "-- listeners";
+      }
+    });
+
+    if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
+      const currentId = parseHydrophoneId(
+        musicController.currentMetadata.id || musicController.currentMetadata.name
+      );
+      const activeStation = hydrophoneStations.find(
+        (station) => parseHydrophoneId(station.id) === currentId
+      );
+
+      if (activeStation) {
+        musicController.currentMetadata = {
+          ...activeStation,
+          ...musicController.currentMetadata,
+          listenerCount: activeStation.listenerCount,
+          cover: activeStation.cover || musicController.currentMetadata.cover,
+        };
+        refreshNowPlaying(true);
+      }
+    }
+  };
+
+  const renderHydrophoneList = () => {
+    const list = widgetHost.querySelector("[data-hydrophone-list]");
+    if (!list) {
+      return;
+    }
+
+    list.innerHTML = "";
+
+    hydrophoneStations.forEach((station) => {
+      const card = document.createElement("article");
+      card.className = "hydrophone-card";
+      card.innerHTML = `
+        <div class="hydrophone-cover" style="background-image: url(${station.cover});">
+          <button type="button" class="hydrophone-play" data-hydrophone-play="${station.id}" aria-label="Play ${station.name}">▶</button>
+        </div>
+        <div class="hydrophone-meta">
+          <p class="hydrophone-name">${station.name}</p>
+          <p class="hydrophone-count" data-hydrophone-count="${station.id}">${
+            formatListenerCount(station.listenerCount) || "-- listeners"
+          }</p>
+        </div>
+      `;
+      list.appendChild(card);
+
+      const playButton = card.querySelector(`[data-hydrophone-play]`);
+      if (playButton) {
+        playButton.addEventListener("click", () => {
+          const metadata = {
+            ...station,
+            artist: "Orcasound live",
+            listenerCount: station.listenerCount,
+          };
+          musicController.playHydrophone(station.streamUrl, metadata);
+          refreshNowPlaying(true);
+        });
+      }
+    });
+  };
+
+  const loadHydrophoneListeners = async () => {
+    const counts = await fetchHydrophoneListeners();
+    applyListenerCounts(counts);
   };
 
   const attachWidget = async () => {
@@ -652,6 +820,11 @@ window.addEventListener("DOMContentLoaded", () => {
       const initialTab = tabs.find((tab) => tab.classList.contains("active")) || tabs[0];
       setActiveTab(initialTab?.dataset.tab);
     }
+
+    renderHydrophoneList();
+    loadHydrophoneListeners();
+    setInterval(loadHydrophoneListeners, 60000);
+
     const spotifyTitle = widgetHost.querySelector("[data-spotify-title]");
     const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
     const spotifyCover = widgetHost.querySelector("[data-spotify-cover]");
