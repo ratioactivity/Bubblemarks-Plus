@@ -7,19 +7,18 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
-const isDev = !app.isPackaged;
+const isDev = process.defaultApp || !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
 function registerDefaultProtocolClient() {
   const appPath = process.execPath;
-  const args = isDev ? [path.resolve(process.argv[1])] : undefined;
+  const args = [];
 
-  if (isDev) {
-    app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL, appPath, args);
-    return;
+  if (isDev && process.argv[1]) {
+    args.push(path.resolve(process.argv[1]));
   }
 
-  app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+  app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL, appPath, args);
 }
 
 app.on("will-finish-launching", () => {
@@ -276,8 +275,12 @@ function createWindow() {
     flushPendingDeepLinks();
   });
 
+  const indexUrl = `${BUBBLEMARKS_PROTOCOL}://index.html`;
+  const fallbackIndexPath = path.join(app.getAppPath(), "index.html");
+  let attemptedFallbackLoad = false;
+
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
+  mainWindow.loadURL(indexUrl);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -307,6 +310,16 @@ function createWindow() {
 
   mainWindow.webContents.on("will-redirect", handleSpotifyNavigation);
   mainWindow.webContents.on("will-navigate", handleSpotifyNavigation);
+
+  mainWindow.webContents.on("did-fail-load", (_event, _errorCode, _errorDescription, validatedURL) => {
+    const failedUrl = typeof validatedURL === "string" ? validatedURL : "";
+    if (attemptedFallbackLoad || !failedUrl.startsWith(`${BUBBLEMARKS_PROTOCOL}://`)) {
+      return;
+    }
+
+    attemptedFallbackLoad = true;
+    mainWindow.loadFile(fallbackIndexPath);
+  });
 }
 
   app.whenReady().then(() => {
