@@ -62,8 +62,49 @@
   </section>
 
   <section class="music-player-panel" data-panel="spotify" role="tabpanel" aria-label="Spotify">
-    <div class="music-player-card" aria-hidden="true">
-      <p class="music-player-note">Spotify shelf coming with more jams</p>
+    <div class="music-player-card music-player-card--spotify" role="region" aria-label="Spotify controls">
+      <header class="music-player-header">
+        <div class="music-player-header__text">
+          <p class="music-player-heading">Spotify Connect</p>
+          <p class="music-player-subtitle">Launch Spotify or reflect what's playing</p>
+        </div>
+        <div class="music-player-badge" aria-hidden="true">🎧</div>
+      </header>
+
+      <div class="spotify-now-playing" aria-live="polite">
+        <div class="spotify-cover" data-spotify-cover aria-hidden="true"></div>
+        <div class="spotify-meta">
+          <p class="spotify-label">Now Playing</p>
+          <p class="spotify-title" data-spotify-title>Spotify idle</p>
+          <p class="spotify-artist" data-spotify-artist>Open Spotify to start</p>
+        </div>
+      </div>
+
+      <div class="spotify-actions" role="group" aria-label="Spotify quick actions">
+        <button type="button" class="music-btn" data-spotify-open aria-label="Open Spotify app">Open Spotify App</button>
+        <button
+          type="button"
+          class="music-btn music-btn--secondary"
+          data-spotify-play-baby
+          aria-label="Play Baby Whiplash"
+        >
+          Play Baby Whiplash
+        </button>
+      </div>
+
+      <div class="spotify-controls" role="group" aria-label="Spotify playback controls">
+        <button type="button" class="music-btn music-btn--secondary" data-spotify-control="prev" aria-label="Previous track">
+          ⟲
+        </button>
+        <button type="button" class="music-btn" data-spotify-control="toggle" aria-label="Play or pause">
+          ▶
+        </button>
+        <button type="button" class="music-btn music-btn--secondary" data-spotify-control="next" aria-label="Next track">
+          ⟳
+        </button>
+      </div>
+
+      <p class="spotify-status" data-spotify-status>Connect Spotify to enable controls.</p>
     </div>
   </section>
 
