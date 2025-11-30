@@ -9,6 +9,12 @@ const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
+const gotLock = app.requestSingleInstanceLock();
+
+app.on("will-finish-launching", () => {
+  app.setAsDefaultProtocolClient("bubblemarks");
+});
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: BUBBLEMARKS_PROTOCOL,
@@ -199,6 +205,8 @@ function registerBubblemarksProtocol() {
   });
 }
 
+let mainWindow;
+
 function createWindow() {
   const targetDisplay = resolveTargetDisplay();
   const { bounds, size, scaleFactor } = targetDisplay;
@@ -263,8 +271,9 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
+    mainWindow.webContents.send("spotify-oauth-callback", url);
   });
-});
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

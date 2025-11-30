@@ -1,4 +1,9 @@
 window.addEventListener("DOMContentLoaded", () => {
+  window.spotifyConfig = {
+    clientId: "<your-client-id>",
+    redirectUri: "bubblemarks://spotify-callback",
+  };
+
   const widgetHost = document.getElementById("music-player-widget");
   if (!widgetHost) {
     console.log("✅ script validated");
