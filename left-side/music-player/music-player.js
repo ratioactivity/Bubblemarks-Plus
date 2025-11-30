@@ -757,12 +757,23 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    const refreshSpotifyNowPlayingFromApi = async () => {
+  const refreshSpotifyNowPlayingFromApi = async () => {
       if (!spotifySettings.clientId) {
-        applySpotifyNowPlaying(null);
+        if (spotifyTitle) {
+          spotifyTitle.textContent = "Spotify offline";
+        }
+        if (spotifyArtist) {
+          spotifyArtist.textContent = "Open Spotify to start";
+        }
+        if (spotifyCover) {
+          spotifyCover.style.background = defaultAccent;
+          spotifyCover.style.backgroundImage = "";
+        }
+        spotifyPlaybackState.isPlaying = false;
+        updateSpotifyToggleLabel(false);
         toggleSpotifyAuthVisibility(false);
-        updateSpotifyControls(false);
-        setSpotifyStatus("Add Spotify credentials to enable the widget.");
+        updateSpotifyControls(true);
+        setSpotifyStatus("Spotify API not configured. Buttons will open Spotify instead.");
         return;
       }
 
