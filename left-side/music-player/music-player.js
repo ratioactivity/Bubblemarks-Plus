@@ -698,11 +698,6 @@ window.addEventListener("DOMContentLoaded", () => {
       const id = parseHydrophoneId(station.id);
       const countValue = counts.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
-
-      const countEl = widgetHost.querySelector(`[data-hydrophone-count="${station.id}"]`);
-      if (countEl) {
-        countEl.textContent = formatListenerCount(station.listenerCount) || "-- listeners";
-      }
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
@@ -739,12 +734,6 @@ window.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div class="hydrophone-cover" style="background-image: url(${station.cover});">
           <button type="button" class="hydrophone-play" data-hydrophone-play="${station.id}" aria-label="Play ${station.name}">▶</button>
-        </div>
-        <div class="hydrophone-meta">
-          <p class="hydrophone-name">${station.name}</p>
-          <p class="hydrophone-count" data-hydrophone-count="${station.id}">${
-            formatListenerCount(station.listenerCount) || "-- listeners"
-          }</p>
         </div>
       `;
       list.appendChild(card);
