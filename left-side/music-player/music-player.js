@@ -102,6 +102,60 @@ window.addEventListener("DOMContentLoaded", () => {
     },
   ];
 
+  const petAssetBase = "bubblemarks://pet-axolotl/assets/";
+  const discAssets = {
+    Pigstep: { icon: `${petAssetBase}icon-pigstep.png`, sound: "Pigstep.mp3" },
+    "Infinite Amethyst": {
+      icon: `${petAssetBase}icon-infinite-amethyst.png`,
+      sound: "Infinite-Amethyst.mp3",
+    },
+    Axolotl: { icon: `${petAssetBase}icon-Axolotl.png`, sound: "Axolotl.mp3" },
+    11: { icon: `${petAssetBase}icon-11.png`, sound: "11.mp3" },
+    13: { icon: `${petAssetBase}icon-13.png`, sound: "13.mp3" },
+    Cat: { icon: `${petAssetBase}icon-cat.png`, sound: "Cat.mp3" },
+    Mellohi: { icon: `${petAssetBase}icon-mellohi.png`, sound: "Mellohi.mp3" },
+    Strad: { icon: `${petAssetBase}icon-strad.png`, sound: "Strad.mp3" },
+    Mall: { icon: `${petAssetBase}icon-mall.png`, sound: "Mall.mp3" },
+    Stal: { icon: `${petAssetBase}icon-stal.png`, sound: "Stal.mp3" },
+    Far: { icon: `${petAssetBase}icon-far.png`, sound: "Far.mp3" },
+    Blocks: { icon: `${petAssetBase}icon-blocks.png`, sound: "Blocks.mp3" },
+    Chirp: { icon: `${petAssetBase}icon-chirp.png`, sound: "Chirp.mp3" },
+    Ward: { icon: `${petAssetBase}icon-ward.png`, sound: "Ward.mp3" },
+    Wait: { icon: `${petAssetBase}icon-wait.png`, sound: "Wait.mp3" },
+  };
+
+  const normalizeDiscName = (value) => {
+    return typeof value === "string" && value.trim() ? value.trim() : "";
+  };
+
+  const getDiscIcon = (discName) => {
+    const normalized = normalizeDiscName(discName);
+    const assetEntry = discAssets[normalized];
+    return assetEntry?.icon || `${petAssetBase}icon-player.png`;
+  };
+
+  const getDiscSource = (discName) => {
+    const normalized = normalizeDiscName(discName);
+    if (!normalized) {
+      return null;
+    }
+    const assetEntry = discAssets[normalized];
+    const fileName = assetEntry?.sound || `${normalized.replace(/\s+/g, "-")}.mp3`;
+    return `pet-axolotl/sounds/${fileName}`;
+  };
+
+  const loadOwnedDiscs = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("ownedDiscs"));
+      if (Array.isArray(stored)) {
+        return stored.filter((disc) => typeof disc === "string" && disc.trim());
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return [];
+  };
+
   let currentTrackIndex = 0;
   const audio = musicController.audio;
   audio.preload = "metadata";
@@ -792,6 +846,8 @@ window.addEventListener("DOMContentLoaded", () => {
     mpArtist = widgetHost.querySelector(".music-player-artist");
     mpMode = widgetHost.querySelector(".music-player-label");
     mpCover = widgetHost.querySelector(".music-player-art");
+    const discLibrary = widgetHost.querySelector("[data-disc-library]");
+    const discLibraryEmpty = widgetHost.querySelector("[data-disc-empty]");
 
     const setActiveTab = (targetTab) => {
       const selected = targetTab || "main";
@@ -816,9 +872,81 @@ window.addEventListener("DOMContentLoaded", () => {
 
     navigateMusicPlayer.openMain = () => navigateMusicPlayer.openTab("main");
 
+    const renderDiscLibrary = () => {
+      if (!discLibrary) {
+        return;
+      }
+
+      const ownedDiscs = loadOwnedDiscs();
+      discLibrary.innerHTML = "";
+
+      const hasDiscs = ownedDiscs.length > 0;
+      if (discLibraryEmpty) {
+        discLibraryEmpty.style.display = hasDiscs ? "none" : "block";
+      }
+
+      if (!hasDiscs) {
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      ownedDiscs.forEach((discName) => {
+        const row = document.createElement("article");
+        row.className = "disc-row";
+
+        const cover = document.createElement("img");
+        cover.src = getDiscIcon(discName);
+        cover.alt = `${discName} disc cover`;
+
+        const meta = document.createElement("div");
+        meta.className = "disc-meta";
+
+        const title = document.createElement("p");
+        title.className = "disc-title";
+        title.textContent = discName;
+
+        const subtitle = document.createElement("p");
+        subtitle.className = "disc-subtitle";
+        subtitle.textContent = "BubblePet music disc";
+
+        meta.append(title, subtitle);
+
+        const actions = document.createElement("div");
+        actions.className = "disc-actions";
+
+        const playBtn = document.createElement("button");
+        playBtn.type = "button";
+        playBtn.className = "music-btn";
+        playBtn.textContent = "Play";
+        playBtn.addEventListener("click", () => {
+          const source = getDiscSource(discName);
+          if (!source) {
+            return;
+          }
+
+          musicController.playDisc(source, {
+            loop: false,
+            metadata: { id: discName, title: discName, artist: "BubblePet", cover: cover.src },
+          });
+          refreshNowPlaying(true);
+        });
+
+        actions.append(playBtn);
+
+        row.append(cover, meta, actions);
+        fragment.appendChild(row);
+      });
+
+      discLibrary.appendChild(fragment);
+    };
+
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         setActiveTab(tab.dataset.tab);
+        if (tab.dataset.tab === "discs") {
+          renderDiscLibrary();
+        }
       });
     });
 
@@ -826,6 +954,14 @@ window.addEventListener("DOMContentLoaded", () => {
       const initialTab = tabs.find((tab) => tab.classList.contains("active")) || tabs[0];
       setActiveTab(initialTab?.dataset.tab);
     }
+
+    renderDiscLibrary();
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === "ownedDiscs") {
+        renderDiscLibrary();
+      }
+    });
 
     renderHydrophoneList();
     loadHydrophoneListeners();

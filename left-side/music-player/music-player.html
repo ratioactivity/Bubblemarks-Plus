@@ -43,8 +43,17 @@
   </section>
 
   <section class="music-player-panel" data-panel="discs" role="tabpanel" aria-label="Discs">
-    <div class="music-player-card" aria-hidden="true">
-      <p class="music-player-note">Twirl through your disc stack soon ✨</p>
+    <div class="music-player-card music-player-card--discs" role="region" aria-label="BubblePet discs">
+      <header class="music-player-header">
+        <div class="music-player-header__text">
+          <p class="music-player-heading">BubblePet Discs</p>
+          <p class="music-player-subtitle">Play discs you’ve discovered with Pico</p>
+        </div>
+        <div class="music-player-badge" aria-hidden="true">💿</div>
+      </header>
+
+      <div class="disc-library-empty" data-disc-empty>Collect discs with BubblePet to see them here.</div>
+      <div class="disc-library" data-disc-library aria-live="polite"></div>
     </div>
   </section>
 
