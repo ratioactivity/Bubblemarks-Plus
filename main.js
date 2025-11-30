@@ -7,10 +7,22 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const isDev = process.defaultApp || !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
+function registerDefaultProtocolClient() {
+  const appPath = process.execPath;
+  const args = [];
+
+  if (isDev && process.argv[1]) {
+    args.push(path.resolve(process.argv[1]));
+  }
+
+  app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL, appPath, args);
+}
+
 app.on("will-finish-launching", () => {
-  app.setAsDefaultProtocolClient("bubblemarks");
+  registerDefaultProtocolClient();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -263,12 +275,50 @@ function createWindow() {
     flushPendingDeepLinks();
   });
 
+  const indexUrl = `${BUBBLEMARKS_PROTOCOL}://index.html`;
+  const fallbackIndexPath = path.join(app.getAppPath(), "index.html");
+  let attemptedFallbackLoad = false;
+
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
+  mainWindow.loadURL(indexUrl);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
+  });
+
+  const handleSpotifyNavigation = (event, url) => {
+    if (!url || typeof url !== "string") {
+      return;
+    }
+
+    const normalizedUrl = url.trim().toLowerCase();
+    const isSpotifyCallbackNavigation = normalizedUrl.includes("spotify-callback");
+
+    if (!isSpotifyCallbackNavigation) {
+      return;
+    }
+
+    event.preventDefault();
+    forwardSpotifyCallback(url);
+
+    const currentUrl = mainWindow.webContents.getURL();
+    if (!currentUrl.startsWith(`${BUBBLEMARKS_PROTOCOL}://index.html`)) {
+      mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
+    }
+  };
+
+  mainWindow.webContents.on("will-redirect", handleSpotifyNavigation);
+  mainWindow.webContents.on("will-navigate", handleSpotifyNavigation);
+
+  mainWindow.webContents.on("did-fail-load", (_event, _errorCode, _errorDescription, validatedURL) => {
+    const failedUrl = typeof validatedURL === "string" ? validatedURL : "";
+    if (attemptedFallbackLoad || !failedUrl.startsWith(`${BUBBLEMARKS_PROTOCOL}://`)) {
+      return;
+    }
+
+    attemptedFallbackLoad = true;
+    mainWindow.loadFile(fallbackIndexPath);
   });
 }
 
@@ -280,7 +330,7 @@ function createWindow() {
     registerBubblemarksProtocol();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
-      app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+      registerDefaultProtocolClient();
     }
 
     createWindow();
@@ -290,16 +340,9 @@ function createWindow() {
       forwardSpotifyCallback(startupDeepLink);
     }
   });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
-
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-  });
