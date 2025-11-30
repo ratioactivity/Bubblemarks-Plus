@@ -9,8 +9,6 @@ const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
-const gotLock = app.requestSingleInstanceLock();
-
 app.on("will-finish-launching", () => {
   app.setAsDefaultProtocolClient("bubblemarks");
 });
@@ -156,15 +154,19 @@ function registerBubblemarksProtocol() {
       );
       const normalizedCallbackPath = [hostSegment, trimmedPath].filter(Boolean).join("/");
 
-      if (isSpotifyCallbackRequest || normalizedCallbackPath.startsWith("spotify-callback")) {
+      const serveSpotifyCallbackResponse = () => {
         forwardSpotifyCallback(request.url);
-        return callback({
+        callback({
           data: Buffer.from(
             "<html><body><p>Spotify login received. You can return to Bubblemarks.</p></body></html>",
             "utf8"
           ),
           mimeType: "text/html",
         });
+      };
+
+      if (isSpotifyCallbackRequest || normalizedCallbackPath.startsWith("spotify-callback")) {
+        return serveSpotifyCallbackResponse();
       }
 
       const normalizedPath = path
@@ -187,6 +189,10 @@ function registerBubblemarksProtocol() {
 
         return normalizedPath;
       })();
+
+      if (resolvedTarget.startsWith("spotify-callback")) {
+        return serveSpotifyCallbackResponse();
+      }
 
       const appBasePath = path.normalize(app.getAppPath() + path.sep);
       const resourceBasePath = path.normalize(process.resourcesPath + path.sep);
@@ -284,6 +290,12 @@ function createWindow() {
       forwardSpotifyCallback(startupDeepLink);
     }
   });
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
 
   app.on("window-all-closed", () => {
