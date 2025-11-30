@@ -59,9 +59,6 @@ window.addEventListener("DOMContentLoaded", () => {
   let mpArtist;
   let mpMode;
   let mpCover;
-  let mpMain;
-  let mpPlayButton;
-  let mpStopButton;
   let widgetPlayButton;
   let nowPlayingSignature = "";
   let spotifyPlaybackState = { isPlaying: false };
@@ -121,11 +118,6 @@ window.addEventListener("DOMContentLoaded", () => {
     if (widgetPlayButton) {
       widgetPlayButton.textContent = symbol;
       widgetPlayButton.setAttribute("aria-label", label);
-    }
-
-    if (mpPlayButton) {
-      mpPlayButton.textContent = symbol;
-      mpPlayButton.setAttribute("aria-label", label);
     }
   };
 
@@ -266,10 +258,6 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const refreshNowPlaying = (force = false) => {
-    if (!mpMain) {
-      return;
-    }
-
     const mode = typeof musicController.mode === "string" ? musicController.mode : "idle";
     const metadata = musicController.currentMetadata || {};
     const source = musicController.currentSource || "";
@@ -344,13 +332,36 @@ window.addEventListener("DOMContentLoaded", () => {
     const volume = widgetHost.querySelector(".music-volume");
     const currentTimeLabel = widgetHost.querySelector('[data-time="current"]');
     const durationLabel = widgetHost.querySelector('[data-time="duration"]');
-    mpMain = widgetHost.querySelector("#mp-main");
-    mpTitle = widgetHost.querySelector("[data-mp-title]");
-    mpArtist = widgetHost.querySelector("[data-mp-artist]");
-    mpMode = widgetHost.querySelector("[data-mp-mode]");
-    mpCover = widgetHost.querySelector("[data-mp-cover]");
-    mpPlayButton = widgetHost.querySelector('[data-mp-action="play"]');
-    mpStopButton = widgetHost.querySelector('[data-mp-action="stop"]');
+    const tabs = Array.from(widgetHost.querySelectorAll(".music-tab"));
+    const panels = Array.from(widgetHost.querySelectorAll(".music-player-panel"));
+    mpTitle = widgetHost.querySelector(".music-player-title");
+    mpArtist = widgetHost.querySelector(".music-player-artist");
+    mpMode = widgetHost.querySelector(".music-player-label");
+    mpCover = widgetHost.querySelector(".music-player-art");
+
+    const setActiveTab = (targetTab) => {
+      const selected = targetTab || "main";
+      tabs.forEach((tab) => {
+        const isActive = tab.dataset.tab === selected;
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("active", panel.dataset.panel === selected);
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setActiveTab(tab.dataset.tab);
+      });
+    });
+
+    if (tabs.length) {
+      const initialTab = tabs.find((tab) => tab.classList.contains("active")) || tabs[0];
+      setActiveTab(initialTab?.dataset.tab);
+    }
     const spotifyTitle = widgetHost.querySelector("[data-spotify-title]");
     const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
     const spotifyCover = widgetHost.querySelector("[data-spotify-cover]");
@@ -590,28 +601,6 @@ window.addEventListener("DOMContentLoaded", () => {
         musicController.setMode("widget");
         musicController.onTrackEnd = null;
         audio.play();
-      });
-    }
-
-    if (mpPlayButton) {
-      mpPlayButton.addEventListener("click", () => {
-        if (!musicController.currentSource) {
-          applyTrack(currentTrackIndex);
-          musicController.setMode("widget");
-        }
-        if (audio.paused) {
-          audio.play();
-        } else {
-          audio.pause();
-        }
-      });
-    }
-
-    if (mpStopButton) {
-      mpStopButton.addEventListener("click", () => {
-        musicController.stop();
-        refreshNowPlaying(true);
-        updatePlayButtons(false);
       });
     }
 
