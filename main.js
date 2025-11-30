@@ -290,16 +290,9 @@ function createWindow() {
       forwardSpotifyCallback(startupDeepLink);
     }
   });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
-
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-  });
