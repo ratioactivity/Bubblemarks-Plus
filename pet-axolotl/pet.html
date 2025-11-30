@@ -143,7 +143,15 @@
           <button id="disc-modal-close" class="disc-modal-close">✕</button>
         </div>
 
-        <div id="now-playing" class="now-playing">Now Playing: None</div>
+        <div class="now-playing-row">
+          <img
+            id="now-playing-art"
+            class="now-playing-art"
+            src="bubblemarks://pet-axolotl/assets/icon-player.png"
+            alt="Now playing disc art"
+          />
+          <div id="now-playing" class="now-playing">Now Playing: None</div>
+        </div>
 
         <div class="random-toggle">
           <label>
@@ -152,9 +160,12 @@
           </label>
         </div>
 
-        <div id="disc-list" class="disc-list"></div>
+        <div class="disc-actions">
+          <button id="shuffle-discs" class="disc-shuffle-btn">🔀 Shuffle</button>
+          <button id="stop-music" class="disc-stop-btn">Stop Music</button>
+        </div>
 
-        <button id="stop-music" class="disc-stop-btn">Stop Music</button>
+        <div id="disc-list" class="disc-list"></div>
       </div>
     </div>
 

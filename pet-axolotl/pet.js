@@ -193,7 +193,9 @@ function initPetWidget() {
   const discListEl = document.getElementById("disc-list");
   const stopMusicBtn = document.getElementById("stop-music");
   const nowPlayingEl = document.getElementById("now-playing");
+  const nowPlayingArtEl = document.getElementById("now-playing-art");
   const randomToggleEl = document.getElementById("randomize-music");
+  const shuffleBtn = document.getElementById("shuffle-discs");
   const achievementButton = document.getElementById("achievement-button");
   const achievementModal = document.getElementById("achievement-modal");
   const achievementCloseButton = document.getElementById("ach-close");
@@ -260,6 +262,7 @@ function initPetWidget() {
   const PET_ASSET_BASE = "bubblemarks://pet-axolotl/assets/";
   let selectedBackgroundReward = null;
   let randomMode = false;
+  let shuffleExclusions = new Set();
 
   const resolveBackgroundPath = (file) => {
     const normalizedFile = typeof file === "string" && file.trim() ? file.trim() : DEFAULT_BACKGROUND;
@@ -290,6 +293,20 @@ function initPetWidget() {
     selectedBackgroundReward = null;
   }
 
+  const resolveDiscIconPath = (discName) => {
+    const assetPath = DISC_ASSETS?.[discName]?.icon;
+    if (!assetPath) {
+      return `${PET_ASSET_BASE}icon-player.png`;
+    }
+
+    if (assetPath.startsWith("bubblemarks://")) {
+      return assetPath;
+    }
+
+    const normalized = assetPath.replace(/^\.\/assets\//, "");
+    return `${PET_ASSET_BASE}${normalized}`;
+  };
+
   const loadRandomMode = () => {
     try {
       const stored = localStorage.getItem("randomMode");
@@ -307,6 +324,27 @@ function initPetWidget() {
     }
   };
 
+  const loadShuffleExclusions = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("shuffleExclusions"));
+      if (Array.isArray(stored)) {
+        shuffleExclusions = new Set(stored.filter((disc) => typeof disc === "string"));
+        return;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    shuffleExclusions = new Set();
+  };
+
+  const persistShuffleExclusions = () => {
+    try {
+      localStorage.setItem("shuffleExclusions", JSON.stringify(Array.from(shuffleExclusions)));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
   const updatePlaybackLoop = () => {
     if (discAudio) {
       discAudio.loop = !randomMode && musicController.mode === "disc";
@@ -318,18 +356,23 @@ function initPetWidget() {
       return;
     }
 
-    const playlist = ownedDiscs
-      .map((disc) => ({
-        id: disc,
-        name: disc,
-        source: getDiscSoundPath(disc),
-      }))
-      .filter((entry) => Boolean(entry.source));
+    const playlist = getShufflablePlaylist();
 
     const next = musicController.shuffleDiscs(playlist, {
       currentId: currentDisc,
       autoPlay: false,
     });
+
+    if (next?.id) {
+      playDisc(next.id);
+    }
+  };
+
+  const shuffleAndPlayNext = () => {
+    if (!musicController) return;
+
+    const playlist = getShufflablePlaylist();
+    const next = musicController.shuffleDiscs(playlist, { currentId: currentDisc });
 
     if (next?.id) {
       playDisc(next.id);
@@ -384,6 +427,7 @@ function initPetWidget() {
     }
 
     loadRandomMode();
+    loadShuffleExclusions();
 
     try {
       const storedXP = Number(localStorage.getItem("petXP"));
@@ -1094,6 +1138,22 @@ function initPetWidget() {
     updateXPBar();
   }
 
+  const updateNowPlayingArtwork = (discName) => {
+    if (!nowPlayingArtEl) return;
+    const iconPath = discName ? resolveDiscIconPath(discName) : `${PET_ASSET_BASE}icon-player.png`;
+    nowPlayingArtEl.src = iconPath;
+    nowPlayingArtEl.alt = discName ? `${discName} disc art` : "Music disc icon";
+  };
+
+  const getShufflablePlaylist = () => {
+    const allowedDiscs = ownedDiscs.filter((disc) => !shuffleExclusions.has(disc));
+    const sourcePool = allowedDiscs.length > 0 ? allowedDiscs : ownedDiscs;
+
+    return sourcePool
+      .map((disc) => ({ id: disc, name: disc, source: getDiscSoundPath(disc) }))
+      .filter((entry) => Boolean(entry.source));
+  };
+
   function playDisc(name) {
     if (!musicController || !discAudio || typeof name !== "string") return;
 
@@ -1109,6 +1169,8 @@ function initPetWidget() {
     if (nowPlayingEl) {
       nowPlayingEl.textContent = `Now Playing: ${name}`;
     }
+
+    updateNowPlayingArtwork(name);
 
     if (ownedDiscs.length >= 1 && currentDisc) {
       unlockAchievement("firstDisc");
@@ -1173,6 +1235,8 @@ function initPetWidget() {
       nowPlayingEl.textContent = "Now Playing: None";
     }
 
+    updateNowPlayingArtwork(null);
+
     try {
       localStorage.removeItem("currentDisc");
     } catch {
@@ -1183,24 +1247,65 @@ function initPetWidget() {
   function renderDiscList() {
     if (!discListEl) return;
 
-    const renderDiscEntry = (discName) => {
+    discListEl.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+
+    ownedDiscs.forEach((discName) => {
       const assets = DISC_ASSETS[discName];
-      const iconSrc = assets?.icon || "./assets/icon-player.png";
+      const iconSrc = resolveDiscIconPath(discName);
       const altText = `${discName} disc icon`;
 
-      return `
-        <div class="disc-entry">
-          <img src="${iconSrc}" alt="${altText}" />
-          <div class="disc-meta">
-            <div class="disc-title">${discName}</div>
-            <div class="disc-subtitle">Minecraft music disc</div>
-          </div>
-          <button class="disc-play-btn" type="button" data-disc="${discName}">▶️ Play</button>
-        </div>
-      `;
-    };
+      const entry = document.createElement("div");
+      entry.className = "disc-entry";
 
-    discListEl.innerHTML = ownedDiscs.map((disc) => renderDiscEntry(disc)).join("");
+      const icon = document.createElement("img");
+      icon.src = iconSrc;
+      icon.alt = altText;
+
+      const meta = document.createElement("div");
+      meta.className = "disc-meta";
+
+      const title = document.createElement("div");
+      title.className = "disc-title";
+      title.textContent = discName;
+
+      const subtitle = document.createElement("div");
+      subtitle.className = "disc-subtitle";
+      subtitle.textContent = assets?.sound ? "Music disc reward" : "Minecraft music disc";
+
+      meta.appendChild(title);
+      meta.appendChild(subtitle);
+
+      const actions = document.createElement("div");
+      actions.className = "disc-actions-cell";
+
+      const playBtn = document.createElement("button");
+      playBtn.className = "disc-play-btn";
+      playBtn.type = "button";
+      playBtn.dataset.disc = discName;
+      playBtn.textContent = "▶️ Play";
+
+      const excludeLabel = document.createElement("label");
+      excludeLabel.className = "shuffle-exclude";
+      const excludeCheckbox = document.createElement("input");
+      excludeCheckbox.type = "checkbox";
+      excludeCheckbox.dataset.discExclude = discName;
+      excludeCheckbox.checked = shuffleExclusions.has(discName);
+      const excludeText = document.createElement("span");
+      excludeText.textContent = "Exclude from shuffle";
+      excludeLabel.append(excludeCheckbox, excludeText);
+
+      actions.appendChild(playBtn);
+      actions.appendChild(excludeLabel);
+
+      entry.appendChild(icon);
+      entry.appendChild(meta);
+      entry.appendChild(actions);
+
+      fragment.appendChild(entry);
+    });
+
+    discListEl.appendChild(fragment);
   }
 
   function setBackgroundReward(rewardFile) {
@@ -1811,6 +1916,12 @@ function initPetWidget() {
       });
     }
 
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener("click", () => {
+        shuffleAndPlayNext();
+      });
+    }
+
     if (stopMusicBtn) {
       stopMusicBtn.addEventListener("click", () => {
         stopMusic();
@@ -1844,6 +1955,35 @@ function initPetWidget() {
     setupRandomToggle();
   } else {
     window.addEventListener("DOMContentLoaded", setupRandomToggle, { once: true });
+  }
+
+  const setupDiscListInteractions = () => {
+    if (!discListEl) {
+      return;
+    }
+
+    discListEl.addEventListener("change", (event) => {
+      const excludeToggle = event.target;
+      if (excludeToggle && excludeToggle.matches("input[data-disc-exclude]")) {
+        const discName = excludeToggle.dataset.discExclude;
+        if (!discName) {
+          return;
+        }
+
+        if (excludeToggle.checked) {
+          shuffleExclusions.add(discName);
+        } else {
+          shuffleExclusions.delete(discName);
+        }
+        persistShuffleExclusions();
+      }
+    });
+  };
+
+  if (document.readyState !== "loading") {
+    setupDiscListInteractions();
+  } else {
+    window.addEventListener("DOMContentLoaded", setupDiscListInteractions, { once: true });
   }
 
   document.addEventListener("click", (event) => {
