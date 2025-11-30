@@ -205,8 +205,6 @@ function registerBubblemarksProtocol() {
   });
 }
 
-let mainWindow;
-
 function createWindow() {
   const targetDisplay = resolveTargetDisplay();
   const { bounds, size, scaleFactor } = targetDisplay;
