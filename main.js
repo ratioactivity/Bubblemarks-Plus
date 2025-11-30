@@ -6,6 +6,8 @@ const ZENBOOK_WIDTH = 3840;
 const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
+const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
 const gotLock = app.requestSingleInstanceLock();
 
@@ -15,7 +17,7 @@ app.on("will-finish-launching", () => {
 
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: "bubblemarks",
+    scheme: BUBBLEMARKS_PROTOCOL,
     privileges: {
       standard: true,
       secure: true,
@@ -28,6 +30,15 @@ protocol.registerSchemesAsPrivileged([
 app.setAppUserModelId(APP_ID);
 
 console.log("✅ script validated");
+
+let mainWindow = null;
+const pendingDeepLinks = [];
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+
+if (!gotSingleInstanceLock) {
+  app.quit();
+}
 
 function displayMatchesZenbook(display) {
   const sizesToCheck = [display.size, display.workAreaSize];
@@ -73,8 +84,64 @@ function resolveTargetDisplay() {
   return secondaryDisplays[0];
 }
 
+function extractBubblemarksUrl(commandLine = []) {
+  return commandLine.find((arg) => typeof arg === "string" && arg.startsWith(`${BUBBLEMARKS_PROTOCOL}://`));
+}
+
+function forwardSpotifyCallback(deepLinkUrl) {
+  if (!deepLinkUrl || typeof deepLinkUrl !== "string") {
+    return;
+  }
+
+  const trimmedUrl = deepLinkUrl.trim();
+  const isSpotifyCallback = trimmedUrl.includes("spotify-callback");
+
+  if (!isSpotifyCallback) {
+    return;
+  }
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(SPOTIFY_OAUTH_CHANNEL, trimmedUrl);
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+    return;
+  }
+
+  pendingDeepLinks.push(trimmedUrl);
+}
+
+function flushPendingDeepLinks() {
+  while (pendingDeepLinks.length > 0 && mainWindow && !mainWindow.isDestroyed()) {
+    const nextUrl = pendingDeepLinks.shift();
+    mainWindow.webContents.send(SPOTIFY_OAUTH_CHANNEL, nextUrl);
+  }
+}
+
+if (gotSingleInstanceLock) {
+  app.on("second-instance", (_event, commandLine) => {
+    const deepLink = extractBubblemarksUrl(commandLine);
+    if (deepLink) {
+      forwardSpotifyCallback(deepLink);
+    }
+
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.focus();
+    }
+  });
+
+  app.on("open-url", (event, url) => {
+    event.preventDefault();
+    forwardSpotifyCallback(url);
+  });
+}
+
 function registerBubblemarksProtocol() {
-  protocol.registerFileProtocol("bubblemarks", (request, callback) => {
+  protocol.registerFileProtocol(BUBBLEMARKS_PROTOCOL, (request, callback) => {
     try {
       const url = new URL(request.url);
       const hostSegment = url.hostname ? url.hostname : "";
@@ -170,10 +237,11 @@ function createWindow() {
     mainWindow.setFullScreen(true);
     mainWindow.show();
     mainWindow.focus();
+    flushPendingDeepLinks();
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadFile("index.html");
+  mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -181,34 +249,26 @@ function createWindow() {
   });
 }
 
-if (!gotLock) {
-  app.quit();
-} else {
-  app.whenReady().then(() => {
-    app.setAsDefaultProtocolClient("bubblemarks");
-    registerBubblemarksProtocol();
-    createWindow();
+app.whenReady().then(() => {
+  if (!gotSingleInstanceLock) {
+    return;
+  }
 
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-      }
-    });
-  });
+  registerBubblemarksProtocol();
 
-  app.on("second-instance", (event, commandLine) => {
-    const deepLink = commandLine.find((arg) => arg.startsWith("bubblemarks://"));
-    if (deepLink) {
-      if (!mainWindow) {
-        createWindow();
-      }
-      mainWindow.webContents.send("spotify-oauth-callback", deepLink);
-    }
-  });
+  if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
+    app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+  }
 
-  app.on("open-url", (event, url) => {
-    event.preventDefault();
-    if (!mainWindow) {
+  createWindow();
+
+  const startupDeepLink = extractBubblemarksUrl(process.argv);
+  if (startupDeepLink) {
+    forwardSpotifyCallback(startupDeepLink);
+  }
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
     mainWindow.webContents.send("spotify-oauth-callback", url);

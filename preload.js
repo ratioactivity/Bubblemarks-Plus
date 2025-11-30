@@ -11,6 +11,19 @@ contextBridge.exposeInMainWorld("bubblemarks", {
 });
 
 contextBridge.exposeInMainWorld("spotifyAPI", {
-  onOAuthCallback: (callback) =>
-    ipcRenderer.on("spotify-oauth-callback", (_, url) => callback(url)),
+  onOAuthCallback(callback) {
+    if (typeof callback !== "function") {
+      return () => {};
+    }
+
+    const handler = (_event, url) => {
+      callback(url);
+    };
+
+    ipcRenderer.on("spotify-oauth-callback", handler);
+
+    return () => {
+      ipcRenderer.removeListener("spotify-oauth-callback", handler);
+    };
+  },
 });

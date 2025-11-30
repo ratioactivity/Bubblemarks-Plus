@@ -170,8 +170,19 @@ window.addEventListener("DOMContentLoaded", () => {
     scopes: "user-read-playback-state user-modify-playback-state user-read-currently-playing",
   };
 
-  const spotifySettings = {
+  const spotifyConfigDefaults = {
+    clientId: "70cb1df3210c4079971d09510ea51ffc",
+    redirectUri: "bubblemarks://spotify-callback",
+  };
+
+  const providedSpotifyConfig = {
     ...(window.spotifyConfig || window.SPOTIFY_CONFIG || {}),
+  };
+
+  window.spotifyConfig = { ...spotifyConfigDefaults, ...providedSpotifyConfig };
+
+  const spotifySettings = {
+    ...window.spotifyConfig,
   };
 
   if (!spotifySettings.playlistUrl) {
@@ -370,15 +381,35 @@ window.addEventListener("DOMContentLoaded", () => {
     window.history.replaceState({}, document.title, cleaned);
   };
 
-  const exchangeCodeForTokens = async (code) => {
+  const extractSpotifyAuthParams = (rawUrl = null) => {
+    if (typeof rawUrl === "string" && rawUrl.trim()) {
+      try {
+        const parsedUrl = new URL(rawUrl.trim());
+        const rawSearch = parsedUrl.search || parsedUrl.hash.replace(/^#/, "?") || "";
+        if (rawSearch) {
+          return new URLSearchParams(rawSearch);
+        }
+      } catch (error) {
+        console.warn("[Bubblemarks] Unable to parse Spotify callback URL", error);
+        return null;
+      }
+    }
+
+    const search = window.location.search || window.location.hash.replace(/^#/, "?");
+    if (!search) {
+      return null;
+    }
+
+    return new URLSearchParams(search);
+  };
+
+  const exchangeCodeForTokens = async (code, { shouldClearUrl = true } = {}) => {
     const verifier = sessionStorage.getItem(SPOTIFY_VERIFIER_KEY);
     if (!verifier || !spotifySettings.clientId || !spotifySettings.redirectUri) {
       return false;
     }
 
     try {
-      const redirectUri =
-        (window.spotifyConfig && window.spotifyConfig.redirectUri) || spotifySettings.redirectUri;
       const response = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: {
@@ -387,7 +418,7 @@ window.addEventListener("DOMContentLoaded", () => {
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
-          redirect_uri: redirectUri,
+          redirect_uri: spotifySettings.redirectUri,
           client_id: spotifySettings.clientId,
           code_verifier: verifier,
         }),
@@ -401,7 +432,9 @@ window.addEventListener("DOMContentLoaded", () => {
       await updateSpotifyTokens(payload);
       sessionStorage.removeItem(SPOTIFY_VERIFIER_KEY);
       sessionStorage.removeItem(SPOTIFY_STATE_KEY);
-      clearAuthParamsFromUrl();
+      if (shouldClearUrl) {
+        clearAuthParamsFromUrl();
+      }
       return true;
     } catch (error) {
       console.warn("[Bubblemarks] Unable to exchange Spotify auth code:", error);
@@ -409,60 +442,24 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const handleRedirectURL = async (url) => {
-    try {
-      const parsed = new URL(url);
-      const code = parsed.searchParams.get("code");
-      const state = parsed.searchParams.get("state");
-      const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
-
-      if (!code) {
-        return false;
-      }
-
-      if (expectedState && expectedState !== state) {
-        return false;
-      }
-
-      const exchanged = await exchangeCodeForTokens(code);
-
-      if (!exchanged) {
-        return exchanged;
-      }
-
-      if (typeof refreshSpotifyNowPlayingFromApi === "function") {
-        await refreshSpotifyNowPlayingFromApi();
-      }
-      if (typeof toggleSpotifyAuthVisibility === "function") {
-        toggleSpotifyAuthVisibility(!hasValidAccessToken());
-      }
-      if (typeof setSpotifyStatus === "function") {
-        setSpotifyStatus("Spotify connected.");
-      }
-      musicController.setMode("spotify");
-      refreshNowPlaying(true);
-
-      return exchanged;
-    } catch (err) {
-      console.error("Failed to handle Spotify redirect URL:", err);
+  const handleSpotifyRedirect = async (rawUrl = null) => {
+    const params = extractSpotifyAuthParams(rawUrl);
+    if (!params) {
       return false;
     }
-  };
+    const code = params.get("code");
+    const state = params.get("state");
+    const expectedState = sessionStorage.getItem(SPOTIFY_STATE_KEY);
 
-  if (typeof MusicController === "function") {
-    MusicController.spotify = MusicController.spotify || {};
-    MusicController.spotify.handleRedirectURL = handleRedirectURL;
-  }
+    if (!code || !state) {
+      return false;
+    }
 
-  if (typeof window.MusicController === "function") {
-    window.MusicController.spotify = window.MusicController.spotify || {};
-    window.MusicController.spotify.handleRedirectURL = handleRedirectURL;
-  }
+    if (expectedState && expectedState !== state) {
+      return false;
+    }
 
-  const handleSpotifyRedirect = async () => {
-    const search = window.location.search || window.location.hash.replace(/^#/, "?");
-    const currentUrl = `${window.location.origin}${window.location.pathname}${search}`;
-    return handleRedirectURL(currentUrl);
+    return exchangeCodeForTokens(code, { shouldClearUrl: rawUrl === null });
   };
 
   const bootstrapSpotifyTokens = async () => {
@@ -691,15 +688,21 @@ window.addEventListener("DOMContentLoaded", () => {
       updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
     };
 
-    const toggleSpotifyAuthVisibility = (visible) => {
-      if (spotifyAuthPanel) {
-        spotifyAuthPanel.style.display = visible ? "block" : "none";
-      }
-    };
+      const toggleSpotifyAuthVisibility = (visible) => {
+        if (spotifyAuthPanel) {
+          spotifyAuthPanel.style.display = visible ? "block" : "none";
+        }
+      };
 
-    const applySpotifyNowPlaying = (track) => {
-      const shouldUpdateMode =
-        musicController.mode === "spotify" || !musicController.currentSource;
+      const stopLocalPlayback = () => {
+        if (musicController && typeof musicController.stop === "function") {
+          musicController.stop();
+        }
+      };
+
+      const applySpotifyNowPlaying = (track) => {
+        const shouldUpdateMode =
+          musicController.mode === "spotify" || !musicController.currentSource;
 
       const coverValue = track?.cover || defaultAccent;
       const titleValue = track?.title || "Spotify idle";
@@ -725,11 +728,14 @@ window.addEventListener("DOMContentLoaded", () => {
         spotifyCover.style.backgroundPosition = "center";
       }
 
-      if (track && shouldUpdateMode) {
-        musicController.setMode("spotify");
-        musicController.currentMetadata = track;
-        musicController.currentSource = track.id;
-      } else if (shouldUpdateMode && !track) {
+        if (track && shouldUpdateMode) {
+          if (musicController.mode !== "spotify") {
+            stopLocalPlayback();
+          }
+          musicController.setMode("spotify");
+          musicController.currentMetadata = track;
+          musicController.currentSource = track.id;
+        } else if (shouldUpdateMode && !track) {
         musicController.setMode("idle");
         musicController.currentMetadata = null;
         musicController.currentSource = null;
@@ -768,6 +774,14 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    };
+
+    const handleOAuthCallbackUrl = async (callbackUrl) => {
+      const handled = await handleSpotifyRedirect(callbackUrl);
+      if (handled) {
+        toggleSpotifyAuthVisibility(false);
+        await refreshSpotifyNowPlayingFromApi();
+      }
     };
 
     const requestSpotify = async (path, options = {}, tokenOverride = null) => {
@@ -888,6 +902,10 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      if (musicController.mode !== "spotify") {
+        stopLocalPlayback();
+      }
+
       const normalized = typeof action === "string" ? action.toLowerCase() : "toggle";
       const mappedAction =
         normalized === "toggle"
@@ -936,6 +954,10 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      if (musicController.mode !== "spotify") {
+        stopLocalPlayback();
+      }
+
       if (!spotifySettings.babyWhiplashUri) {
         openExternal(fallbackUrl);
         setSpotifyStatus("Opening Baby Whiplash in Spotify.");
@@ -963,28 +985,24 @@ window.addEventListener("DOMContentLoaded", () => {
       setSpotifyStatus("Couldn't control Spotify; opened playlist instead.");
     };
 
-    if (window.spotifyAPI && typeof window.spotifyAPI.onOAuthCallback === "function") {
-      window.spotifyAPI.onOAuthCallback((url) => {
-        if (MusicController?.spotify?.handleRedirectURL) {
-          MusicController.spotify.handleRedirectURL(url);
-        } else {
-          handleRedirectURL(url);
-        }
-      });
-    }
-
     await bootstrapSpotifyTokens();
     toggleSpotifyAuthVisibility(!hasValidAccessToken());
-    if (!hasValidAccessToken()) {
-      setSpotifyStatus(
-        spotifySettings.clientId
-          ? "Login to Spotify to sync playback."
-          : "Add Spotify credentials to enable the widget."
-      );
-    }
+      if (!hasValidAccessToken()) {
+        setSpotifyStatus(
+          spotifySettings.clientId
+            ? "Login to Spotify to sync playback."
+            : "Add Spotify credentials to enable the widget."
+        );
+      }
 
-    applyTrack(currentTrackIndex);
-    refreshNowPlaying(true);
+      if (window.spotifyAPI?.onOAuthCallback) {
+        window.spotifyAPI.onOAuthCallback((url) => {
+          handleOAuthCallbackUrl(url);
+        });
+      }
+
+      applyTrack(currentTrackIndex);
+      refreshNowPlaying(true);
 
     if (widgetPlayButton) {
       widgetPlayButton.addEventListener("click", () => {
