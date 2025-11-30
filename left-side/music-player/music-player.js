@@ -59,11 +59,9 @@ window.addEventListener("DOMContentLoaded", () => {
   let mpArtist;
   let mpMode;
   let mpCover;
-  let mpMain;
-  let mpPlayButton;
-  let mpStopButton;
   let widgetPlayButton;
   let nowPlayingSignature = "";
+  let spotifyPlaybackState = { isPlaying: false };
 
   const formatTime = (value) => {
     if (!Number.isFinite(value)) {
@@ -121,11 +119,6 @@ window.addEventListener("DOMContentLoaded", () => {
       widgetPlayButton.textContent = symbol;
       widgetPlayButton.setAttribute("aria-label", label);
     }
-
-    if (mpPlayButton) {
-      mpPlayButton.textContent = symbol;
-      mpPlayButton.setAttribute("aria-label", label);
-    }
   };
 
   const formatSourceName = (source) => {
@@ -161,6 +154,88 @@ window.addEventListener("DOMContentLoaded", () => {
     return defaultCoverArt;
   };
 
+  const readStoredAccessToken = () => {
+    try {
+      return localStorage.getItem("spotifyAccessToken");
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to read stored Spotify token:", error);
+      return null;
+    }
+  };
+
+  const spotifyDefaults = {
+    openUri: "spotify:",
+    fallbackUrl: "https://open.spotify.com/search/Baby%20Whiplash",
+  };
+
+  const spotifySettings = {
+    ...(window.spotifyConfig || window.SPOTIFY_CONFIG || {}),
+  };
+
+  if (!spotifySettings.accessToken) {
+    spotifySettings.accessToken = readStoredAccessToken();
+  }
+
+  if (!spotifySettings.playlistUrl) {
+    spotifySettings.playlistUrl = spotifyDefaults.fallbackUrl;
+  }
+
+  if (!spotifySettings.babyWhiplashUrl) {
+    spotifySettings.babyWhiplashUrl = spotifyDefaults.fallbackUrl;
+  }
+
+  const spotifyHeaders = () => {
+    if (!spotifySettings.accessToken) {
+      return {};
+    }
+    return {
+      Authorization: `Bearer ${spotifySettings.accessToken}`,
+      "Content-Type": "application/json",
+    };
+  };
+
+  const isSpotifyConfigured = () => {
+    return Boolean(spotifySettings.accessToken && spotifySettings.accessToken.trim());
+  };
+
+  const openExternal = (url) => {
+    if (typeof url === "string" && url.trim()) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const formatArtists = (artists) => {
+    if (!Array.isArray(artists)) {
+      return "";
+    }
+
+    return artists
+      .map((artist) => artist?.name)
+      .filter((name) => typeof name === "string" && name.trim())
+      .join(", ");
+  };
+
+  const parseSpotifyTrack = (payload) => {
+    if (!payload || typeof payload !== "object") {
+      return null;
+    }
+
+    const item = payload.item || payload.track;
+    if (!item) {
+      return null;
+    }
+
+    const coverImage = Array.isArray(item.album?.images) ? item.album.images[0]?.url : null;
+
+    return {
+      id: item.id || item.uri || item.name || "spotify-track",
+      title: item.name || "Spotify",
+      artist: formatArtists(item.artists) || "Spotify",
+      cover: coverImage || defaultAccent,
+      isPlaying: payload.is_playing === true,
+    };
+  };
+
   const applyMainCover = (value) => {
     if (!mpCover) {
       return;
@@ -183,14 +258,11 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const refreshNowPlaying = (force = false) => {
-    if (!mpMain) {
-      return;
-    }
-
     const mode = typeof musicController.mode === "string" ? musicController.mode : "idle";
     const metadata = musicController.currentMetadata || {};
     const source = musicController.currentSource || "";
-    const paused = audio.paused;
+    const paused =
+      musicController.mode === "spotify" ? spotifyPlaybackState.isPlaying !== true : audio.paused;
 
     let title = "Nothing playing";
     let artist = "Press play to start";
@@ -260,13 +332,252 @@ window.addEventListener("DOMContentLoaded", () => {
     const volume = widgetHost.querySelector(".music-volume");
     const currentTimeLabel = widgetHost.querySelector('[data-time="current"]');
     const durationLabel = widgetHost.querySelector('[data-time="duration"]');
-    mpMain = widgetHost.querySelector("#mp-main");
-    mpTitle = widgetHost.querySelector("[data-mp-title]");
-    mpArtist = widgetHost.querySelector("[data-mp-artist]");
-    mpMode = widgetHost.querySelector("[data-mp-mode]");
-    mpCover = widgetHost.querySelector("[data-mp-cover]");
-    mpPlayButton = widgetHost.querySelector('[data-mp-action="play"]');
-    mpStopButton = widgetHost.querySelector('[data-mp-action="stop"]');
+    const tabs = Array.from(widgetHost.querySelectorAll(".music-tab"));
+    const panels = Array.from(widgetHost.querySelectorAll(".music-player-panel"));
+    mpTitle = widgetHost.querySelector(".music-player-title");
+    mpArtist = widgetHost.querySelector(".music-player-artist");
+    mpMode = widgetHost.querySelector(".music-player-label");
+    mpCover = widgetHost.querySelector(".music-player-art");
+
+    const setActiveTab = (targetTab) => {
+      const selected = targetTab || "main";
+      tabs.forEach((tab) => {
+        const isActive = tab.dataset.tab === selected;
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("active", panel.dataset.panel === selected);
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setActiveTab(tab.dataset.tab);
+      });
+    });
+
+    if (tabs.length) {
+      const initialTab = tabs.find((tab) => tab.classList.contains("active")) || tabs[0];
+      setActiveTab(initialTab?.dataset.tab);
+    }
+    const spotifyTitle = widgetHost.querySelector("[data-spotify-title]");
+    const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
+    const spotifyCover = widgetHost.querySelector("[data-spotify-cover]");
+    const spotifyStatus = widgetHost.querySelector("[data-spotify-status]");
+    const spotifyOpenButton = widgetHost.querySelector("[data-spotify-open]");
+    const spotifyPlayBabyButton = widgetHost.querySelector("[data-spotify-play-baby]");
+    const spotifyControlButtons = Array.from(
+      widgetHost.querySelectorAll("[data-spotify-control]")
+    );
+
+    const updateSpotifyToggleLabel = (isPlaying) => {
+      const toggleButton = spotifyControlButtons.find(
+        (button) => button.dataset.spotifyControl === "toggle"
+      );
+      if (!toggleButton) {
+        return;
+      }
+
+      toggleButton.textContent = isPlaying ? "❚❚" : "▶";
+      toggleButton.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+    };
+
+    const updateSpotifyControls = (enabled) => {
+      spotifyControlButtons.forEach((button) => {
+        button.disabled = !enabled;
+        if (!enabled) {
+          button.setAttribute("aria-disabled", "true");
+        } else {
+          button.removeAttribute("aria-disabled");
+        }
+      });
+      updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
+    };
+
+    const applySpotifyNowPlaying = (track) => {
+      const shouldUpdateMode =
+        musicController.mode === "spotify" || !musicController.currentSource;
+
+      const coverValue = track?.cover || defaultAccent;
+      const titleValue = track?.title || "Spotify idle";
+      const artistValue =
+        track?.artist || (isSpotifyConfigured() ? "Ready when you press play" : "Open Spotify to start");
+
+      spotifyPlaybackState.isPlaying = track?.isPlaying === true;
+      updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
+
+      if (spotifyTitle) {
+        spotifyTitle.textContent = titleValue;
+      }
+
+      if (spotifyArtist) {
+        spotifyArtist.textContent = artistValue;
+      }
+
+      if (spotifyCover) {
+        const isImage = typeof coverValue === "string" && coverValue.startsWith("http");
+        spotifyCover.style.background = isImage ? defaultAccent : coverValue;
+        spotifyCover.style.backgroundImage = isImage ? `url(${coverValue})` : "";
+        spotifyCover.style.backgroundSize = "cover";
+        spotifyCover.style.backgroundPosition = "center";
+      }
+
+      if (track && shouldUpdateMode) {
+        musicController.setMode("spotify");
+        musicController.currentMetadata = track;
+        musicController.currentSource = track.id;
+      } else if (shouldUpdateMode && !track) {
+        musicController.setMode("idle");
+        musicController.currentMetadata = null;
+        musicController.currentSource = null;
+      }
+
+      refreshNowPlaying(true);
+    };
+
+    const setSpotifyStatus = (message) => {
+      if (spotifyStatus && typeof message === "string") {
+        spotifyStatus.textContent = message;
+      }
+    };
+
+    const requestSpotify = async (path, options = {}) => {
+      if (!isSpotifyConfigured()) {
+        return null;
+      }
+
+      try {
+        const response = await fetch(`https://api.spotify.com/v1${path}`, {
+          ...options,
+          headers: { ...spotifyHeaders(), ...(options.headers || {}) },
+        });
+        return response;
+      } catch (error) {
+        console.warn("[Bubblemarks] Spotify request failed:", error);
+        return null;
+      }
+    };
+
+    const refreshSpotifyNowPlayingFromApi = async () => {
+      if (!isSpotifyConfigured()) {
+        applySpotifyNowPlaying(null);
+        updateSpotifyControls(false);
+        setSpotifyStatus("Spotify API not configured. Buttons will open Spotify instead.");
+        return;
+      }
+
+      const response = await requestSpotify("/me/player/currently-playing");
+
+      if (!response) {
+        updateSpotifyControls(false);
+        setSpotifyStatus("Unable to reach Spotify right now.");
+        return;
+      }
+
+      if (response.status === 204) {
+        applySpotifyNowPlaying({
+          title: "Spotify ready",
+          artist: "No track currently playing",
+          cover: defaultAccent,
+          isPlaying: false,
+        });
+        updateSpotifyControls(true);
+        setSpotifyStatus("Spotify linked. Ready when you press play.");
+        return;
+      }
+
+      if (!response.ok) {
+        updateSpotifyControls(false);
+        setSpotifyStatus(`Spotify error ${response.status}. Check your session.`);
+        return;
+      }
+
+      const payload = await response.json().catch(() => null);
+      const track = parseSpotifyTrack(payload);
+
+      if (track) {
+        spotifyPlaybackState.isPlaying = track.isPlaying === true;
+        applySpotifyNowPlaying(track);
+        updateSpotifyControls(true);
+        setSpotifyStatus(track.isPlaying ? "Playing on Spotify." : "Paused on Spotify.");
+      } else {
+        applySpotifyNowPlaying(null);
+        updateSpotifyControls(true);
+        setSpotifyStatus("Spotify connected. Start something to see it here.");
+      }
+    };
+
+    const controlSpotifyPlayback = async (action) => {
+      const fallbackUrl = spotifySettings.playlistUrl || spotifyDefaults.fallbackUrl;
+      if (!isSpotifyConfigured()) {
+        openExternal(fallbackUrl);
+        setSpotifyStatus("Opening Spotify since controls are offline.");
+        return;
+      }
+
+      const normalized = typeof action === "string" ? action.toLowerCase() : "toggle";
+      const mappedAction =
+        normalized === "toggle"
+          ? spotifyPlaybackState.isPlaying
+            ? "pause"
+            : "play"
+          : normalized;
+
+      const endpoint = {
+        next: { method: "POST", path: "/me/player/next" },
+        prev: { method: "POST", path: "/me/player/previous" },
+        play: { method: "PUT", path: "/me/player/play" },
+        pause: { method: "PUT", path: "/me/player/pause" },
+      }[mappedAction];
+
+      if (!endpoint) {
+        return;
+      }
+
+      const response = await requestSpotify(endpoint.path, { method: endpoint.method });
+      if (response && (response.ok || response.status === 204)) {
+        spotifyPlaybackState.isPlaying = mappedAction !== "pause";
+        updateSpotifyToggleLabel(spotifyPlaybackState.isPlaying);
+        setSpotifyStatus("Sent control to Spotify.");
+        await refreshSpotifyNowPlayingFromApi();
+        return;
+      }
+
+      setSpotifyStatus("Spotify control unavailable right now.");
+    };
+
+    const playBabyWhiplash = async () => {
+      const fallbackUrl =
+        spotifySettings.babyWhiplashUrl || spotifySettings.playlistUrl || spotifyDefaults.fallbackUrl;
+
+      if (!isSpotifyConfigured() || !spotifySettings.babyWhiplashUri) {
+        openExternal(fallbackUrl);
+        setSpotifyStatus("Opening Baby Whiplash in Spotify.");
+        return;
+      }
+
+      const body = spotifySettings.babyWhiplashUri.includes("playlist:")
+        ? { context_uri: spotifySettings.babyWhiplashUri }
+        : { uris: [spotifySettings.babyWhiplashUri] };
+
+      const response = await requestSpotify("/me/player/play", {
+        method: "PUT",
+        body: JSON.stringify(body),
+      });
+
+      if (response && (response.ok || response.status === 204)) {
+        spotifyPlaybackState.isPlaying = true;
+        musicController.setMode("spotify");
+        setSpotifyStatus("Requested Baby Whiplash on Spotify.");
+        await refreshSpotifyNowPlayingFromApi();
+        return;
+      }
+
+      openExternal(fallbackUrl);
+      setSpotifyStatus("Couldn't control Spotify; opened playlist instead.");
+    };
 
     applyTrack(currentTrackIndex);
     refreshNowPlaying(true);
@@ -293,27 +604,25 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    if (mpPlayButton) {
-      mpPlayButton.addEventListener("click", () => {
-        if (!musicController.currentSource) {
-          applyTrack(currentTrackIndex);
-          musicController.setMode("widget");
-        }
-        if (audio.paused) {
-          audio.play();
-        } else {
-          audio.pause();
-        }
+    if (spotifyOpenButton) {
+      spotifyOpenButton.addEventListener("click", () => {
+        const openUri = spotifySettings.openUri || spotifyDefaults.openUri;
+        openExternal(openUri);
+        setSpotifyStatus("Opening Spotify...");
       });
     }
 
-    if (mpStopButton) {
-      mpStopButton.addEventListener("click", () => {
-        musicController.stop();
-        refreshNowPlaying(true);
-        updatePlayButtons(false);
+    if (spotifyPlayBabyButton) {
+      spotifyPlayBabyButton.addEventListener("click", () => {
+        playBabyWhiplash();
       });
     }
+
+    spotifyControlButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        controlSpotifyPlayback(button.dataset.spotifyControl);
+      });
+    });
 
     if (forwardButton) {
       forwardButton.addEventListener("click", () => {
@@ -390,6 +699,12 @@ window.addEventListener("DOMContentLoaded", () => {
       updatePlayButtons(false);
       refreshNowPlaying(true);
     });
+
+    refreshSpotifyNowPlayingFromApi();
+
+    window.setInterval(() => {
+      refreshSpotifyNowPlayingFromApi();
+    }, 12000);
 
     window.setInterval(() => {
       const forceUpdate = musicController.mode === "spotify" || musicController.mode === "hydrophone";
