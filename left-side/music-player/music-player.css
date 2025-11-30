@@ -389,3 +389,63 @@
   width: 100%;
   min-height: 44px;
 }
+
+.music-player-card--orca {
+  gap: 0.85rem;
+}
+
+.hydrophone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.65rem;
+}
+
+.hydrophone-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--soft-radius, 16px) * 0.7);
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.92), rgba(218, 234, 255, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.hydrophone-cover {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 16px rgba(146, 169, 255, 0.2);
+}
+
+.hydrophone-meta {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.hydrophone-name {
+  margin: 0;
+  font-family: var(--font-heading, "Bigbesty", "Papernotes", cursive);
+  color: #7a6af7;
+  font-size: 1.05rem;
+}
+
+.hydrophone-count {
+  margin: 0;
+  color: rgba(75, 61, 85, 0.78);
+  font-family: "Papernotes", "Comic Sans MS", "Segoe UI", sans-serif;
+}
+
+.hydrophone-actions {
+  grid-column: 1 / -1;
+  display: grid;
+}
+
+.hydrophone-card .music-btn {
+  width: 100%;
+  min-height: 40px;
+}

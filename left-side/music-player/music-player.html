@@ -104,8 +104,16 @@
   </section>
 
   <section class="music-player-panel" data-panel="orca" role="tabpanel" aria-label="Orca">
-    <div class="music-player-card" aria-hidden="true">
-      <p class="music-player-note">Orca signal waiting for a glow-up</p>
+    <div class="music-player-card music-player-card--orca" role="region" aria-label="Orcasound hydrophones">
+      <header class="music-player-header">
+        <div class="music-player-header__text">
+          <p class="music-player-heading">Orcasound Live</p>
+          <p class="music-player-subtitle">Tune into Pacific Northwest hydrophones</p>
+        </div>
+        <div class="music-player-badge" aria-hidden="true">🌊</div>
+      </header>
+
+      <div class="hydrophone-grid" data-hydrophone-list aria-live="polite"></div>
     </div>
   </section>
 </div>
