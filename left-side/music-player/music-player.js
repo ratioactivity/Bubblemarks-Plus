@@ -737,15 +737,14 @@ window.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("article");
       card.className = "hydrophone-card";
       card.innerHTML = `
-        <div class="hydrophone-cover" style="background-image: url(${station.cover});"></div>
+        <div class="hydrophone-cover" style="background-image: url(${station.cover});">
+          <button type="button" class="hydrophone-play" data-hydrophone-play="${station.id}" aria-label="Play ${station.name}">▶</button>
+        </div>
         <div class="hydrophone-meta">
           <p class="hydrophone-name">${station.name}</p>
           <p class="hydrophone-count" data-hydrophone-count="${station.id}">${
             formatListenerCount(station.listenerCount) || "-- listeners"
           }</p>
-        </div>
-        <div class="hydrophone-actions">
-          <button type="button" class="music-btn" data-hydrophone-play="${station.id}">Play</button>
         </div>
       `;
       list.appendChild(card);
