@@ -1,4 +1,11 @@
 window.addEventListener("DOMContentLoaded", () => {
+  const navigateMusicPlayer = {
+    openTab: () => false,
+    openMain: () => false,
+  };
+
+  window.navigateMusicPlayer = navigateMusicPlayer;
+
   window.spotifyConfig = {
     clientId: "<your-client-id>",
     redirectUri: "bubblemarks://spotify-callback",
@@ -798,6 +805,16 @@ window.addEventListener("DOMContentLoaded", () => {
         panel.classList.toggle("active", panel.dataset.panel === selected);
       });
     };
+
+    navigateMusicPlayer.openTab = (targetTab = "main") => {
+      setActiveTab(targetTab);
+      if (widgetHost?.scrollIntoView) {
+        widgetHost.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return true;
+    };
+
+    navigateMusicPlayer.openMain = () => navigateMusicPlayer.openTab("main");
 
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {

@@ -192,6 +192,7 @@ function initPetWidget() {
   const musicButton = document.getElementById("music-button");
   const discListEl = document.getElementById("disc-list");
   const stopMusicBtn = document.getElementById("stop-music");
+  const openMusicPlayerBtn = document.getElementById("open-music-player");
   const nowPlayingEl = document.getElementById("now-playing");
   const nowPlayingArtEl = document.getElementById("now-playing-art");
   const randomToggleEl = document.getElementById("randomize-music");
@@ -372,10 +373,17 @@ function initPetWidget() {
     if (!musicController) return;
 
     const playlist = getShufflablePlaylist();
-    const next = musicController.shuffleDiscs(playlist, { currentId: currentDisc });
+    const next = musicController.shuffleDiscs(playlist, { currentId: currentDisc, autoPlay: false });
 
     if (next?.id) {
       playDisc(next.id);
+    }
+  };
+
+  const openMainMusicTab = () => {
+    const navigation = window.parent?.navigateMusicPlayer || window.navigateMusicPlayer;
+    if (navigation && typeof navigation.openTab === "function") {
+      navigation.openTab("main");
     }
   };
 
@@ -1919,6 +1927,12 @@ function initPetWidget() {
     if (shuffleBtn) {
       shuffleBtn.addEventListener("click", () => {
         shuffleAndPlayNext();
+      });
+    }
+
+    if (openMusicPlayerBtn) {
+      openMusicPlayerBtn.addEventListener("click", () => {
+        openMainMusicTab();
       });
     }
 
