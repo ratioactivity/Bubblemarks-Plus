@@ -105,8 +105,19 @@ window.addEventListener("DOMContentLoaded", () => {
       return false;
     }
 
-    playHydrophone(source) {
-      return this.playSource(source, { loop: false, mode: "hydrophone" });
+    playHydrophone(source, metadata = null) {
+      const normalizedMetadata =
+        typeof metadata === "string"
+          ? { cover: metadata }
+          : metadata && typeof metadata === "object"
+            ? metadata
+            : null;
+
+      return this.playSource(source, {
+        loop: false,
+        mode: "hydrophone",
+        metadata: normalizedMetadata,
+      });
     }
 
     stop() {
