@@ -270,6 +270,30 @@ function createWindow() {
     shell.openExternal(url);
     return { action: "deny" };
   });
+
+  const handleSpotifyNavigation = (event, url) => {
+    if (!url || typeof url !== "string") {
+      return;
+    }
+
+    const normalizedUrl = url.trim().toLowerCase();
+    const isSpotifyCallbackNavigation = normalizedUrl.includes("spotify-callback");
+
+    if (!isSpotifyCallbackNavigation) {
+      return;
+    }
+
+    event.preventDefault();
+    forwardSpotifyCallback(url);
+
+    const currentUrl = mainWindow.webContents.getURL();
+    if (!currentUrl.startsWith(`${BUBBLEMARKS_PROTOCOL}://index.html`)) {
+      mainWindow.loadURL(`${BUBBLEMARKS_PROTOCOL}://index.html`);
+    }
+  };
+
+  mainWindow.webContents.on("will-redirect", handleSpotifyNavigation);
+  mainWindow.webContents.on("will-navigate", handleSpotifyNavigation);
 }
 
   app.whenReady().then(() => {
@@ -290,16 +314,9 @@ function createWindow() {
       forwardSpotifyCallback(startupDeepLink);
     }
   });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
-
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-  });
