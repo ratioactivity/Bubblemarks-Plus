@@ -7,10 +7,23 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const isDev = !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
+function registerDefaultProtocolClient() {
+  const appPath = process.execPath;
+  const args = isDev ? [path.resolve(process.argv[1])] : undefined;
+
+  if (isDev) {
+    app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL, appPath, args);
+    return;
+  }
+
+  app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+}
+
 app.on("will-finish-launching", () => {
-  app.setAsDefaultProtocolClient("bubblemarks");
+  registerDefaultProtocolClient();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -304,7 +317,7 @@ function createWindow() {
     registerBubblemarksProtocol();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
-      app.setAsDefaultProtocolClient(BUBBLEMARKS_PROTOCOL);
+      registerDefaultProtocolClient();
     }
 
     createWindow();
