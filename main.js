@@ -147,6 +147,25 @@ function registerBubblemarksProtocol() {
       const hostSegment = url.hostname ? url.hostname : "";
       const rawPath = decodeURIComponent(url.pathname);
       const trimmedPath = rawPath.startsWith("/") ? rawPath.slice(1) : rawPath;
+      const requestUrlLower = (request.url || "").toLowerCase();
+      const pathCandidates = [hostSegment, trimmedPath, rawPath, url.pathname]
+        .map((value) => (typeof value === "string" ? value.toLowerCase() : ""))
+        .filter(Boolean);
+      const isSpotifyCallbackRequest = [requestUrlLower, ...pathCandidates].some((value) =>
+        value.includes("spotify-callback")
+      );
+      const normalizedCallbackPath = [hostSegment, trimmedPath].filter(Boolean).join("/");
+
+      if (isSpotifyCallbackRequest || normalizedCallbackPath.startsWith("spotify-callback")) {
+        forwardSpotifyCallback(request.url);
+        return callback({
+          data: Buffer.from(
+            "<html><body><p>Spotify login received. You can return to Bubblemarks.</p></body></html>",
+            "utf8"
+          ),
+          mimeType: "text/html",
+        });
+      }
 
       const normalizedPath = path
         .posix
@@ -264,13 +283,8 @@ function createWindow() {
     if (startupDeepLink) {
       forwardSpotifyCallback(startupDeepLink);
     }
-
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-      }
-    });
   });
+});
 
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
