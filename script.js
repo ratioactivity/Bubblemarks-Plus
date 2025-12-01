@@ -785,7 +785,7 @@ function mountPetWidget() {
     return null;
   }
 
-  const existingWidget = widgetContainer.querySelector("#pet-widget iframe");
+  const existingWidget = widgetContainer.querySelector(".pet-widget iframe");
 
   if (existingWidget) {
     return existingWidget;
