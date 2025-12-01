@@ -537,7 +537,7 @@ body.notion-embed .app-shell {
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  min-height: clamp(560px, 48vh, 760px);
+  min-height: max(760px, 78vh);
 }
 
 .pet-widget__frame {
