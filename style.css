@@ -56,7 +56,7 @@ body.notion-embed .app-shell {
   gap: clamp(0.6rem, 1.4vw, 1.6rem);
   width: min(100%, 3840px);
   margin: 0 auto;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 #bubblemarks-left {
@@ -521,7 +521,7 @@ body.notion-embed .app-shell {
 }
 
 .screenpad-layout .app-shell {
-  flex: 1 1 960px;
+  flex: 1 1 clamp(640px, calc(100vw - 760px), 980px);
 }
 
 .pet-widget {
@@ -1093,7 +1093,7 @@ h6,
 .app-shell {
   position: relative;
   z-index: 1;
-  width: min(1120px, 100%);
+  width: clamp(640px, calc(100vw - 760px), 980px);
   min-height: clamp(1020px, 92vh, 1340px);
   background: var(--surface);
   backdrop-filter: blur(28px);
