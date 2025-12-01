@@ -68,7 +68,7 @@ body.pet-scroll-disabled {
 }
 
 .aquarium-container {
-  width: min(94vw, 560px);
+  width: 100%;
   padding: 0;
   margin: 0 auto;
   display: flex;
@@ -80,7 +80,7 @@ body.pet-scroll-disabled {
 }
 
 .pet-card {
-  width: min(94vw, 560px);
+  width: 100%;
   flex-grow: 1;
   background: radial-gradient(circle at 40% 30%, #ffffff 0%, #fdfbff 80%);
   box-shadow:
@@ -104,7 +104,7 @@ body.pet-scroll-disabled {
 
 .pet-container {
   position: relative;
-  width: min(94vw, 560px);
+  width: 100%;
   min-height: max(620px, 76vh);
   margin: 0 auto;
   padding: 2vh clamp(1.4rem, 3vw, 1.8rem) 3.2vh;

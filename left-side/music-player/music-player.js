@@ -805,6 +805,8 @@ window.addEventListener("DOMContentLoaded", () => {
         refreshNowPlaying(true);
       }
     }
+
+    renderHydrophoneList();
   };
 
   const renderHydrophoneList = () => {
@@ -818,9 +820,16 @@ window.addEventListener("DOMContentLoaded", () => {
     hydrophoneStations.forEach((station) => {
       const card = document.createElement("article");
       card.className = "hydrophone-card";
+      const listenerLabel = Number.isFinite(station.listenerCount)
+        ? `${station.listenerCount} listening`
+        : "Live hydrophone";
       card.innerHTML = `
         <div class="hydrophone-cover" style="background-image: url(${station.cover});">
           <button type="button" class="hydrophone-play" data-hydrophone-play="${station.id}" aria-label="Play ${station.name}">▶</button>
+        </div>
+        <div class="hydrophone-meta">
+          <p class="hydrophone-name">${station.name}</p>
+          <p class="hydrophone-count">${listenerLabel}</p>
         </div>
       `;
       list.appendChild(card);
@@ -839,8 +848,6 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
-
-    stabilizePanelHeight();
   };
 
   const loadHydrophoneListeners = async () => {
@@ -978,8 +985,6 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       discLibrary.appendChild(fragment);
-
-      stabilizePanelHeight();
     };
 
     tabs.forEach((tab) => {
