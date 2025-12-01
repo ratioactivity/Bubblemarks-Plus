@@ -521,7 +521,7 @@ body.notion-embed .app-shell {
 }
 
 .screenpad-layout .app-shell {
-  flex: 1 1 1040px;
+  flex: 1 1 960px;
 }
 
 .pet-widget {
@@ -1093,7 +1093,7 @@ h6,
 .app-shell {
   position: relative;
   z-index: 1;
-  width: min(1320px, 100%);
+  width: min(1120px, 100%);
   min-height: clamp(1020px, 92vh, 1340px);
   background: var(--surface);
   backdrop-filter: blur(28px);
