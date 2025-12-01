@@ -47,13 +47,27 @@ body.notion-embed .app-shell {
 }
 
 .right-side {
-  flex: 0 0 auto;
-  width: min(100%, 380px);
-  max-width: 380px;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
-  justify-content: center;
-  align-self: stretch;
+  justify-content: flex-start;
+  flex: 0 0 420px;
+  width: 420px;
+  min-width: 420px;
+  max-width: 420px;
+  gap: clamp(0.65rem, 1vw, 1rem);
+  align-self: flex-start;
+}
+
+.bm-widget {
+  width: 100%;
+  padding: clamp(0.9rem, 1.2vw, 1.25rem);
+  background: var(--surface);
+  border-radius: calc(var(--soft-radius) * 1.05);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 
@@ -534,33 +548,48 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
-.pet-widget {
-  flex: 0 0 350px;
-  width: 350px;
-  min-width: 350px;
-  max-width: 350px;
-  background: var(--surface);
-  backdrop-filter: blur(28px);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: calc(var(--soft-radius) * 1.2);
-  box-shadow: var(--shadow-soft);
-  overflow: visible;
+.bm-widget.pet-widget {
   display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 0.9vw, 0.95rem);
+}
+
+.bm-widget.pet-widget .pet-widget {
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  min-height: max(1080px, 92vh);
-  margin-inline: auto;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  background: transparent;
+  border: 0;
+  border-radius: calc(var(--soft-radius) * 0.95);
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
 }
 
 .pet-widget__frame {
+  position: relative;
   flex: 1 1 auto;
   display: flex;
-  min-height: inherit;
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(360px, 55vw, 620px);
+  border-radius: calc(var(--soft-radius) * 0.9);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: var(--shadow-soft);
+  background: var(--surface);
 }
 
 .pet-widget__frame iframe,
 .pet-widget__frame .pet-widget__placeholder {
   width: 100%;
+  height: 100%;
   min-height: 100%;
   border: 0;
   display: block;
@@ -592,6 +621,9 @@ body.notion-embed .app-shell {
   .pet-widget,
   .right-side {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
   }
 
   #bubblemarks-left {
