@@ -518,35 +518,48 @@ body.notion-embed .app-shell {
 }
 
 .pet-widget {
-  flex: 1 1 720px;
-  width: 100%;
-  max-width: none;
-  background: var(--surface);
-  backdrop-filter: blur(28px);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: calc(var(--soft-radius) * 1.2);
-  box-shadow: var(--shadow-soft);
+  position: relative;
+  flex: 0 0 auto;
+  width: min(var(--pet-widget-width), 100%);
+  max-width: var(--pet-widget-width);
+  margin-inline: auto;
+  background: var(--pet-widget-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--pet-widget-border);
+  border-radius: var(--pet-widget-radius);
+  box-shadow: var(--pet-widget-glow);
   overflow: hidden;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
-  min-height: min(86vh, 920px);
+  padding: clamp(0.85rem, 1.6vw, 1.6rem);
 }
 
 .pet-widget__frame {
-  flex: 1 1 auto;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   display: flex;
-  min-height: min(760px, 82vh);
-  height: 100%;
+  align-items: stretch;
+  justify-content: center;
+  padding: clamp(0.6rem, 1vw, 0.9rem);
+  border-radius: calc(var(--pet-widget-radius) - 12px);
+  background: var(--pet-widget-frame-bg);
+  border: 1px solid var(--pet-widget-frame-border);
+  box-shadow: inset 0 12px 32px rgba(255, 255, 255, 0.45);
+  overflow: hidden;
 }
 
 .pet-widget__frame iframe,
 .pet-widget__frame .pet-widget__placeholder {
   width: 100%;
   height: 100%;
-  min-height: inherit;
   border: 0;
+  border-radius: calc(var(--pet-widget-radius) - 18px);
   display: block;
+  background: transparent;
 }
 
 @media (min-width: 1400px) {
@@ -587,6 +600,13 @@ body.notion-embed .app-shell {
   --accent-3: #ffc778;
   --text-main: #55415f;
   --surface: rgba(255, 255, 255, 0.6);
+  --pet-widget-width: 480px;
+  --pet-widget-radius: 32px;
+  --pet-widget-border: rgba(255, 255, 255, 0.82);
+  --pet-widget-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 239, 252, 0.94) 45%, rgba(232, 246, 255, 0.96) 100%);
+  --pet-widget-glow: 0 26px 46px rgba(255, 170, 220, 0.28), 0 14px 30px rgba(162, 188, 255, 0.2);
+  --pet-widget-frame-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 236, 248, 0.92));
+  --pet-widget-frame-border: rgba(255, 255, 255, 0.88);
   --keyboard-bg: rgba(255, 255, 255, 0.7);
   --keyboard-key: rgba(255, 255, 255, 0.9);
   --keyboard-border: rgba(255, 194, 220, 0.8);
