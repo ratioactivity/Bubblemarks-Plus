@@ -57,8 +57,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-block: clamp(2vh, 3vh, 4vh);
-  padding-inline: clamp(1.5rem, 4vw, 3rem);
+  padding-block: clamp(1.2vh, 2vh, 3vh);
+  padding-inline: clamp(0.75rem, 2.5vw, 2rem);
   background: linear-gradient(180deg, #f7f1ff 0%, #fff8fb 100%);
   color: #b3728e;
 }
@@ -104,7 +104,7 @@ body.pet-scroll-disabled {
 
 .pet-container {
   position: relative;
-  width: 100%;
+  width: clamp(300px, 100%, 340px);
   min-height: max(920px, 90vh);
   margin: 0 auto;
   padding: 2vh clamp(1.4rem, 3vw, 1.8rem) 3.2vh;
@@ -112,8 +112,7 @@ body.pet-scroll-disabled {
   flex-direction: column;
   align-items: center;
   flex: 0 0 auto;
-  max-width: 350px;
-  min-width: 350px;
+  max-width: 100%;
   border-radius: 28px;
   background: radial-gradient(
     circle at 45% 20%,
