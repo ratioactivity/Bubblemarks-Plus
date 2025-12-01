@@ -59,6 +59,13 @@ body.notion-embed .app-shell {
   align-self: flex-start;
 }
 
+.right-side #pet-widget-container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.65rem, 1vw, 1rem);
+  width: 100%;
+}
+
 .bm-widget {
   width: 100%;
   padding: clamp(0.9rem, 1.2vw, 1.25rem);
@@ -552,6 +559,7 @@ body.notion-embed .app-shell {
   display: flex;
   flex-direction: column;
   gap: clamp(0.6rem, 0.9vw, 0.95rem);
+  width: 100%;
 }
 
 .bm-widget.pet-widget .pet-widget {
@@ -578,7 +586,7 @@ body.notion-embed .app-shell {
   display: flex;
   width: 100%;
   min-width: 0;
-  min-height: clamp(360px, 55vw, 620px);
+  min-height: clamp(680px, 60vw, 960px);
   border-radius: calc(var(--soft-radius) * 0.9);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.65);
