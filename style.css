@@ -540,7 +540,7 @@ body.notion-embed .app-shell {
   position: relative;
   z-index: 1;
   width: 100%;
-  aspect-ratio: 3 / 2;
+  min-height: clamp(540px, 52vw, 660px);
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -600,7 +600,7 @@ body.notion-embed .app-shell {
   --accent-3: #ffc778;
   --text-main: #55415f;
   --surface: rgba(255, 255, 255, 0.6);
-  --pet-widget-width: 480px;
+  --pet-widget-width: clamp(440px, 44vw, 620px);
   --pet-widget-radius: 32px;
   --pet-widget-border: rgba(255, 255, 255, 0.82);
   --pet-widget-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 239, 252, 0.94) 45%, rgba(232, 246, 255, 0.96) 100%);
