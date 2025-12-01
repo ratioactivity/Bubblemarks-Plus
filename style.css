@@ -1094,7 +1094,7 @@ h6,
   position: relative;
   z-index: 1;
   width: clamp(420px, calc(100vw - 780px), 760px);
-  min-height: clamp(1020px, 92vh, 1340px);
+  min-height: clamp(1140px, 96vh, 1400px);
   background: var(--surface);
   backdrop-filter: blur(28px);
   border-radius: calc(var(--soft-radius) * 1.2);
