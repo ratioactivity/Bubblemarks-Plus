@@ -1118,7 +1118,9 @@ window.addEventListener("DOMContentLoaded", () => {
         state,
       });
 
-      window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+      const loginUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
+      openExternal(loginUrl);
+      setSpotifyStatus("Opening Spotify login in your browser...");
     };
 
     const handleOAuthCallbackUrl = async (callbackUrl) => {

@@ -529,12 +529,14 @@ body.notion-embed .app-shell {
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  min-height: clamp(250px, 42vh, 500px);
+  min-height: clamp(360px, 48vh, 640px);
+  height: clamp(420px, 52vh, 720px);
 }
 
 .pet-widget__frame {
   flex: 1 1 auto;
   display: flex;
+  min-height: 100%;
 }
 
 .pet-widget__frame iframe,
@@ -548,16 +550,16 @@ body.notion-embed .app-shell {
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
   }
 
   .pet-widget {
-    align-self: stretch;
+    align-self: flex-start;
   }
 
   #bubblemarks-left {
-    align-self: stretch;
+    align-self: flex-start;
   }
 }
 
