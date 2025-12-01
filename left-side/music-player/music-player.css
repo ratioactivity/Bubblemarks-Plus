@@ -12,8 +12,18 @@
   box-sizing: border-box;
 }
 
-#music-player .music-player-panel {
-  min-height: var(--music-panel-min-height, auto);
+.music-player {
+  width: 100%;
+}
+
+.music-player-panels {
+  width: 100%;
+  overflow: hidden;
+}
+
+.music-player-panel {
+  width: 100%;
+  height: auto;
 }
 
 #music-player .music-player-tabs {
