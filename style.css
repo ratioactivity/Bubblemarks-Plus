@@ -46,6 +46,16 @@ body.notion-embed .app-shell {
   align-self: flex-start;
 }
 
+.right-side {
+  flex: 0 0 auto;
+  width: min(100%, 380px);
+  max-width: 380px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  align-self: stretch;
+}
+
 
 .screenpad-layout {
   position: relative;
@@ -567,6 +577,10 @@ body.notion-embed .app-shell {
     align-self: flex-start;
   }
 
+  .right-side {
+    align-self: flex-start;
+  }
+
   #bubblemarks-left {
     align-self: flex-start;
   }
@@ -575,7 +589,8 @@ body.notion-embed .app-shell {
 @media (max-width: 1399px) {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
-  .pet-widget {
+  .pet-widget,
+  .right-side {
     width: 100%;
   }
 
