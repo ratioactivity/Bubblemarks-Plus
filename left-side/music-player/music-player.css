@@ -4,11 +4,16 @@
 }
 
 #music-player {
+  position: relative;
   display: grid;
   gap: 0.65rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+#music-player .music-player-panel {
+  min-height: var(--music-panel-min-height, auto);
 }
 
 #music-player .music-player-tabs {
