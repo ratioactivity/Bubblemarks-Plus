@@ -518,9 +518,9 @@ body.notion-embed .app-shell {
 }
 
 .pet-widget {
-  flex: 0 1 clamp(320px, 22vw, 520px);
-  width: min(100%, clamp(300px, 22vw, 540px));
-  max-width: 100%;
+  flex: 0 0 auto;
+  width: min(100%, 560px);
+  max-width: 560px;
   background: var(--surface);
   backdrop-filter: blur(28px);
   border: 2px solid rgba(255, 255, 255, 0.6);
@@ -529,14 +529,15 @@ body.notion-embed .app-shell {
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  min-height: clamp(360px, 48vh, 640px);
-  height: clamp(420px, 52vh, 720px);
+  justify-content: center;
+  min-height: min(72vh, 760px);
 }
 
 .pet-widget__frame {
   flex: 1 1 auto;
   display: flex;
-  min-height: 100%;
+  min-height: min(620px, 68vh);
+  aspect-ratio: 5 / 4;
 }
 
 .pet-widget__frame iframe,
