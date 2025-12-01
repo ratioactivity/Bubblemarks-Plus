@@ -548,16 +548,16 @@ body.notion-embed .app-shell {
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
   }
 
   .pet-widget {
-    align-self: stretch;
+    align-self: flex-start;
   }
 
   #bubblemarks-left {
-    align-self: stretch;
+    align-self: flex-start;
   }
 }
 
