@@ -777,6 +777,41 @@ function createDeleteConfirmationPanel(card, bookmark) {
   return panel;
 }
 
+function mountPetWidget() {
+  const widgetContainer = document.getElementById("pet-widget-container");
+
+  if (!widgetContainer) {
+    console.warn("Pet widget container not found.");
+    return null;
+  }
+
+  const existingWidget = widgetContainer.querySelector("#pet-widget iframe");
+
+  if (existingWidget) {
+    return existingWidget;
+  }
+
+  const petWidget = document.createElement("section");
+  petWidget.id = "pet-widget";
+  petWidget.className = "pet-widget";
+  petWidget.setAttribute("aria-label", "Axolotl companion widget");
+
+  const petWidgetFrame = document.createElement("div");
+  petWidgetFrame.className = "pet-widget__frame";
+
+  const petWidgetIframe = document.createElement("iframe");
+  petWidgetIframe.src = "pet-axolotl/pet.html";
+  petWidgetIframe.title = "Axolotl companion";
+  petWidgetIframe.loading = "lazy";
+  petWidgetIframe.referrerPolicy = "no-referrer";
+
+  petWidgetFrame.appendChild(petWidgetIframe);
+  petWidget.appendChild(petWidgetFrame);
+  widgetContainer.appendChild(petWidget);
+
+  return petWidgetIframe;
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   grid = document.getElementById("bookmarks");
   emptyState = document.getElementById("empty-state");
@@ -814,7 +849,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   settingsModal = document.getElementById("settings-modal");
   settingsForm = document.getElementById("settings-form");
   settingsDialog = document.querySelector(".settings-modal__dialog");
-  petWidgetFrame = document.querySelector("#pet-widget iframe");
+  petWidgetFrame = mountPetWidget();
 
   const petLevelUpProxy = (amount = 1) => {
     const petWindow = petWidgetFrame?.contentWindow;
