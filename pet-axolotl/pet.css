@@ -111,6 +111,9 @@ body.pet-scroll-disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 0 0 350px;
+  max-width: 350px;
+  min-width: 350px;
   border-radius: 28px;
   background: radial-gradient(
     circle at 45% 20%,

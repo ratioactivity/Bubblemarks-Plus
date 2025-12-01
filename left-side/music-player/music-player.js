@@ -887,45 +887,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const discLibrary = widgetHost.querySelector("[data-disc-library]");
     const discLibraryEmpty = widgetHost.querySelector("[data-disc-empty]");
 
-    const stabilizePanelHeight = () => {
-      if (!musicPlayerRoot || !panels.length) {
-        return;
-      }
-
-      let maxHeight = 0;
-
-      panels.forEach((panel) => {
-        const isActive = panel.classList.contains("active");
-        const previousDisplay = panel.style.display;
-        const previousPosition = panel.style.position;
-        const previousVisibility = panel.style.visibility;
-        const previousPointerEvents = panel.style.pointerEvents;
-
-        if (!isActive) {
-          panel.style.display = "block";
-          panel.style.position = "absolute";
-          panel.style.visibility = "hidden";
-          panel.style.pointerEvents = "none";
-        }
-
-        const panelHeight = panel.getBoundingClientRect().height;
-        if (panelHeight > maxHeight) {
-          maxHeight = panelHeight;
-        }
-
-        if (!isActive) {
-          panel.style.display = previousDisplay;
-          panel.style.position = previousPosition;
-          panel.style.visibility = previousVisibility;
-          panel.style.pointerEvents = previousPointerEvents;
-        }
-      });
-
-      if (maxHeight > 0) {
-        musicPlayerRoot.style.setProperty("--music-panel-min-height", `${Math.ceil(maxHeight)}px`);
-      }
-    };
-
     const setActiveTab = (targetTab) => {
       const selected = targetTab || "main";
       tabs.forEach((tab) => {
@@ -937,8 +898,6 @@ window.addEventListener("DOMContentLoaded", () => {
       panels.forEach((panel) => {
         panel.classList.toggle("active", panel.dataset.panel === selected);
       });
-
-      stabilizePanelHeight();
     };
 
     navigateMusicPlayer.openTab = (targetTab = "main") => {

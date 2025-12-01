@@ -26,10 +26,6 @@
   height: auto;
 }
 
-#music-player .music-player-panel {
-  min-height: var(--music-panel-min-height, auto);
-}
-
 #music-player .music-player-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
