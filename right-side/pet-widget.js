@@ -8,13 +8,6 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const existingIframe = petWidget?.querySelector(".pet-widget iframe, iframe");
-
-  if (existingIframe) {
-    console.log("✅ script validated");
-    return;
-  }
-
   fetch("right-side/pet-widget.html")
     .then((response) => {
       if (!response.ok) {
@@ -31,10 +24,17 @@ window.addEventListener("DOMContentLoaded", () => {
         throw new Error("[PetWidget] No widget markup found in response");
       }
 
-      if (petWidget) {
-        petWidget.replaceWith(widget);
+      widget.classList.add("bm-widget");
+
+      if (widgetColumn) {
+        const existingWidget = widgetColumn.querySelector("#pet-widget");
+        if (existingWidget) {
+          existingWidget.replaceWith(widget);
+        } else {
+          widgetColumn.appendChild(widget);
+        }
       } else {
-        widgetColumn?.appendChild(widget);
+        petWidget?.replaceWith(widget);
       }
     })
     .catch((error) => {
