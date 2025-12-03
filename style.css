@@ -51,10 +51,10 @@ body.notion-embed .app-shell {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  flex: 0 0 420px;
-  width: 420px;
-  min-width: 420px;
-  max-width: 420px;
+  flex: 0 1 clamp(320px, 30vw, 420px);
+  width: clamp(320px, 30vw, 420px);
+  min-width: 300px;
+  max-width: 480px;
   gap: clamp(0.65rem, 1vw, 1rem);
   align-self: flex-start;
 }
