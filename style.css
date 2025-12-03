@@ -591,7 +591,7 @@ body.notion-embed .app-shell {
   display: flex;
   width: 100%;
   min-width: 0;
-  min-height: clamp(920px, 80vh, 1100px);
+  min-height: clamp(680px, 78vh, 860px);
   border-radius: calc(var(--soft-radius) * 0.9);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.65);
