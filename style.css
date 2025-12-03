@@ -572,7 +572,7 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
-.pet-widget {
+.bm-widget.pet-widget {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -591,7 +591,7 @@ body.notion-embed .app-shell {
   display: flex;
   width: 100%;
   min-width: 0;
-  min-height: clamp(680px, 60vw, 960px);
+  min-height: clamp(520px, 62vw, 780px);
   border-radius: calc(var(--soft-radius) * 0.9);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.65);
@@ -638,7 +638,7 @@ body.notion-embed .app-shell {
     justify-content: center;
   }
 
-  .pet-widget {
+  .bm-widget.pet-widget {
     align-self: flex-start;
   }
 
@@ -655,7 +655,7 @@ body.notion-embed .app-shell {
 @media (max-width: 1399px) {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
-  .pet-widget,
+  .bm-widget.pet-widget,
   .right-side,
   .widget-column {
     width: 100%;

@@ -105,7 +105,7 @@ body.pet-scroll-disabled {
 .pet-container {
   position: relative;
   width: clamp(300px, 100%, 340px);
-  min-height: max(920px, 90vh);
+  min-height: clamp(600px, 88vh, 760px);
   margin: 0 auto;
   padding: 2vh clamp(1.4rem, 3vw, 1.8rem) 3.2vh;
   display: flex;
