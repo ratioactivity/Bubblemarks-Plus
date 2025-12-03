@@ -46,24 +46,27 @@ body.notion-embed .app-shell {
   align-self: flex-start;
 }
 
-.right-side {
+.widget-column {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  flex: 0 0 420px;
-  width: 420px;
-  min-width: 420px;
-  max-width: 420px;
-  gap: clamp(0.65rem, 1vw, 1rem);
-  align-self: flex-start;
+  flex: 0 1 clamp(320px, 28vw, 560px);
+  width: min(100%, clamp(320px, 28vw, 580px));
+  gap: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
-.right-side #pet-widget-container {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.65rem, 1vw, 1rem);
-  width: 100%;
+.widget {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.right-side {
+  align-self: flex-start;
 }
 
 .bm-widget {
@@ -555,14 +558,7 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
-.bm-widget.pet-widget-card {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.6rem, 0.9vw, 0.95rem);
-  width: 100%;
-}
-
-.pet-widget-card .pet-widget {
+.pet-widget {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -572,12 +568,7 @@ body.notion-embed .app-shell {
   max-width: 100%;
   min-width: 0;
   height: auto;
-  background: transparent;
-  border: 0;
-  border-radius: calc(var(--soft-radius) * 0.95);
-  box-shadow: none;
-  margin: 0;
-  padding: 0;
+  gap: clamp(0.6rem, 0.9vw, 0.95rem);
 }
 
 .pet-widget__frame {
@@ -603,6 +594,29 @@ body.notion-embed .app-shell {
   display: block;
 }
 
+.pet-widget__actions {
+  display: flex;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.pet-widget__actions button {
+  border: 0;
+  border-radius: 12px;
+  padding: 0.7rem 1.1rem;
+  background: var(--primary, #7c8ce9);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.pet-widget__actions button[hidden] {
+  display: none;
+}
+
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
@@ -614,7 +628,8 @@ body.notion-embed .app-shell {
     align-self: flex-start;
   }
 
-  .right-side {
+  .right-side,
+  .widget-column {
     align-self: flex-start;
   }
 
@@ -627,7 +642,8 @@ body.notion-embed .app-shell {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
   .pet-widget,
-  .right-side {
+  .right-side,
+  .widget-column {
     width: 100%;
     min-width: 0;
     max-width: 100%;

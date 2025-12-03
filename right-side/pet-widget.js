@@ -1,13 +1,14 @@
 window.addEventListener("DOMContentLoaded", () => {
-  const petWidgetContainer = document.getElementById("pet-widget-container");
+  const widgetColumn = document.getElementById("right-widgets");
+  const petWidget = document.getElementById("pet-widget");
 
-  if (!petWidgetContainer) {
-    console.error("[PetWidget] #pet-widget-container not found");
+  if (!widgetColumn && !petWidget) {
+    console.error("[PetWidget] #right-widgets not found");
     console.log("✅ script validated");
     return;
   }
 
-  const existingIframe = petWidgetContainer.querySelector(".pet-widget iframe");
+  const existingIframe = petWidget?.querySelector(".pet-widget iframe, iframe");
 
   if (existingIframe) {
     console.log("✅ script validated");
@@ -22,7 +23,19 @@ window.addEventListener("DOMContentLoaded", () => {
       return response.text();
     })
     .then((html) => {
-      petWidgetContainer.innerHTML = html;
+      const template = document.createElement("template");
+      template.innerHTML = html.trim();
+      const widget = template.content.firstElementChild;
+
+      if (!widget) {
+        throw new Error("[PetWidget] No widget markup found in response");
+      }
+
+      if (petWidget) {
+        petWidget.replaceWith(widget);
+      } else {
+        widgetColumn?.appendChild(widget);
+      }
     })
     .catch((error) => {
       console.error(error);
