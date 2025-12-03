@@ -608,29 +608,6 @@ body.notion-embed .app-shell {
   display: block;
 }
 
-.pet-widget__actions {
-  display: flex;
-  gap: clamp(0.5rem, 1vw, 0.75rem);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.pet-widget__actions button {
-  border: 0;
-  border-radius: 12px;
-  padding: 0.7rem 1.1rem;
-  background: var(--primary, #7c8ce9);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: var(--shadow-soft);
-}
-
-.pet-widget__actions button[hidden] {
-  display: none;
-}
-
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;

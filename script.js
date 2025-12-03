@@ -814,22 +814,7 @@ function mountPetWidget() {
   petWidgetFrame.appendChild(petWidgetIframe);
   petWidgetFrame.appendChild(petWidgetPlaceholder);
 
-  const petWidgetActions = document.createElement("div");
-  petWidgetActions.className = "pet-widget__actions";
-
-  const sendOutButton = document.createElement("button");
-  sendOutButton.id = "axolotl-send-out";
-  sendOutButton.textContent = "Let Axolotl Roam";
-
-  const callBackButton = document.createElement("button");
-  callBackButton.id = "axolotl-call-back";
-  callBackButton.hidden = true;
-  callBackButton.textContent = "Call Back";
-
-  petWidgetActions.append(sendOutButton, callBackButton);
-
   petWidgetSection.appendChild(petWidgetFrame);
-  petWidgetSection.appendChild(petWidgetActions);
 
   if (!petWidget) {
     widgetColumn?.appendChild(petWidgetSection);
