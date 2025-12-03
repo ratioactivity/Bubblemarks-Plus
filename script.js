@@ -778,40 +778,62 @@ function createDeleteConfirmationPanel(card, bookmark) {
 }
 
 function mountPetWidget() {
-  const widgetContainer = document.getElementById("pet-widget-container");
+  const widgetColumn = document.getElementById("right-widgets");
+  const petWidget = document.getElementById("pet-widget");
 
-  if (!widgetContainer) {
+  if (!widgetColumn && !petWidget) {
     console.warn("Pet widget container not found.");
     return null;
   }
 
-  const existingWidget = widgetContainer.querySelector(".pet-widget iframe");
+  const existingWidget = petWidget?.querySelector("iframe");
 
   if (existingWidget) {
     return existingWidget;
   }
 
-  const widgetCard = document.createElement("div");
-  widgetCard.className = "bm-widget pet-widget-card";
-
-  const petWidget = document.createElement("section");
-  petWidget.id = "pet-widget";
-  petWidget.className = "pet-widget widget widget-style";
-  petWidget.setAttribute("aria-label", "Axolotl companion widget");
+  const petWidgetSection = petWidget ?? document.createElement("section");
+  petWidgetSection.id = "pet-widget";
+  petWidgetSection.className = "pet-widget widget";
+  petWidgetSection.setAttribute("aria-label", "Axolotl companion widget");
 
   const petWidgetFrame = document.createElement("div");
   petWidgetFrame.className = "pet-widget__frame";
 
   const petWidgetIframe = document.createElement("iframe");
   petWidgetIframe.src = "pet-axolotl/pet.html";
-  petWidgetIframe.title = "Axolotl companion";
+  petWidgetIframe.title = "BubblePet";
   petWidgetIframe.loading = "lazy";
   petWidgetIframe.referrerPolicy = "no-referrer";
 
+  const petWidgetPlaceholder = document.createElement("div");
+  petWidgetPlaceholder.id = "pet-widget-placeholder";
+  petWidgetPlaceholder.hidden = true;
+  petWidgetPlaceholder.textContent = "Letting the axolotl roam…";
+
   petWidgetFrame.appendChild(petWidgetIframe);
-  petWidget.appendChild(petWidgetFrame);
-  widgetCard.appendChild(petWidget);
-  widgetContainer.replaceChildren(widgetCard);
+  petWidgetFrame.appendChild(petWidgetPlaceholder);
+
+  const petWidgetActions = document.createElement("div");
+  petWidgetActions.className = "pet-widget__actions";
+
+  const sendOutButton = document.createElement("button");
+  sendOutButton.id = "axolotl-send-out";
+  sendOutButton.textContent = "Let Axolotl Roam";
+
+  const callBackButton = document.createElement("button");
+  callBackButton.id = "axolotl-call-back";
+  callBackButton.hidden = true;
+  callBackButton.textContent = "Call Back";
+
+  petWidgetActions.append(sendOutButton, callBackButton);
+
+  petWidgetSection.appendChild(petWidgetFrame);
+  petWidgetSection.appendChild(petWidgetActions);
+
+  if (!petWidget) {
+    widgetColumn?.appendChild(petWidgetSection);
+  }
 
   return petWidgetIframe;
 }

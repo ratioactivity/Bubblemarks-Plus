@@ -234,8 +234,17 @@
     </p>
     </main>
 
-    <aside id="right-widgets" class="right-side widget-column" aria-label="Companion widgets">
-      <div id="pet-widget-container"></div>
+    <aside id="right-widgets" class="widget-column" aria-label="Companion widgets">
+      <section id="pet-widget" class="pet-widget widget" aria-label="Axolotl companion widget">
+        <div class="pet-widget__frame">
+          <iframe src="pet-axolotl/pet.html" title="BubblePet"></iframe>
+          <div id="pet-widget-placeholder" hidden>Letting the axolotl roam…</div>
+        </div>
+        <div class="pet-widget__actions">
+          <button id="axolotl-send-out">Let Axolotl Roam</button>
+          <button id="axolotl-call-back" hidden>Call Back</button>
+        </div>
+      </section>
     </aside>
   </div>
 
