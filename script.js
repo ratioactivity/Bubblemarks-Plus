@@ -791,6 +791,9 @@ function mountPetWidget() {
     return existingWidget;
   }
 
+  const widgetCard = document.createElement("div");
+  widgetCard.className = "bm-widget pet-widget-card";
+
   const petWidget = document.createElement("section");
   petWidget.id = "pet-widget";
   petWidget.className = "pet-widget";
@@ -807,7 +810,8 @@ function mountPetWidget() {
 
   petWidgetFrame.appendChild(petWidgetIframe);
   petWidget.appendChild(petWidgetFrame);
-  widgetContainer.appendChild(petWidget);
+  widgetCard.appendChild(petWidget);
+  widgetContainer.replaceChildren(widgetCard);
 
   return petWidgetIframe;
 }
