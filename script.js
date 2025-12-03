@@ -801,7 +801,7 @@ function mountPetWidget() {
   petWidgetFrame.className = "pet-widget__frame";
 
   const petWidgetIframe = document.createElement("iframe");
-  petWidgetIframe.src = "pet-axolotl/pet.html";
+  petWidgetIframe.src = "pet-axolotl/pet-widget.html";
   petWidgetIframe.title = "BubblePet";
   petWidgetIframe.loading = "lazy";
   petWidgetIframe.referrerPolicy = "no-referrer";
