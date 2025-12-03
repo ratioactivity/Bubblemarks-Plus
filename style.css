@@ -49,14 +49,19 @@ body.notion-embed .app-shell {
 .widget-column {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  flex: 0 0 420px;
-  width: 420px;
-  min-width: 420px;
-  max-width: 420px;
-  gap: clamp(0.65rem, 1vw, 1rem);
-  align-self: flex-start;
+  flex: 0 1 clamp(320px, 28vw, 560px);
+  width: min(100%, clamp(320px, 28vw, 580px));
+  gap: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.widget {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 0 0 auto;
+  overflow: hidden;
 }
 
 .right-side {
