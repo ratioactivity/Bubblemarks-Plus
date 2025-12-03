@@ -794,7 +794,7 @@ function mountPetWidget() {
 
   const petWidgetSection = petWidget ?? document.createElement("section");
   petWidgetSection.id = "pet-widget";
-  petWidgetSection.className = "pet-widget widget";
+  petWidgetSection.className = "pet-widget bm-widget";
   petWidgetSection.setAttribute("aria-label", "Axolotl companion widget");
 
   const petWidgetFrame = document.createElement("div");
