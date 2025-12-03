@@ -555,14 +555,14 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
-.bm-widget.pet-widget {
+.bm-widget.pet-widget-card {
   display: flex;
   flex-direction: column;
   gap: clamp(0.6rem, 0.9vw, 0.95rem);
   width: 100%;
 }
 
-.bm-widget.pet-widget .pet-widget {
+.pet-widget-card .pet-widget {
   display: flex;
   flex-direction: column;
   align-items: stretch;

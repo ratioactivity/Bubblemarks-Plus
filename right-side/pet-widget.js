@@ -7,6 +7,13 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const existingIframe = petWidgetContainer.querySelector(".pet-widget iframe");
+
+  if (existingIframe) {
+    console.log("✅ script validated");
+    return;
+  }
+
   fetch("right-side/pet-widget.html")
     .then((response) => {
       if (!response.ok) {
