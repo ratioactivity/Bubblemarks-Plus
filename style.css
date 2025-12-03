@@ -69,6 +69,20 @@ body.notion-embed .app-shell {
   align-self: flex-start;
 }
 
+.widget-style {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 0.9vw, 0.95rem);
+  width: 100%;
+  padding: clamp(0.9rem, 1.2vw, 1.25rem);
+  background: var(--surface);
+  border-radius: calc(var(--soft-radius) * 1.05);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
 .bm-widget {
   width: 100%;
   padding: clamp(0.9rem, 1.2vw, 1.25rem);
