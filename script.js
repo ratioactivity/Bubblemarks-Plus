@@ -794,14 +794,14 @@ function mountPetWidget() {
 
   const petWidgetSection = petWidget ?? document.createElement("section");
   petWidgetSection.id = "pet-widget";
-  petWidgetSection.className = "pet-widget widget";
+  petWidgetSection.className = "pet-widget bm-widget";
   petWidgetSection.setAttribute("aria-label", "Axolotl companion widget");
 
   const petWidgetFrame = document.createElement("div");
   petWidgetFrame.className = "pet-widget__frame";
 
   const petWidgetIframe = document.createElement("iframe");
-  petWidgetIframe.src = "pet-axolotl/pet.html";
+  petWidgetIframe.src = "pet-axolotl/pet-widget.html";
   petWidgetIframe.title = "BubblePet";
   petWidgetIframe.loading = "lazy";
   petWidgetIframe.referrerPolicy = "no-referrer";
