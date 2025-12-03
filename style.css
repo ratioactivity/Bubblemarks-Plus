@@ -46,24 +46,47 @@ body.notion-embed .app-shell {
   align-self: flex-start;
 }
 
-.right-side {
+.widget-column {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  flex: 0 0 420px;
-  width: 420px;
-  min-width: 420px;
-  max-width: 420px;
-  gap: clamp(0.65rem, 1vw, 1rem);
+  flex: 0 1 clamp(320px, 28vw, 560px);
+  width: min(100%, clamp(320px, 28vw, 580px));
+  gap: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.widget {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.right-side {
   align-self: flex-start;
 }
 
-.right-side #pet-widget-container {
+.widget-column #pet-widget-container {
   display: flex;
   flex-direction: column;
   gap: clamp(0.65rem, 1vw, 1rem);
   width: 100%;
+}
+
+.widget-style {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 0.9vw, 0.95rem);
+  width: 100%;
+  padding: clamp(0.9rem, 1.2vw, 1.25rem);
+  background: var(--surface);
+  border-radius: calc(var(--soft-radius) * 1.05);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .bm-widget {
@@ -560,6 +583,10 @@ body.notion-embed .app-shell {
   flex-direction: column;
   gap: clamp(0.6rem, 0.9vw, 0.95rem);
   width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .pet-widget-card .pet-widget {
@@ -572,12 +599,10 @@ body.notion-embed .app-shell {
   max-width: 100%;
   min-width: 0;
   height: auto;
-  background: transparent;
-  border: 0;
-  border-radius: calc(var(--soft-radius) * 0.95);
-  box-shadow: none;
+}
+
+.pet-widget.widget-style {
   margin: 0;
-  padding: 0;
 }
 
 .pet-widget__frame {
@@ -614,7 +639,8 @@ body.notion-embed .app-shell {
     align-self: flex-start;
   }
 
-  .right-side {
+  .right-side,
+  .widget-column {
     align-self: flex-start;
   }
 
@@ -627,7 +653,8 @@ body.notion-embed .app-shell {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
   .pet-widget,
-  .right-side {
+  .right-side,
+  .widget-column {
     width: 100%;
     min-width: 0;
     max-width: 100%;
