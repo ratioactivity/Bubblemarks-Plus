@@ -572,7 +572,7 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
-.pet-widget {
+.bm-widget.pet-widget {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -638,7 +638,7 @@ body.notion-embed .app-shell {
     justify-content: center;
   }
 
-  .pet-widget {
+  .bm-widget.pet-widget {
     align-self: flex-start;
   }
 
@@ -655,7 +655,7 @@ body.notion-embed .app-shell {
 @media (max-width: 1399px) {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
-  .pet-widget,
+  .bm-widget.pet-widget,
   .right-side,
   .widget-column {
     width: 100%;
