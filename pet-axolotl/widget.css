@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+#pet-widget-root {
+  width: 100%;
+  border-radius: 20px;
+  padding: 16px;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
