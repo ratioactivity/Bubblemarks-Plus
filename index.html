@@ -244,6 +244,29 @@
         ></iframe>
       </div>
     </section>
+    <button
+      id="bubblewarp-toggle"
+      class="bubblewarp-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="bubblewarp-overlay"
+    >
+      <span class="bubblewarp-toggle__logo" aria-hidden="true"></span>
+      <span class="bubblewarp-toggle__label">BubbleWarp</span>
+      <span class="bubblewarp-toggle__chevron" aria-hidden="true">✧</span>
+    </button>
+  </div>
+
+  <div id="bubblewarp-overlay" class="bubblewarp-overlay" hidden>
+    <button type="button" class="bubblewarp-overlay__close" aria-label="Return to Bubblemarks">
+      ← Back to Bubblemarks
+    </button>
+    <iframe
+      src="BubbleWarp/index.html"
+      title="BubbleWarp UI"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    ></iframe>
   </div>
 
   <template id="bookmark-card-template">
@@ -571,6 +594,43 @@
     <img src="bubblemarks://pet-axolotl/assets/gear.png" alt="" aria-hidden="true" />
     <span class="sr-only">Open settings</span>
   </button>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+      const bubblewarpOverlay = document.getElementById("bubblewarp-overlay");
+      const bubblewarpClose = document.querySelector(".bubblewarp-overlay__close");
+
+      const toggleBubblewarp = (shouldShow) => {
+        if (!bubblewarpOverlay || !bubblewarpToggle) return;
+
+        if (shouldShow) {
+          bubblewarpOverlay.removeAttribute("hidden");
+          bubblewarpToggle.setAttribute("aria-expanded", "true");
+          document.body.classList.add("bubblewarp-active");
+        } else {
+          bubblewarpOverlay.setAttribute("hidden", "");
+          bubblewarpToggle.setAttribute("aria-expanded", "false");
+          document.body.classList.remove("bubblewarp-active");
+        }
+
+        console.log("✅ script validated");
+      };
+
+      if (bubblewarpToggle && bubblewarpOverlay) {
+        bubblewarpToggle.addEventListener("click", () => {
+          const isHidden = bubblewarpOverlay.hasAttribute("hidden");
+          toggleBubblewarp(isHidden);
+        });
+
+        console.log("✅ script validated");
+      }
+
+      if (bubblewarpClose) {
+        bubblewarpClose.addEventListener("click", () => toggleBubblewarp(false));
+      }
+    });
+  </script>
 
   <script src="shared/music-controller.js"></script>
   <script src="audio-manager.js"></script>
