@@ -524,6 +524,18 @@ body.notion-embed .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
 }
 
+.pet-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 350px;
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
+  align-self: flex-start;
+}
+
 .pet-widget {
   flex: 0 0 350px;
   width: 350px;
@@ -557,16 +569,12 @@ body.notion-embed .app-shell {
 }
 
 .bubblewarp-toggle {
-  flex: 0 0 350px;
-  width: 350px;
-  min-width: 350px;
-  max-width: 350px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 0.95rem;
-  margin: 1rem auto 0.65rem;
+  width: 100%;
   background: var(--surface);
   border: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: calc(var(--soft-radius) * 1.2);
@@ -604,61 +612,11 @@ body.notion-embed .app-shell {
   font-size: 1.2rem;
 }
 
-.bubblewarp-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: grid;
-  place-items: center;
-  padding: clamp(1.25rem, 2vw, 2rem);
-  background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8), transparent 35%),
-    radial-gradient(circle at 90% 10%, rgba(146, 169, 255, 0.25), transparent 45%),
-    radial-gradient(circle at 30% 80%, rgba(255, 194, 220, 0.25), transparent 40%),
-    var(--bg-gradient);
-  backdrop-filter: blur(20px);
-}
-
-.bubblewarp-overlay[hidden] {
-  display: none;
-}
-
-.bubblewarp-overlay iframe {
-  width: min(1240px, 100%);
-  height: min(94vh, 100%);
-  border: 0;
-  border-radius: calc(var(--soft-radius) * 1.2);
-  box-shadow: 0 24px 48px rgba(84, 62, 103, 0.25);
-  background: var(--surface);
-}
-
-.bubblewarp-overlay__close {
-  position: absolute;
-  top: clamp(0.85rem, 2vw, 1.25rem);
-  left: clamp(0.85rem, 2vw, 1.25rem);
-  padding: 0.65rem 0.95rem;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  border-radius: calc(var(--soft-radius) * 0.55);
-  background: var(--card-gradient);
-  color: var(--text-main);
-  font-family: var(--font-heading);
-  letter-spacing: 0.35px;
-  cursor: pointer;
-  box-shadow: var(--shadow-soft);
-}
-
-.bubblewarp-active {
-  overflow: hidden;
-}
-
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
     align-items: flex-start;
     justify-content: center;
-  }
-
-  .pet-widget {
-    align-self: flex-start;
   }
 
   #bubblemarks-left {
@@ -669,6 +627,7 @@ body.notion-embed .app-shell {
 @media (max-width: 1399px) {
   .screenpad-layout .app-shell,
   #bubblemarks-left,
+  .pet-column,
   .pet-widget {
     width: 100%;
   }
