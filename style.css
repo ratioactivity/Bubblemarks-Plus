@@ -604,8 +604,50 @@ body.notion-embed .app-shell {
   font-size: 1.2rem;
 }
 
-.bubblewarp-widget {
-  margin-top: 0.35rem;
+.bubblewarp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: clamp(1.25rem, 2vw, 2rem);
+  background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8), transparent 35%),
+    radial-gradient(circle at 90% 10%, rgba(146, 169, 255, 0.25), transparent 45%),
+    radial-gradient(circle at 30% 80%, rgba(255, 194, 220, 0.25), transparent 40%),
+    var(--bg-gradient);
+  backdrop-filter: blur(20px);
+}
+
+.bubblewarp-overlay[hidden] {
+  display: none;
+}
+
+.bubblewarp-overlay iframe {
+  width: min(1240px, 100%);
+  height: min(94vh, 100%);
+  border: 0;
+  border-radius: calc(var(--soft-radius) * 1.2);
+  box-shadow: 0 24px 48px rgba(84, 62, 103, 0.25);
+  background: var(--surface);
+}
+
+.bubblewarp-overlay__close {
+  position: absolute;
+  top: clamp(0.85rem, 2vw, 1.25rem);
+  left: clamp(0.85rem, 2vw, 1.25rem);
+  padding: 0.65rem 0.95rem;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: calc(var(--soft-radius) * 0.55);
+  background: var(--card-gradient);
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  letter-spacing: 0.35px;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.bubblewarp-active {
+  overflow: hidden;
 }
 
 @media (min-width: 1400px) {
