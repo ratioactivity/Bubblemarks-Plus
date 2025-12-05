@@ -234,16 +234,44 @@
     </p>
     </main>
 
-    <section id="pet-widget" class="pet-widget" aria-label="Axolotl companion widget">
-      <div class="pet-widget__frame">
-        <iframe
-          src="pet-axolotl/pet.html"
-          title="Axolotl companion"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        ></iframe>
-      </div>
-    </section>
+    <div class="pet-column">
+      <button
+        id="bubblewarp-toggle"
+        class="bubblewarp-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="bubblewarp-panel"
+      >
+        <span class="bubblewarp-toggle__logo" aria-hidden="true"></span>
+        <span class="bubblewarp-toggle__label">BubbleWarp</span>
+        <span class="bubblewarp-toggle__chevron" aria-hidden="true">✧</span>
+      </button>
+      <section
+        id="bubblewarp-panel"
+        class="pet-widget bubblewarp-panel"
+        aria-label="BubbleWarp widget"
+        hidden
+      >
+        <div class="pet-widget__frame">
+          <iframe
+            src="BubbleWarp/index.html"
+            title="BubbleWarp UI"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          ></iframe>
+        </div>
+      </section>
+      <section id="pet-widget" class="pet-widget" aria-label="Axolotl companion widget">
+        <div class="pet-widget__frame">
+          <iframe
+            src="pet-axolotl/pet.html"
+            title="Axolotl companion"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          ></iframe>
+        </div>
+      </section>
+    </div>
   </div>
 
   <template id="bookmark-card-template">
@@ -571,6 +599,39 @@
     <img src="bubblemarks://pet-axolotl/assets/gear.png" alt="" aria-hidden="true" />
     <span class="sr-only">Open settings</span>
   </button>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+      const bubblewarpPanel = document.getElementById("bubblewarp-panel");
+      const bubblewarpFrame = bubblewarpPanel?.querySelector("iframe");
+
+      const toggleBubblewarp = (shouldShow) => {
+        if (!bubblewarpPanel || !bubblewarpToggle || !bubblewarpFrame) {
+          return;
+        }
+
+        if (shouldShow) {
+          bubblewarpPanel.removeAttribute("hidden");
+          bubblewarpToggle.setAttribute("aria-expanded", "true");
+        } else {
+          bubblewarpPanel.setAttribute("hidden", "");
+          bubblewarpToggle.setAttribute("aria-expanded", "false");
+        }
+
+        console.log("✅ script validated");
+      };
+
+      if (bubblewarpToggle && bubblewarpPanel) {
+        bubblewarpToggle.addEventListener("click", () => {
+          const isHidden = bubblewarpPanel.hasAttribute("hidden");
+          toggleBubblewarp(isHidden);
+        });
+
+        console.log("✅ script validated");
+      }
+    });
+  </script>
 
   <script src="shared/music-controller.js"></script>
   <script src="audio-manager.js"></script>
