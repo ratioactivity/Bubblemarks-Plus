@@ -244,6 +244,32 @@
         ></iframe>
       </div>
     </section>
+    <button
+      id="bubblewarp-toggle"
+      class="bubblewarp-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="bubblewarp-widget"
+    >
+      <span class="bubblewarp-toggle__logo" aria-hidden="true"></span>
+      <span class="bubblewarp-toggle__label">BubbleWarp</span>
+      <span class="bubblewarp-toggle__chevron" aria-hidden="true">✧</span>
+    </button>
+    <section
+      id="bubblewarp-widget"
+      class="pet-widget bubblewarp-widget"
+      aria-label="BubbleWarp widget"
+      hidden
+    >
+      <div class="pet-widget__frame">
+        <iframe
+          src="BubbleWarp/index.html"
+          title="BubbleWarp UI"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </section>
   </div>
 
   <template id="bookmark-card-template">
@@ -571,6 +597,31 @@
     <img src="bubblemarks://pet-axolotl/assets/gear.png" alt="" aria-hidden="true" />
     <span class="sr-only">Open settings</span>
   </button>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+      const bubblewarpWidget = document.getElementById("bubblewarp-widget");
+
+      if (bubblewarpToggle && bubblewarpWidget) {
+        bubblewarpToggle.addEventListener("click", () => {
+          const isHidden = bubblewarpWidget.hasAttribute("hidden");
+
+          if (isHidden) {
+            bubblewarpWidget.removeAttribute("hidden");
+            bubblewarpToggle.setAttribute("aria-expanded", "true");
+          } else {
+            bubblewarpWidget.setAttribute("hidden", "");
+            bubblewarpToggle.setAttribute("aria-expanded", "false");
+          }
+
+          console.log("✅ script validated");
+        });
+
+        console.log("✅ script validated");
+      }
+    });
+  </script>
 
   <script src="shared/music-controller.js"></script>
   <script src="audio-manager.js"></script>
