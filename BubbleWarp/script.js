@@ -10,6 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const footerIcon = document.getElementById("footer-icon");
   const soundToggle = document.getElementById("sound-toggle");
   const whaleOverlay = document.getElementById("whale-overlay");
+  const returnButton = document.getElementById("bubblewarp-return-button");
   const favoritesBtn = document.getElementById("favorites-button");
   const favoritesOverlay = document.getElementById("favorites-overlay");
   const favoritesList = document.getElementById("favorites-list");
@@ -29,6 +30,10 @@ window.addEventListener("DOMContentLoaded", () => {
   let nuclearMode = JSON.parse(localStorage.getItem("nuclearMode") || "false");
   let favBtnResetTimer = null;
   let latestLink = null;
+
+  returnButton?.addEventListener("click", () => {
+    window.parent?.postMessage("switch-to-bubblemarks", "*");
+  });
 
   const deepDiveTopicOverlay = document.createElement("div");
   deepDiveTopicOverlay.id = "deepdive-topic-overlay";

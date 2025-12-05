@@ -814,7 +814,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   settingsModal = document.getElementById("settings-modal");
   settingsForm = document.getElementById("settings-form");
   settingsDialog = document.querySelector(".settings-modal__dialog");
+  const petWidget = document.getElementById("pet-widget");
   petWidgetFrame = document.querySelector("#pet-widget iframe");
+  const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+  const bubblewarpContainer = document.getElementById("bubblewarp-container");
+  const bubblewarpFrame = document.getElementById("bubblewarp-frame");
+  const floatingCharms = document.querySelector(".floating-charms");
 
   const petLevelUpProxy = (amount = 1) => {
     const petWindow = petWidgetFrame?.contentWindow;
@@ -852,6 +857,68 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   window.resetPetLevel = resetPetLevelProxy;
+
+  const hideBubblemarksUi = () => {
+    [
+      document.getElementById("bubblemarks-left"),
+      document.querySelector(".app-shell"),
+      petWidget,
+      floatingCharms,
+      axolotlLayer,
+    ].forEach((node) => {
+      if (node) {
+        node.setAttribute("hidden", "");
+      }
+    });
+  };
+
+  const showBubblemarksUi = () => {
+    [
+      document.getElementById("bubblemarks-left"),
+      document.querySelector(".app-shell"),
+      petWidget,
+      floatingCharms,
+      axolotlLayer,
+    ].forEach((node) => {
+      if (node) {
+        node.removeAttribute("hidden");
+      }
+    });
+  };
+
+  const openBubblewarp = () => {
+    if (!bubblewarpContainer) {
+      return;
+    }
+
+    hideBubblemarksUi();
+    bubblewarpContainer.removeAttribute("hidden");
+    if (bubblewarpFrame?.contentWindow) {
+      bubblewarpFrame.contentWindow.postMessage({ type: "bubblewarp:activated" }, "*");
+    }
+  };
+
+  const closeBubblewarp = () => {
+    if (!bubblewarpContainer) {
+      return;
+    }
+
+    bubblewarpContainer.setAttribute("hidden", "");
+    showBubblemarksUi();
+  };
+
+  bubblewarpToggle?.addEventListener("click", openBubblewarp);
+
+  window.addEventListener("message", (event) => {
+    const message = event.data;
+
+    if (
+      message === "switch-to-bubblemarks" ||
+      (message && typeof message === "object" && message.type === "switch-to-bubblemarks")
+    ) {
+      closeBubblewarp();
+    }
+  });
 
   toggleHeadingInput = document.getElementById("toggle-heading");
   toggleAxolotlInput = document.getElementById("toggle-axolotl");
