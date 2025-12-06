@@ -572,79 +572,49 @@ body.notion-embed .app-shell {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: clamp(0.75rem, 2vw, 1rem);
-  padding: clamp(0.95rem, 2vw, 1.25rem) clamp(1.15rem, 2.5vw, 1.6rem);
+  gap: 12px;
+  padding: 12px 20px;
   width: 100%;
-  background: linear-gradient(120deg, #60b4f0, #3a87b9);
-  color: #e9f6ff;
+  background: linear-gradient(135deg, #d8ecf6, #c9e1f0);
+  color: #405f7e;
   font-family: "Bigbesty", "Papernotes", cursive;
-  font-size: clamp(1.35rem, 2.6vw, 1.6rem);
-  letter-spacing: 0.4px;
-  border: none;
-  border-radius: 9999px;
-  box-shadow: 0 14px 36px rgba(60, 140, 210, 0.35), 0 6px 16px rgba(58, 135, 185, 0.28);
-  margin-bottom: clamp(0.9rem, 2vw, 1.35rem);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 16px;
   cursor: pointer;
   overflow: hidden;
-  isolation: isolate;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-}
-
-.bubblewarp-toggle::before,
-.bubblewarp-toggle::after {
-  content: "";
-  position: absolute;
-  background-repeat: no-repeat;
-  background-size: contain;
-  opacity: 0.25;
-  filter: drop-shadow(0 10px 18px rgba(0, 63, 117, 0.28));
-  pointer-events: none;
-}
-
-.bubblewarp-toggle::before {
-  inset: -18% auto auto 58%;
-  width: clamp(120px, 22vw, 180px);
-  height: clamp(120px, 22vw, 180px);
-  background-image: url("BubbleWarp/assets/bubble5.png");
-}
-
-.bubblewarp-toggle::after {
-  inset: auto 58% -26% auto;
-  width: clamp(110px, 20vw, 160px);
-  height: clamp(110px, 20vw, 160px);
-  background-image: url("BubbleWarp/assets/bubble2.png");
+  transition: filter 0.2s ease;
 }
 
 .bubblewarp-toggle:hover {
-  transform: scale(1.02);
-  box-shadow: 0 18px 42px rgba(60, 140, 210, 0.45), 0 10px 22px rgba(58, 135, 185, 0.32);
-  filter: drop-shadow(0 0 12px rgba(96, 180, 240, 0.35));
+  filter: brightness(1.03);
 }
 
 .bubblewarp-toggle__logo {
   flex-shrink: 0;
-  width: clamp(56px, 7vw, 64px);
-  height: clamp(56px, 7vw, 64px);
-  border-radius: 9999px;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2));
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 22px rgba(0, 63, 117, 0.16), inset 0 1px 2px rgba(255, 255, 255, 0.65);
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
 }
 
 .bubblewarp-toggle__logo img {
-  width: clamp(48px, 6vw, 56px);
-  height: clamp(48px, 6vw, 56px);
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0, 44, 80, 0.28));
+  border-radius: 8px;
+  margin-right: 0;
 }
 
 .bubblewarp-toggle__label {
   position: relative;
   text-align: left;
-  color: #f7fbff;
-  text-shadow: 0 4px 14px rgba(0, 63, 117, 0.45);
+  color: #405f7e;
 }
 
 .bubblewarp-toggle__chevron {
