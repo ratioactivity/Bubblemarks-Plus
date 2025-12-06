@@ -569,53 +569,82 @@ body.notion-embed .app-shell {
 }
 
 .bubblewarp-toggle {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: clamp(0.7rem, 1.4vw, 0.95rem);
-  padding: clamp(0.68rem, 1.4vw, 0.92rem) clamp(0.82rem, 1.8vw, 1.12rem);
+  gap: clamp(0.75rem, 2vw, 1rem);
+  padding: clamp(0.95rem, 2vw, 1.25rem) clamp(1.15rem, 2.5vw, 1.6rem);
   width: 100%;
-  background: var(--card-gradient);
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: calc(var(--soft-radius) * 0.95);
-  box-shadow: 0 16px 32px rgba(146, 169, 255, 0.2), 0 10px 22px rgba(255, 128, 200, 0.16);
-  backdrop-filter: blur(16px);
-  color: var(--text-main);
-  font-family: var(--font-heading);
-  font-size: 1.05rem;
+  background: linear-gradient(120deg, #60b4f0, #3a87b9);
+  color: #e9f6ff;
+  font-family: "Bigbesty", "Papernotes", cursive;
+  font-size: clamp(1.35rem, 2.6vw, 1.6rem);
+  letter-spacing: 0.4px;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 14px 36px rgba(60, 140, 210, 0.35), 0 6px 16px rgba(58, 135, 185, 0.28);
+  margin-bottom: clamp(0.9rem, 2vw, 1.35rem);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.bubblewarp-toggle::before,
+.bubblewarp-toggle::after {
+  content: "";
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.25;
+  filter: drop-shadow(0 10px 18px rgba(0, 63, 117, 0.28));
+  pointer-events: none;
+}
+
+.bubblewarp-toggle::before {
+  inset: -18% auto auto 58%;
+  width: clamp(120px, 22vw, 180px);
+  height: clamp(120px, 22vw, 180px);
+  background-image: url("BubbleWarp/assets/bubble5.png");
+}
+
+.bubblewarp-toggle::after {
+  inset: auto 58% -26% auto;
+  width: clamp(110px, 20vw, 160px);
+  height: clamp(110px, 20vw, 160px);
+  background-image: url("BubbleWarp/assets/bubble2.png");
 }
 
 .bubblewarp-toggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 22px 38px rgba(146, 169, 255, 0.22), 0 12px 22px rgba(255, 128, 200, 0.18);
+  transform: scale(1.02);
+  box-shadow: 0 18px 42px rgba(60, 140, 210, 0.45), 0 10px 22px rgba(58, 135, 185, 0.32);
+  filter: drop-shadow(0 0 12px rgba(96, 180, 240, 0.35));
 }
 
 .bubblewarp-toggle__logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(255, 244, 253, 0.95), rgba(223, 241, 255, 0.92));
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 16px rgba(146, 169, 255, 0.22);
-  display: grid;
-  place-items: center;
+  flex-shrink: 0;
+  width: clamp(56px, 7vw, 64px);
+  height: clamp(56px, 7vw, 64px);
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 22px rgba(0, 63, 117, 0.16), inset 0 1px 2px rgba(255, 255, 255, 0.65);
 }
 
 .bubblewarp-toggle__logo img {
-  width: 70%;
-  height: 70%;
+  width: clamp(48px, 6vw, 56px);
+  height: clamp(48px, 6vw, 56px);
   object-fit: contain;
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.9));
+  filter: drop-shadow(0 2px 6px rgba(0, 44, 80, 0.28));
 }
 
 .bubblewarp-toggle__label {
+  position: relative;
   text-align: left;
-  letter-spacing: 0.28px;
-  font-size: clamp(1.08rem, 2.2vw, 1.22rem);
-  color: var(--accent);
-  text-shadow: 0 3px 10px rgba(255, 128, 200, 0.35);
+  color: #f7fbff;
+  text-shadow: 0 4px 14px rgba(0, 63, 117, 0.45);
 }
 
 .bubblewarp-toggle__chevron {
