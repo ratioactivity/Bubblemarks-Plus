@@ -873,6 +873,61 @@ window.addEventListener("DOMContentLoaded", async () => {
   paginationControls = document.getElementById("pagination-controls");
   prevPageBtn = document.getElementById("prev-page");
   nextPageBtn = document.getElementById("next-page");
+  const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+  const bubblewarpOverlay = document.getElementById("bubblewarp-overlay");
+  const bubblewarpClose = document.getElementById("bubblewarp-close");
+  const bubblewarpBackdrop = bubblewarpOverlay?.querySelector("[data-bubblewarp-dismiss]");
+  const bubblewarpFrameContainer = bubblewarpOverlay?.querySelector(
+    ".bubblewarp-overlay__frame"
+  );
+  const bubblewarpFrame = bubblewarpFrameContainer?.querySelector("iframe");
+
+  const appShell = document.querySelector(".app-shell");
+  const petWidget = document.getElementById("pet-widget");
+  const bubblewarpRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let bubblewarpPreviousVisibility = new Map();
+
+  const toggleBubblewarpView = (shouldShow) => {
+    if (!bubblewarpOverlay || !bubblewarpToggle) {
+      return;
+    }
+
+    if (shouldShow) {
+      bubblewarpPreviousVisibility = new Map(
+        bubblewarpRestoreTargets.map((target) => [target, target.hidden])
+      );
+      bubblewarpOverlay.removeAttribute("hidden");
+      bubblewarpToggle.setAttribute("aria-expanded", "true");
+
+      bubblewarpRestoreTargets.forEach((target) => {
+        target.hidden = true;
+      });
+
+      window.requestAnimationFrame(() => {
+        bubblewarpClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    bubblewarpOverlay.setAttribute("hidden", "");
+    bubblewarpToggle.setAttribute("aria-expanded", "false");
+
+    bubblewarpRestoreTargets.forEach((target) => {
+      const originalState = bubblewarpPreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    window.requestAnimationFrame(() => {
+      bubblewarpToggle.focus({ preventScroll: true });
+    });
+  };
+
+  if (bubblewarpToggle && bubblewarpOverlay) {
+    bubblewarpToggle.addEventListener("click", () => toggleBubblewarpView(true));
+    bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
+    bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
+  }
 
   if (!grid) console.error("Missing #bookmarks element in DOM");
   if (!keyboardContainer) console.error("Missing #keyboard element in DOM");
