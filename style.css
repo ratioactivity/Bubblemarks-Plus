@@ -612,6 +612,73 @@ body.notion-embed .app-shell {
   font-size: 1.2rem;
 }
 
+.bubblewarp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  isolation: isolate;
+}
+
+.bubblewarp-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(16px);
+  z-index: 0;
+}
+
+.bubblewarp-overlay__frame {
+  position: relative;
+  z-index: 1;
+  width: min(1320px, 100%);
+  height: min(96vh, 1100px);
+  background: var(--surface);
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: calc(var(--soft-radius) * 1.1);
+  box-shadow: 0 28px 50px rgba(84, 62, 103, 0.28);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bubblewarp-overlay__frame iframe {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+}
+
+.bubblewarp-overlay__close {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, rgba(255, 244, 253, 0.96), rgba(223, 241, 255, 0.94));
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.bubblewarp-overlay__close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 38px rgba(146, 169, 255, 0.28);
+}
+
+body.bubblewarp-open {
+  overflow: hidden;
+}
+
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;

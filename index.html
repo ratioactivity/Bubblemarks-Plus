@@ -240,27 +240,12 @@
         class="bubblewarp-toggle"
         type="button"
         aria-expanded="false"
-        aria-controls="bubblewarp-panel"
+        aria-controls="bubblewarp-overlay"
       >
         <span class="bubblewarp-toggle__logo" aria-hidden="true"></span>
         <span class="bubblewarp-toggle__label">BubbleWarp</span>
         <span class="bubblewarp-toggle__chevron" aria-hidden="true">✧</span>
       </button>
-      <section
-        id="bubblewarp-panel"
-        class="pet-widget bubblewarp-panel"
-        aria-label="BubbleWarp widget"
-        hidden
-      >
-        <div class="pet-widget__frame">
-          <iframe
-            src="BubbleWarp/index.html"
-            title="BubbleWarp UI"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-          ></iframe>
-        </div>
-      </section>
       <section id="pet-widget" class="pet-widget" aria-label="Axolotl companion widget">
         <div class="pet-widget__frame">
           <iframe
@@ -286,14 +271,14 @@
     </a>
   </template>
 
-  <div
-    id="bookmark-modal"
-    class="bookmark-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="bookmark-modal-title"
-    hidden
-  >
+    <div
+      id="bookmark-modal"
+      class="bookmark-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bookmark-modal-title"
+      hidden
+    >
     <div class="bookmark-modal__backdrop" data-bookmark-dismiss="true"></div>
     <div class="bookmark-modal__dialog" tabindex="-1">
       <div class="bookmark-modal__header">
@@ -429,6 +414,33 @@
       </div>
     </article>
   </template>
+
+  <div
+    id="bubblewarp-overlay"
+    class="bubblewarp-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="BubbleWarp view"
+    hidden
+  >
+    <div class="bubblewarp-overlay__backdrop" data-bubblewarp-dismiss="true"></div>
+    <div class="bubblewarp-overlay__frame">
+      <button
+        type="button"
+        class="bubblewarp-overlay__close"
+        id="bubblewarp-close"
+        aria-label="Return to Bubblemarks"
+      >
+        ← Back
+      </button>
+      <iframe
+        src="BubbleWarp/index.html"
+        title="BubbleWarp UI"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
+  </div>
 
   <div
     id="manage-bookmarks-modal"
@@ -603,29 +615,47 @@
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
-      const bubblewarpPanel = document.getElementById("bubblewarp-panel");
-      const bubblewarpFrame = bubblewarpPanel?.querySelector("iframe");
+      const bubblewarpOverlay = document.getElementById("bubblewarp-overlay");
+      const bubblewarpClose = document.getElementById("bubblewarp-close");
+      const bubblewarpBackdrop = bubblewarpOverlay?.querySelector("[data-bubblewarp-dismiss]");
+      const bubblewarpFrame = bubblewarpOverlay?.querySelector("iframe");
 
       const toggleBubblewarp = (shouldShow) => {
-        if (!bubblewarpPanel || !bubblewarpToggle || !bubblewarpFrame) {
+        if (
+          !bubblewarpOverlay ||
+          !bubblewarpToggle ||
+          !bubblewarpClose ||
+          !bubblewarpBackdrop ||
+          !bubblewarpFrame
+        ) {
+          console.log("✅ script validated");
           return;
         }
 
         if (shouldShow) {
-          bubblewarpPanel.removeAttribute("hidden");
+          bubblewarpOverlay.removeAttribute("hidden");
+          document.body.classList.add("bubblewarp-open");
           bubblewarpToggle.setAttribute("aria-expanded", "true");
+          bubblewarpClose.focus({ preventScroll: true });
         } else {
-          bubblewarpPanel.setAttribute("hidden", "");
+          bubblewarpOverlay.setAttribute("hidden", "");
+          document.body.classList.remove("bubblewarp-open");
           bubblewarpToggle.setAttribute("aria-expanded", "false");
+          bubblewarpToggle.focus({ preventScroll: true });
         }
 
         console.log("✅ script validated");
       };
 
-      if (bubblewarpToggle && bubblewarpPanel) {
-        bubblewarpToggle.addEventListener("click", () => {
-          const isHidden = bubblewarpPanel.hasAttribute("hidden");
-          toggleBubblewarp(isHidden);
+      if (bubblewarpToggle && bubblewarpOverlay) {
+        bubblewarpToggle.addEventListener("click", () => toggleBubblewarp(true));
+        bubblewarpClose?.addEventListener("click", () => toggleBubblewarp(false));
+        bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarp(false));
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !bubblewarpOverlay.hasAttribute("hidden")) {
+            toggleBubblewarp(false);
+          }
         });
 
         console.log("✅ script validated");
