@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BubbleWarp</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="assets/icon128.png" />
+  <script defer src="links.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <main id="main-content">
+    <div id="bubbles-container"></div>
+
+    <div id="logo-container">
+      <img id="logo" src="assets/logo.gif" alt="BubbleWarp Logo">
+    </div>
+  </main>
+
+  <footer id="footer-bar">
+    <div id="footer-left">
+      <span id="timer">Time wasted: 0s</span>
+      <span id="clicks">Bubbles burst: 0</span>
+    </div>
+
+    <div id="footer-right">
+      <label id="filter-label">
+        <input type="checkbox" id="no-itch" />
+        *.✧ avoid itch.io games ✧.*
+      </label>
+
+    <label id="deepdive-toggle-label">
+      <input type="checkbox" id="deepdive-toggle" />
+      🌊 deep dive
+    </label>
+    <label id="nuclear-toggle-label">
+      <input type="checkbox" id="nuclear-toggle" />
+      ☢ Nuclear Mode
+    </label>
+    <button id="menu-button">📜 Menu</button>
+    <button id="add-favorite-button">⭐ It was fintastic!</button>
+    <button id="favorites-button">⭐ Finternet Favorites</button>
+    <img id="footer-icon" src="assets/icon128.png" alt="GitHub Link">
+  </div>
+</footer>
+
+<!-- Whale event overlay -->
+<div id="whale-overlay">🐋 WHALE EVENT 🐋</div>
+
+<!-- Finternet Favorites Overlay -->
+<div id="favorites-overlay">
+  <h2>⭐ Finternet Favorites ⭐</h2>
+  <ul id="favorites-list"></ul>
+  <button id="close-favorites">Close</button>
+</div>
+
+  </main>
+
+  <div id="menu-modal" aria-hidden="true">
+    <div id="menu-backdrop"></div>
+    <div id="menu-content" role="dialog" aria-modal="true" aria-label="Menu">
+      <button id="menu-close" aria-label="Close menu">✖</button>
+      <div id="menu-tabs">
+        <button class="menu-tab active" data-tab="normal">Normal Mode</button>
+        <button class="menu-tab" data-tab="deep-dive">Deep Dive</button>
+        <button class="menu-tab" data-tab="radioactive">Radioactive</button>
+      </div>
+      <div class="menu-panel active" data-panel="normal">
+        <ul id="menu-normal-list"></ul>
+      </div>
+      <div class="menu-panel" data-panel="deep-dive">
+        <ul id="menu-deepdive-list"></ul>
+      </div>
+      <div class="menu-panel" data-panel="radioactive">
+        <ul id="menu-radioactive-list"></ul>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
