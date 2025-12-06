@@ -596,6 +596,118 @@ body.notion-embed .app-shell {
   box-shadow: 0 18px 32px rgba(87, 132, 255, 0.33), 0 9px 18px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
+.bubblewarp-toggle__bubbles {
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bubblewarp-toggle__bubble {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.35;
+  transform: translate3d(0, 8px, 0) scale(0.95);
+  transition: transform 0.8s ease, opacity 0.8s ease;
+}
+
+.bubblewarp-toggle:hover .bubblewarp-toggle__bubble {
+  opacity: 0.78;
+  transform: translate3d(var(--drift-x, 0px), var(--drift-y, -14px), 0) scale(1);
+}
+
+.bubblewarp-toggle__bubble--one {
+  bottom: 8%;
+  left: 18%;
+  width: 13px;
+  height: 13px;
+  background-image: url("BubbleWarp/assets/bubble1.png");
+  --drift-x: -6px;
+  --drift-y: -18px;
+}
+
+.bubblewarp-toggle__bubble--two {
+  bottom: 12%;
+  left: 44%;
+  width: 11px;
+  height: 11px;
+  background-image: url("BubbleWarp/assets/bubble2.png");
+  --drift-x: 3px;
+  --drift-y: -16px;
+}
+
+.bubblewarp-toggle__bubble--three {
+  bottom: 16%;
+  left: 66%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble3.png");
+  --drift-x: 8px;
+  --drift-y: -20px;
+}
+
+.bubblewarp-toggle__bubble--four {
+  bottom: 22%;
+  left: 28%;
+  width: 14px;
+  height: 14px;
+  background-image: url("BubbleWarp/assets/bubble4.png");
+  --drift-x: -4px;
+  --drift-y: -22px;
+}
+
+.bubblewarp-toggle__bubble--five {
+  bottom: 26%;
+  left: 52%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble5.png");
+  --drift-x: 5px;
+  --drift-y: -18px;
+}
+
+.bubblewarp-toggle__bubble--six {
+  bottom: 30%;
+  left: 74%;
+  width: 10px;
+  height: 10px;
+  background-image: url("BubbleWarp/assets/bubble6.png");
+  --drift-x: 2px;
+  --drift-y: -15px;
+}
+
+.bubblewarp-toggle__bubble--seven {
+  bottom: 32%;
+  left: 36%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble7.png");
+  --drift-x: -3px;
+  --drift-y: -19px;
+}
+
+.bubblewarp-toggle__bubble--eight {
+  bottom: 38%;
+  left: 60%;
+  width: 13px;
+  height: 13px;
+  background-image: url("BubbleWarp/assets/bubble8.png");
+  --drift-x: 4px;
+  --drift-y: -21px;
+}
+
+.bubblewarp-toggle__logo,
+.bubblewarp-toggle__label,
+.bubblewarp-toggle__chevron {
+  position: relative;
+  z-index: 1;
+}
+
 .bubblewarp-toggle__logo {
   flex-shrink: 0;
   display: inline-flex;
