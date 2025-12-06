@@ -596,6 +596,248 @@ body.notion-embed .app-shell {
   box-shadow: 0 18px 32px rgba(87, 132, 255, 0.33), 0 9px 18px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
+.bubblewarp-toggle__bubbles {
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bubblewarp-toggle__bubble {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
+}
+
+.bubblewarp-toggle:hover .bubblewarp-toggle__bubble {
+  animation: bubblewarp-burst 1.1s ease-out forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes bubblewarp-burst {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7);
+  }
+  45% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--burst-x, 0px), var(--burst-y, -48px), 0) scale(var(--burst-scale, 1.25));
+  }
+}
+
+.bubblewarp-toggle__bubble--one {
+  bottom: 10%;
+  left: 18%;
+  width: 13px;
+  height: 13px;
+  background-image: url("BubbleWarp/assets/bubble1.png");
+  --start-x: -4px;
+  --start-y: 16px;
+  --burst-x: -34px;
+  --burst-y: -52px;
+  --burst-scale: 1.25;
+  --delay: 0s;
+}
+
+.bubblewarp-toggle__bubble--two {
+  bottom: 16%;
+  left: 34%;
+  width: 11px;
+  height: 11px;
+  background-image: url("BubbleWarp/assets/bubble2.png");
+  --start-x: 0px;
+  --start-y: 18px;
+  --burst-x: 22px;
+  --burst-y: -62px;
+  --burst-scale: 1.3;
+  --delay: 0.05s;
+}
+
+.bubblewarp-toggle__bubble--three {
+  bottom: 20%;
+  left: 52%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble3.png");
+  --start-x: 6px;
+  --start-y: 12px;
+  --burst-x: 42px;
+  --burst-y: -58px;
+  --burst-scale: 1.2;
+  --delay: 0.1s;
+}
+
+.bubblewarp-toggle__bubble--four {
+  bottom: 28%;
+  left: 28%;
+  width: 14px;
+  height: 14px;
+  background-image: url("BubbleWarp/assets/bubble4.png");
+  --start-x: -2px;
+  --start-y: 14px;
+  --burst-x: -14px;
+  --burst-y: -70px;
+  --burst-scale: 1.4;
+  --delay: 0.08s;
+}
+
+.bubblewarp-toggle__bubble--five {
+  bottom: 24%;
+  left: 56%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble5.png");
+  --start-x: 4px;
+  --start-y: 10px;
+  --burst-x: 30px;
+  --burst-y: -66px;
+  --burst-scale: 1.22;
+  --delay: 0.06s;
+}
+
+.bubblewarp-toggle__bubble--six {
+  bottom: 32%;
+  left: 74%;
+  width: 10px;
+  height: 10px;
+  background-image: url("BubbleWarp/assets/bubble6.png");
+  --start-x: 8px;
+  --start-y: 16px;
+  --burst-x: 18px;
+  --burst-y: -54px;
+  --burst-scale: 1.15;
+  --delay: 0.12s;
+}
+
+.bubblewarp-toggle__bubble--seven {
+  bottom: 36%;
+  left: 40%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble7.png");
+  --start-x: -6px;
+  --start-y: 8px;
+  --burst-x: -40px;
+  --burst-y: -64px;
+  --burst-scale: 1.18;
+  --delay: 0.14s;
+}
+
+.bubblewarp-toggle__bubble--eight {
+  bottom: 38%;
+  left: 62%;
+  width: 13px;
+  height: 13px;
+  background-image: url("BubbleWarp/assets/bubble8.png");
+  --start-x: 10px;
+  --start-y: 10px;
+  --burst-x: 10px;
+  --burst-y: -72px;
+  --burst-scale: 1.3;
+  --delay: 0.16s;
+}
+
+.bubblewarp-toggle__bubble--nine {
+  bottom: 22%;
+  left: 14%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble2.png");
+  --start-x: -8px;
+  --start-y: 18px;
+  --burst-x: -46px;
+  --burst-y: -62px;
+  --burst-scale: 1.2;
+  --delay: 0.18s;
+}
+
+.bubblewarp-toggle__bubble--ten {
+  bottom: 30%;
+  left: 48%;
+  width: 11px;
+  height: 11px;
+  background-image: url("BubbleWarp/assets/bubble6.png");
+  --start-x: 2px;
+  --start-y: 14px;
+  --burst-x: -6px;
+  --burst-y: -78px;
+  --burst-scale: 1.35;
+  --delay: 0.2s;
+}
+
+.bubblewarp-toggle__bubble--eleven {
+  bottom: 34%;
+  left: 68%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble4.png");
+  --start-x: 12px;
+  --start-y: 12px;
+  --burst-x: 38px;
+  --burst-y: -68px;
+  --burst-scale: 1.18;
+  --delay: 0.22s;
+}
+
+.bubblewarp-toggle__bubble--twelve {
+  bottom: 40%;
+  left: 32%;
+  width: 10px;
+  height: 10px;
+  background-image: url("BubbleWarp/assets/bubble1.png");
+  --start-x: -10px;
+  --start-y: 10px;
+  --burst-x: -24px;
+  --burst-y: -84px;
+  --burst-scale: 1.28;
+  --delay: 0.24s;
+}
+
+.bubblewarp-toggle__bubble--thirteen {
+  bottom: 42%;
+  left: 54%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble7.png");
+  --start-x: 6px;
+  --start-y: 16px;
+  --burst-x: 28px;
+  --burst-y: -80px;
+  --burst-scale: 1.32;
+  --delay: 0.26s;
+}
+
+.bubblewarp-toggle__bubble--fourteen {
+  bottom: 18%;
+  left: 82%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble3.png");
+  --start-x: 14px;
+  --start-y: 20px;
+  --burst-x: 52px;
+  --burst-y: -58px;
+  --burst-scale: 1.16;
+  --delay: 0.28s;
+}
+
+.bubblewarp-toggle__logo,
+.bubblewarp-toggle__label,
+.bubblewarp-toggle__chevron {
+  position: relative;
+  z-index: 1;
+}
+
 .bubblewarp-toggle__logo {
   flex-shrink: 0;
   display: inline-flex;
