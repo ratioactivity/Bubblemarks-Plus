@@ -607,12 +607,20 @@ body.notion-embed .app-shell {
 
 .bubblewarp-toggle__bubble {
   position: absolute;
+  --seed: 0.42;
+  --seed-y: 0.5;
+  --burst-distance: 190px;
+  --start-x: calc((0.5 - var(--seed)) * 26px);
+  --start-y: calc(10px + var(--seed-y) * 18px);
+  --burst-x: calc((var(--seed) - 0.5) * var(--burst-distance));
+  --burst-y: calc((0.18 - var(--seed-y)) * var(--burst-distance) - 34px);
+  --spin: calc((var(--seed) - 0.5) * 40deg);
   width: 12px;
   height: 12px;
   background-size: contain;
   background-repeat: no-repeat;
   opacity: 0;
-  transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7);
+  transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7) rotate(var(--spin, 0deg));
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
 }
 
@@ -624,224 +632,240 @@ body.notion-embed .app-shell {
 @keyframes bubblewarp-burst {
   0% {
     opacity: 0.2;
-    transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7);
+    transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7) rotate(var(--spin, 0deg));
   }
   45% {
     opacity: 0.95;
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--burst-x, 0px), var(--burst-y, -48px), 0) scale(var(--burst-scale, 1.25));
+    transform: translate3d(var(--burst-x, 0px), var(--burst-y, -48px), 0) scale(var(--burst-scale, 1.25)) rotate(calc(var(--spin, 0deg) * -1));
   }
 }
 
 .bubblewarp-toggle__bubble--one {
-  bottom: 10%;
-  left: 18%;
+  bottom: 14%;
+  left: 28%;
   width: 13px;
   height: 13px;
   background-image: url("BubbleWarp/assets/bubble1.png");
-  --start-x: -4px;
-  --start-y: 16px;
-  --burst-x: -34px;
-  --burst-y: -52px;
-  --burst-scale: 1.25;
+  --start-x: -10px;
+  --start-y: 14px;
+  --burst-x: -92px;
+  --burst-y: -114px;
+  --burst-scale: 1.26;
+  --spin: -18deg;
   --delay: 0s;
 }
 
 .bubblewarp-toggle__bubble--two {
-  bottom: 16%;
-  left: 34%;
+  bottom: 12%;
+  left: 72%;
   width: 11px;
   height: 11px;
   background-image: url("BubbleWarp/assets/bubble2.png");
-  --start-x: 0px;
+  --start-x: 12px;
   --start-y: 18px;
-  --burst-x: 22px;
-  --burst-y: -62px;
-  --burst-scale: 1.3;
-  --delay: 0.05s;
+  --burst-x: 86px;
+  --burst-y: -132px;
+  --burst-scale: 1.24;
+  --spin: 24deg;
+  --delay: 0.02s;
 }
 
 .bubblewarp-toggle__bubble--three {
-  bottom: 20%;
-  left: 52%;
+  bottom: 30%;
+  left: 40%;
   width: 12px;
   height: 12px;
   background-image: url("BubbleWarp/assets/bubble3.png");
-  --start-x: 6px;
-  --start-y: 12px;
-  --burst-x: 42px;
-  --burst-y: -58px;
-  --burst-scale: 1.2;
-  --delay: 0.1s;
+  --start-x: -4px;
+  --start-y: 20px;
+  --burst-x: -24px;
+  --burst-y: -168px;
+  --burst-scale: 1.36;
+  --spin: 8deg;
+  --delay: 0.05s;
 }
 
 .bubblewarp-toggle__bubble--four {
-  bottom: 28%;
-  left: 28%;
+  bottom: 22%;
+  left: 14%;
   width: 14px;
   height: 14px;
   background-image: url("BubbleWarp/assets/bubble4.png");
-  --start-x: -2px;
-  --start-y: 14px;
-  --burst-x: -14px;
-  --burst-y: -70px;
-  --burst-scale: 1.4;
+  --start-x: 6px;
+  --start-y: 12px;
+  --burst-x: 44px;
+  --burst-y: -142px;
+  --burst-scale: 1.3;
+  --spin: -22deg;
   --delay: 0.08s;
 }
 
 .bubblewarp-toggle__bubble--five {
-  bottom: 24%;
-  left: 56%;
+  bottom: 32%;
+  left: 66%;
   width: 12px;
   height: 12px;
   background-image: url("BubbleWarp/assets/bubble5.png");
-  --start-x: 4px;
-  --start-y: 10px;
-  --burst-x: 30px;
-  --burst-y: -66px;
-  --burst-scale: 1.22;
-  --delay: 0.06s;
+  --start-x: -16px;
+  --start-y: 16px;
+  --burst-x: -118px;
+  --burst-y: -86px;
+  --burst-scale: 1.18;
+  --spin: 18deg;
+  --delay: 0.1s;
 }
 
 .bubblewarp-toggle__bubble--six {
-  bottom: 32%;
-  left: 74%;
+  bottom: 10%;
+  left: 54%;
   width: 10px;
   height: 10px;
   background-image: url("BubbleWarp/assets/bubble6.png");
-  --start-x: 8px;
-  --start-y: 16px;
-  --burst-x: 18px;
-  --burst-y: -54px;
-  --burst-scale: 1.15;
+  --start-x: 18px;
+  --start-y: 10px;
+  --burst-x: 126px;
+  --burst-y: -78px;
+  --burst-scale: 1.14;
+  --spin: -30deg;
   --delay: 0.12s;
 }
 
 .bubblewarp-toggle__bubble--seven {
-  bottom: 36%;
-  left: 40%;
+  bottom: 18%;
+  left: 8%;
   width: 12px;
   height: 12px;
   background-image: url("BubbleWarp/assets/bubble7.png");
-  --start-x: -6px;
+  --start-x: -22px;
   --start-y: 8px;
-  --burst-x: -40px;
-  --burst-y: -64px;
-  --burst-scale: 1.18;
+  --burst-x: -92px;
+  --burst-y: -58px;
+  --burst-scale: 1.12;
+  --spin: 28deg;
   --delay: 0.14s;
 }
 
 .bubblewarp-toggle__bubble--eight {
-  bottom: 38%;
-  left: 62%;
+  bottom: 46%;
+  left: 50%;
   width: 13px;
   height: 13px;
   background-image: url("BubbleWarp/assets/bubble8.png");
-  --start-x: 10px;
-  --start-y: 10px;
-  --burst-x: 10px;
-  --burst-y: -72px;
-  --burst-scale: 1.3;
+  --start-x: 2px;
+  --start-y: 22px;
+  --burst-x: 18px;
+  --burst-y: -186px;
+  --burst-scale: 1.42;
+  --spin: -12deg;
   --delay: 0.16s;
 }
 
 .bubblewarp-toggle__bubble--nine {
-  bottom: 22%;
-  left: 14%;
+  bottom: 28%;
+  left: 84%;
   width: 12px;
   height: 12px;
   background-image: url("BubbleWarp/assets/bubble2.png");
-  --start-x: -8px;
+  --start-x: -6px;
   --start-y: 18px;
-  --burst-x: -46px;
-  --burst-y: -62px;
-  --burst-scale: 1.2;
+  --burst-x: -52px;
+  --burst-y: -164px;
+  --burst-scale: 1.34;
+  --spin: 32deg;
   --delay: 0.18s;
 }
 
 .bubblewarp-toggle__bubble--ten {
-  bottom: 30%;
-  left: 48%;
-  width: 11px;
-  height: 11px;
-  background-image: url("BubbleWarp/assets/bubble6.png");
-  --start-x: 2px;
+  bottom: 22%;
+  left: 46%;
+  width: 12px;
+  height: 12px;
+  background-image: url("BubbleWarp/assets/bubble2.png");
+  --start-x: 16px;
   --start-y: 14px;
-  --burst-x: -6px;
-  --burst-y: -78px;
-  --burst-scale: 1.35;
+  --burst-x: 84px;
+  --burst-y: -126px;
+  --burst-scale: 1.28;
+  --spin: -10deg;
   --delay: 0.2s;
 }
 
 .bubblewarp-toggle__bubble--eleven {
-  bottom: 34%;
-  left: 68%;
-  width: 12px;
-  height: 12px;
-  background-image: url("BubbleWarp/assets/bubble4.png");
-  --start-x: 12px;
+  bottom: 40%;
+  left: 10%;
+  width: 13px;
+  height: 13px;
+  background-image: url("BubbleWarp/assets/bubble3.png");
+  --start-x: -12px;
   --start-y: 12px;
-  --burst-x: 38px;
-  --burst-y: -68px;
-  --burst-scale: 1.18;
+  --burst-x: -140px;
+  --burst-y: -96px;
+  --burst-scale: 1.24;
+  --spin: 16deg;
   --delay: 0.22s;
 }
 
 .bubblewarp-toggle__bubble--twelve {
-  bottom: 40%;
-  left: 32%;
-  width: 10px;
-  height: 10px;
-  background-image: url("BubbleWarp/assets/bubble1.png");
-  --start-x: -10px;
-  --start-y: 10px;
-  --burst-x: -24px;
-  --burst-y: -84px;
-  --burst-scale: 1.28;
+  bottom: 16%;
+  left: 62%;
+  width: 11px;
+  height: 11px;
+  background-image: url("BubbleWarp/assets/bubble4.png");
+  --start-x: 24px;
+  --start-y: 16px;
+  --burst-x: 146px;
+  --burst-y: -102px;
+  --burst-scale: 1.22;
+  --spin: -8deg;
   --delay: 0.24s;
 }
 
 .bubblewarp-toggle__bubble--thirteen {
-  bottom: 42%;
-  left: 54%;
+  bottom: 52%;
+  left: 32%;
   width: 12px;
   height: 12px;
-  background-image: url("BubbleWarp/assets/bubble7.png");
-  --start-x: 6px;
-  --start-y: 16px;
-  --burst-x: 28px;
-  --burst-y: -80px;
-  --burst-scale: 1.32;
+  background-image: url("BubbleWarp/assets/bubble5.png");
+  --start-x: -2px;
+  --start-y: 26px;
+  --burst-x: -8px;
+  --burst-y: -190px;
+  --burst-scale: 1.46;
+  --spin: 12deg;
   --delay: 0.26s;
 }
 
 .bubblewarp-toggle__bubble--fourteen {
-  bottom: 18%;
-  left: 82%;
+  bottom: 26%;
+  left: 58%;
   width: 12px;
   height: 12px;
   background-image: url("BubbleWarp/assets/bubble3.png");
-  --start-x: 14px;
-  --start-y: 20px;
+  --start-x: 10px;
+  --start-y: 10px;
   --burst-x: 52px;
-  --burst-y: -58px;
-  --burst-scale: 1.16;
+  --burst-y: -168px;
+  --burst-scale: 1.32;
+  --spin: -26deg;
   --delay: 0.28s;
 }
 
 .bubblewarp-toggle__bubble:nth-child(n + 15) {
   width: 11px;
   height: 11px;
-  bottom: 12%;
-  left: 22%;
-  --start-x: -4px;
-  --start-y: 12px;
-  --burst-x: -32px;
-  --burst-y: -60px;
-  --burst-scale: 1.18;
-  --delay: 0.02s;
+  left: calc(4% + var(--seed) * 92%);
+  bottom: calc(6% + var(--seed-y) * 48%);
+  --start-x: calc((0.5 - var(--seed)) * 28px);
+  --start-y: calc(8px + var(--seed-y) * 18px);
+  --burst-distance: calc(130px + var(--seed-y) * 150px);
+  --burst-x: calc((var(--seed) - 0.5) * var(--burst-distance));
+  --burst-y: calc((0.18 - var(--seed-y)) * var(--burst-distance) - 34px);
+  --burst-scale: calc(1.05 + var(--seed) * 0.55);
+  --spin: calc((var(--seed) - 0.5) * 48deg);
+  --delay: calc((var(--seed) * 0.08s) + (var(--seed-y) * 0.14s));
 }
 
 .bubblewarp-toggle__bubble:nth-child(8n + 15) {
@@ -880,125 +904,117 @@ body.notion-embed .app-shell {
   background-image: url("BubbleWarp/assets/bubble8.png");
 }
 
+.bubblewarp-toggle__bubble:nth-child(6n + 15) {
+  --seed: 0.04;
+  --seed-y: 0.72;
+  --burst-distance: 210px;
+}
+
+.bubblewarp-toggle__bubble:nth-child(6n + 16) {
+  --seed: 0.22;
+  --seed-y: 0.32;
+  --burst-distance: 170px;
+}
+
+.bubblewarp-toggle__bubble:nth-child(6n + 17) {
+  --seed: 0.48;
+  --seed-y: 0.58;
+  --burst-distance: 190px;
+}
+
+.bubblewarp-toggle__bubble:nth-child(6n + 18) {
+  --seed: 0.66;
+  --seed-y: 0.18;
+  --burst-distance: 220px;
+}
+
+.bubblewarp-toggle__bubble:nth-child(6n + 19) {
+  --seed: 0.82;
+  --seed-y: 0.46;
+  --burst-distance: 200px;
+}
+
+.bubblewarp-toggle__bubble:nth-child(6n + 20) {
+  --seed: 0.94;
+  --seed-y: 0.74;
+  --burst-distance: 240px;
+}
+
 .bubblewarp-toggle__bubble:nth-child(10n + 15) {
-  bottom: 14%;
-  left: 10%;
-  --start-x: -18px;
-  --start-y: 16px;
-  --burst-x: -64px;
-  --burst-y: -66px;
-  --burst-scale: 1.22;
-  --delay: 0.03s;
+  --seed: 0.12;
+  --seed-y: 0.66;
+  --burst-distance: 210px;
+  --spin: -24deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 16) {
-  bottom: 16%;
-  left: 26%;
-  --start-x: -6px;
-  --start-y: 18px;
-  --burst-x: -26px;
-  --burst-y: -88px;
-  --burst-scale: 1.32;
-  --delay: 0.06s;
+  --seed: 0.26;
+  --seed-y: 0.22;
+  --burst-distance: 190px;
+  --spin: 18deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 17) {
-  bottom: 18%;
-  left: 42%;
-  --start-x: 4px;
-  --start-y: 14px;
-  --burst-x: 12px;
-  --burst-y: -92px;
-  --burst-scale: 1.4;
-  --delay: 0.08s;
+  --seed: 0.44;
+  --seed-y: 0.58;
+  --burst-distance: 230px;
+  --spin: -16deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 18) {
-  bottom: 20%;
-  left: 58%;
-  --start-x: 12px;
-  --start-y: 12px;
-  --burst-x: 42px;
-  --burst-y: -74px;
-  --burst-scale: 1.3;
-  --delay: 0.1s;
+  --seed: 0.62;
+  --seed-y: 0.34;
+  --burst-distance: 180px;
+  --spin: 14deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 19) {
-  bottom: 22%;
-  left: 74%;
-  --start-x: 18px;
-  --start-y: 16px;
-  --burst-x: 64px;
-  --burst-y: -62px;
-  --burst-scale: 1.2;
-  --delay: 0.12s;
+  --seed: 0.74;
+  --seed-y: 0.14;
+  --burst-distance: 240px;
+  --spin: 26deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 20) {
-  bottom: 24%;
-  left: 88%;
-  --start-x: 22px;
-  --start-y: 18px;
-  --burst-x: 82px;
-  --burst-y: -58px;
-  --burst-scale: 1.16;
-  --delay: 0.14s;
+  --seed: 0.86;
+  --seed-y: 0.42;
+  --burst-distance: 175px;
+  --spin: -20deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 21) {
-  bottom: 32%;
-  left: 14%;
-  --start-x: -14px;
-  --start-y: 14px;
-  --burst-x: -68px;
-  --burst-y: -78px;
-  --burst-scale: 1.36;
-  --delay: 0.16s;
+  --seed: 0.92;
+  --seed-y: 0.82;
+  --burst-distance: 205px;
+  --spin: 12deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 22) {
-  bottom: 34%;
-  left: 34%;
-  --start-x: -2px;
-  --start-y: 10px;
-  --burst-x: -14px;
-  --burst-y: -96px;
-  --burst-scale: 1.48;
-  --delay: 0.18s;
+  --seed: 0.58;
+  --seed-y: 0.92;
+  --burst-distance: 225px;
+  --spin: -18deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 23) {
-  bottom: 36%;
-  left: 56%;
-  --start-x: 8px;
-  --start-y: 16px;
-  --burst-x: 38px;
-  --burst-y: -88px;
-  --burst-scale: 1.42;
-  --delay: 0.22s;
+  --seed: 0.36;
+  --seed-y: 0.44;
+  --burst-distance: 185px;
+  --spin: 28deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 24) {
-  bottom: 38%;
-  left: 78%;
-  --start-x: 18px;
-  --start-y: 12px;
-  --burst-x: 68px;
-  --burst-y: -82px;
-  --burst-scale: 1.26;
-  --delay: 0.26s;
+  --seed: 0.18;
+  --seed-y: 0.12;
+  --burst-distance: 160px;
+  --spin: -32deg;
 }
 
 .bubblewarp-toggle__bubble:nth-child(10n + 25) {
-  bottom: 40%;
-  left: 90%;
-  --start-x: 26px;
-  --start-y: 10px;
-  --burst-x: 98px;
-  --burst-y: -62px;
-  --burst-scale: 1.18;
-  --delay: 0.3s;
+  --seed: 0.98;
+  --seed-y: 0.26;
+  --burst-distance: 245px;
+  --spin: 6deg;
 }
 
 .bubblewarp-toggle__logo,
