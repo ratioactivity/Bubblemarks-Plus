@@ -575,8 +575,8 @@ body.notion-embed .app-shell {
   gap: 12px;
   padding: 12px 20px;
   width: 100%;
-  background: linear-gradient(135deg, #0fced5, #2d4bff 60%, #0f1f5c);
-  color: #f7fbff;
+  background: linear-gradient(135deg, #c5f1ff, #c7dfff 55%, #d7ccff);
+  color: #fdfdff;
   font-family: "Bigbesty", "Papernotes", cursive;
   font-size: 1.25rem;
   line-height: 1.2;
@@ -586,14 +586,14 @@ body.notion-embed .app-shell {
   margin-bottom: 16px;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 0 14px 26px rgba(87, 132, 255, 0.28), 0 6px 14px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 24px rgba(137, 170, 255, 0.22), 0 8px 18px rgba(255, 194, 220, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: filter 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .bubblewarp-toggle:hover {
-  filter: brightness(1.05);
-  border-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 32px rgba(87, 132, 255, 0.33), 0 9px 18px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  filter: brightness(1.03);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 30px rgba(137, 170, 255, 0.26), 0 10px 20px rgba(255, 194, 220, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.48);
 }
 
 .bubblewarp-toggle__bubbles {
@@ -621,7 +621,7 @@ body.notion-embed .app-shell {
   background-repeat: no-repeat;
   opacity: 0;
   transform: translate3d(var(--start-x, 0px), var(--start-y, 12px), 0) scale(0.7) rotate(var(--spin, 0deg));
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 3px 6px rgba(92, 126, 173, 0.16));
 }
 
 .bubblewarp-toggle:hover .bubblewarp-toggle__bubble {
@@ -1046,7 +1046,7 @@ body.notion-embed .app-shell {
   position: relative;
   text-align: left;
   color: #ffffff;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), 0 6px 14px rgba(88, 120, 180, 0.28);
 }
 
 .bubblewarp-toggle__chevron {
