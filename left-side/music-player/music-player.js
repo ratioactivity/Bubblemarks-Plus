@@ -1173,6 +1173,33 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     };
 
+    const applyVolume = (value) => {
+      const normalized = Math.min(Math.max(value, 0), 1);
+      audio.volume = normalized;
+      return normalized;
+    };
+
+    const updateSpotifyVolume = async (value) => {
+      const token = await ensureSpotifyAccessToken();
+      if (!token) {
+        return;
+      }
+
+      const percent = Math.round(value * 100);
+      const response = await requestSpotify(
+        `/me/player/volume?volume_percent=${percent}`,
+        { method: "PUT" },
+        token,
+      );
+
+      if (response && (response.ok || response.status === 204)) {
+        setSpotifyStatus(`Set Spotify volume to ${percent}%`);
+        return;
+      }
+
+      setSpotifyStatus("Spotify volume controls are unavailable right now.");
+    };
+
   const refreshSpotifyNowPlayingFromApi = async () => {
       if (!spotifySettings.clientId) {
         if (spotifyTitle) {
@@ -1425,7 +1452,10 @@ window.addEventListener("DOMContentLoaded", () => {
         if (target instanceof HTMLInputElement) {
           const newVolume = Number.parseFloat(target.value);
           if (Number.isFinite(newVolume)) {
-            audio.volume = newVolume;
+            const normalizedVolume = applyVolume(newVolume);
+            if (musicController.mode === "spotify") {
+              updateSpotifyVolume(normalizedVolume).catch(() => {});
+            }
           }
         }
       });
