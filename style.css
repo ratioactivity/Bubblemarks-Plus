@@ -557,11 +557,11 @@ body.notion-embed .app-shell {
 
 @media (min-width: 3840px) {
   #bubblemarks-left {
-    min-height: 1340px;
+    min-height: 1260px;
   }
 
   .pet-widget {
-    min-height: 1340px;
+    min-height: 1260px;
   }
 }
 
