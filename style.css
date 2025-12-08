@@ -71,6 +71,7 @@ body.notion-embed .app-shell {
   min-width: 400px;
   max-width: 400px;
   height: auto;
+  min-height: 1400px;
   padding: clamp(0.85rem, 1.8vw, 1.4rem);
   background: rgba(255, 255, 255, 0.35);
   border-radius: calc(var(--soft-radius) * 1.2);
@@ -550,7 +551,7 @@ body.notion-embed .app-shell {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  min-height: max(1080px, 92vh);
+  min-height: 1320px;
   margin-inline: auto;
 }
 
