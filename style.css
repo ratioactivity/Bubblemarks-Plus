@@ -555,6 +555,16 @@ body.notion-embed .app-shell {
   margin-inline: auto;
 }
 
+@media (min-width: 3840px) {
+  #bubblemarks-left {
+    min-height: 1340px;
+  }
+
+  .pet-widget {
+    min-height: 1340px;
+  }
+}
+
 .pet-widget__frame {
   flex: 1 1 auto;
   display: flex;
