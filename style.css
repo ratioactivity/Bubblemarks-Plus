@@ -556,6 +556,10 @@ body.notion-embed .app-shell {
 }
 
 @media (min-width: 3840px) {
+  .screenpad-layout .app-shell {
+    min-height: clamp(1400px, 96vh, 1600px);
+  }
+
   #bubblemarks-left {
     min-height: 1160px;
   }
