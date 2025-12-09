@@ -557,11 +557,11 @@ body.notion-embed .app-shell {
 
 @media (min-width: 3840px) {
   .screenpad-layout .app-shell {
-    min-height: clamp(1400px, 96vh, 1600px);
+    min-height: clamp(1500px, 98vh, 1700px);
   }
 
   #bubblemarks-left {
-    min-height: 1160px;
+    min-height: 1240px;
   }
 
   .pet-widget {
