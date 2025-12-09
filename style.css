@@ -557,7 +557,7 @@ body.notion-embed .app-shell {
 
 @media (min-width: 3840px) {
   :root {
-    --panel-min-height: clamp(1300px, 98vh, 1500px);
+    --panel-min-height: clamp(820px, 84vh, 1160px);
   }
 }
 
@@ -1276,7 +1276,7 @@ body.bubblewarp-open {
   --shadow-soft: 0 20px 45px rgba(255, 170, 214, 0.35);
   --shadow-card: 0 14px 30px rgba(179, 197, 255, 0.35);
   --soft-radius: 26px;
-  --panel-min-height: clamp(1180px, 98vh, 1400px);
+  --panel-min-height: clamp(680px, 82vh, 980px);
   --modal-backdrop: rgba(84, 62, 103, 0.35);
   --card-min-height: 142px;
   --card-media-height: 64px;
