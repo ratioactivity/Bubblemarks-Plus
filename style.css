@@ -61,7 +61,7 @@ body.notion-embed .app-shell {
 
 #bubblemarks-left {
   position: sticky;
-  top: clamp(0.35rem, 0.8vw, 0.85rem);
+  top: clamp(1rem, 2vw, 1.75rem);
   align-self: flex-start;
   display: flex;
   flex-direction: column;
@@ -71,7 +71,7 @@ body.notion-embed .app-shell {
   min-width: 400px;
   max-width: 400px;
   height: auto;
-  min-height: var(--panel-min-height);
+  min-height: 1140px;
   padding: clamp(0.85rem, 1.8vw, 1.4rem);
   background: rgba(255, 255, 255, 0.35);
   border-radius: calc(var(--soft-radius) * 1.2);
@@ -551,13 +551,21 @@ body.notion-embed .app-shell {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  min-height: var(--panel-min-height);
+  min-height: 1140px;
   margin-inline: auto;
 }
 
 @media (min-width: 3840px) {
-  :root {
-    --panel-min-height: clamp(1300px, 98vh, 1500px);
+  .screenpad-layout .app-shell {
+    min-height: clamp(1500px, 98vh, 1700px);
+  }
+
+  #bubblemarks-left {
+    min-height: 1240px;
+  }
+
+  .pet-widget {
+    min-height: 1140px;
   }
 }
 
@@ -1237,13 +1245,12 @@ body.bubblewarp-open {
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
   }
 
-  #bubblemarks-left,
-  .pet-column {
-    align-self: stretch;
+  #bubblemarks-left {
+    align-self: flex-start;
   }
 }
 
@@ -1276,7 +1283,6 @@ body.bubblewarp-open {
   --shadow-soft: 0 20px 45px rgba(255, 170, 214, 0.35);
   --shadow-card: 0 14px 30px rgba(179, 197, 255, 0.35);
   --soft-radius: 26px;
-  --panel-min-height: clamp(1180px, 98vh, 1400px);
   --modal-backdrop: rgba(84, 62, 103, 0.35);
   --card-min-height: 142px;
   --card-media-height: 64px;
@@ -1771,7 +1777,7 @@ h6,
   position: relative;
   z-index: 1;
   width: clamp(420px, calc(100vw - 780px), 760px);
-  min-height: var(--panel-min-height);
+  min-height: clamp(1140px, 96vh, 1400px);
   background: var(--surface);
   backdrop-filter: blur(28px);
   border-radius: calc(var(--soft-radius) * 1.2);
