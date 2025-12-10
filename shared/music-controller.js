@@ -8,16 +8,100 @@ window.addEventListener("DOMContentLoaded", () => {
       this.currentSource = null;
       this.currentMetadata = null;
       this.onTrackEnd = null;
+      this.hydrophoneRetryTimer = null;
+      this.hydrophoneRetryCount = 0;
 
       this.audio.addEventListener("ended", () => {
         if (typeof this.onTrackEnd === "function") {
           this.onTrackEnd();
         }
       });
+
+      this.audio.addEventListener("error", (event) => {
+        this.handlePlaybackIssue("error", event);
+      });
+
+      this.audio.addEventListener("stalled", (event) => {
+        this.handlePlaybackIssue("stalled", event);
+      });
+
+      this.audio.addEventListener("canplay", () => {
+        this.handleHydrophoneRecovery();
+      });
+    }
+
+    dispatchStatus(type, detail = {}) {
+      window.dispatchEvent(new CustomEvent("musiccontroller", { detail: { type, ...detail } }));
+    }
+
+    handleHydrophoneRecovery() {
+      if (this.mode !== "hydrophone") {
+        return;
+      }
+
+      if (this.hydrophoneRetryTimer) {
+        clearTimeout(this.hydrophoneRetryTimer);
+      }
+      this.hydrophoneRetryTimer = null;
+      this.hydrophoneRetryCount = 0;
+
+      this.dispatchStatus("hydrophone-recovered", {
+        source: this.currentSource,
+        metadata: this.currentMetadata,
+        mode: this.mode,
+      });
+    }
+
+    handlePlaybackIssue(reason, event) {
+      const error = event?.error || this.audio?.error || null;
+      this.dispatchStatus("playback-error", {
+        reason,
+        mode: this.mode,
+        source: this.currentSource,
+        metadata: this.currentMetadata,
+        error,
+      });
+
+      if (this.mode === "hydrophone" && this.currentSource) {
+        this.scheduleHydrophoneRetry(reason);
+      }
+    }
+
+    scheduleHydrophoneRetry(reason = "error") {
+      const delay = Math.min(5000, 1000 * (this.hydrophoneRetryCount + 1));
+      this.hydrophoneRetryCount += 1;
+
+      if (this.hydrophoneRetryTimer) {
+        clearTimeout(this.hydrophoneRetryTimer);
+      }
+
+      const source = this.currentSource;
+      const metadata = this.currentMetadata;
+      this.dispatchStatus("hydrophone-retry", {
+        reason,
+        attempt: this.hydrophoneRetryCount,
+        delay,
+        source,
+        metadata,
+        mode: this.mode,
+      });
+
+      this.hydrophoneRetryTimer = setTimeout(() => {
+        if (this.mode !== "hydrophone" || !source) {
+          return;
+        }
+        this.playHydrophone(source, metadata);
+      }, delay);
     }
 
     setMode(mode) {
       this.mode = typeof mode === "string" && mode.trim() ? mode : "idle";
+
+      if (this.mode !== "hydrophone" && this.hydrophoneRetryTimer) {
+        clearTimeout(this.hydrophoneRetryTimer);
+        this.hydrophoneRetryTimer = null;
+        this.hydrophoneRetryCount = 0;
+      }
     }
 
     playSource(source, { loop = false, mode = null, metadata = null } = {}) {
