@@ -318,20 +318,34 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const fetchHydrophoneListeners = async () => {
+  const normalizeHydrophoneUrl = (rawUrl) => {
+    try {
+      const parsed = new URL(rawUrl);
+      parsed.protocol = "https:";
+      parsed.port = "";
+      parsed.search = "";
+      return parsed.toString();
+    } catch {
+      return "";
+    }
+  };
+
+  const fetchHydrophoneStatus = async () => {
     try {
       const response = await fetch("https://icecast.orcasound.net/status-json.xsl");
       if (!response.ok) {
-        throw new Error("Unable to load listener counts");
+        throw new Error("Unable to load hydrophone status");
       }
 
       const payload = await response.json();
       const sources = payload?.icestats?.source;
       const list = Array.isArray(sources) ? sources : sources ? [sources] : [];
       const counts = new Map();
+      const endpoints = new Map();
 
       list.forEach((entry) => {
         const listenUrl = entry?.listenurl || entry?.url || "";
+        const normalizedUrl = normalizeHydrophoneUrl(listenUrl);
         const fromUrl = typeof listenUrl === "string" ? listenUrl.split("/").pop() : "";
         const mountId = parseHydrophoneId((fromUrl || "").replace(/\.[^/.]+$/, ""));
         const nameId = parseHydrophoneId(entry?.server_name) || parseHydrophoneId(entry?.server_description);
@@ -340,13 +354,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
         if (targetId) {
           counts.set(targetId, Number.isFinite(listeners) ? listeners : null);
+          if (normalizedUrl) {
+            endpoints.set(targetId, normalizedUrl);
+          }
         }
       });
 
-      return counts;
+      return { counts, endpoints };
     } catch (error) {
       console.log("✅ script validated");
-      return new Map();
+      return { counts: new Map(), endpoints: new Map() };
     }
   };
 
@@ -838,11 +855,13 @@ window.addEventListener("DOMContentLoaded", () => {
     updatePlayButtons(!paused);
   };
 
-  const applyListenerCounts = (counts = new Map()) => {
+  const applyHydrophoneStatus = ({ counts = new Map(), endpoints = new Map() } = {}) => {
     hydrophoneStations.forEach((station) => {
       const id = parseHydrophoneId(station.id);
       const countValue = counts.get(id);
+      const endpointValue = endpoints.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
+      station.streamUrl = endpointValue || station.streamUrl;
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
@@ -854,12 +873,24 @@ window.addEventListener("DOMContentLoaded", () => {
       );
 
       if (activeStation) {
-        musicController.currentMetadata = {
+        const updatedMetadata = {
           ...activeStation,
           ...musicController.currentMetadata,
           listenerCount: activeStation.listenerCount,
           cover: activeStation.cover || musicController.currentMetadata.cover,
         };
+
+        const nextStream = activeStation.streamUrl || musicController.currentSource;
+        const shouldRefreshStream =
+          typeof nextStream === "string" && nextStream && nextStream !== musicController.currentSource;
+
+        musicController.currentMetadata = updatedMetadata;
+
+        if (shouldRefreshStream) {
+          setHydrophoneStatus("Refreshing live stream...", "info", 2000);
+          musicController.playHydrophone(nextStream, updatedMetadata);
+        }
+
         refreshNowPlaying(true);
       }
     }
@@ -913,8 +944,8 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const loadHydrophoneListeners = async () => {
-    const counts = await fetchHydrophoneListeners();
-    applyListenerCounts(counts);
+    const status = await fetchHydrophoneStatus();
+    applyHydrophoneStatus(status);
   };
 
   const attachWidget = async () => {
