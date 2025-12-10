@@ -63,6 +63,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ["mastcenter", "assets/cover-mastcenter.png"],
     ["orcasoundlab", "assets/cover-orcasoundlab.png"],
     ["porttownsend", "assets/cover-porttownsend.png"],
+    ["sunsetbay", "assets/cover-orcasoundlab.png"],
   ]);
 
   const defaultCoverArt = "assets/cover-orcasoundlab.png";
@@ -72,40 +73,40 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const hydrophoneStations = [
     {
-      id: "harostrait",
-      name: "Haro Strait",
-      streamUrl: "https://icecast.orcasound.net:8000/harostrait.mp3",
-      cover: hydrophoneCoverMap.get("harostrait") || defaultCoverArt,
+      id: "mastcenter",
+      name: "MaST Center",
+      streamUrl: "http://icecast.orcasound.net:8000/mast-center.mp3",
+      cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
+    },
+    {
+      id: "orcasoundlab",
+      name: "Orcasound Lab",
+      streamUrl: "http://icecast.orcasound.net:8000/orcasound-lab.mp3",
+      cover: hydrophoneCoverMap.get("orcasoundlab") || defaultCoverArt,
     },
     {
       id: "andrewsbay",
       name: "Andrews Bay",
-      streamUrl: "https://icecast.orcasound.net:8000/andrewsbay.mp3",
+      streamUrl: "http://icecast.orcasound.net:8000/andrews-bay.mp3",
       cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
-    },
-    {
-      id: "bushpoint",
-      name: "Bush Point",
-      streamUrl: "https://icecast.orcasound.net:8000/bushpoint.mp3",
-      cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
       id: "porttownsend",
       name: "Port Townsend",
-      streamUrl: "https://icecast.orcasound.net:8000/porttownsend.mp3",
+      streamUrl: "http://icecast.orcasound.net:8000/port-townsend.mp3",
       cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
     },
     {
-      id: "beachcamp",
-      name: "Beach Camp",
-      streamUrl: "https://icecast.orcasound.net:8000/beachcamp.mp3",
-      cover: hydrophoneCoverMap.get("beachcamp") || defaultCoverArt,
+      id: "bushpoint",
+      name: "Bush Point",
+      streamUrl: "http://icecast.orcasound.net:8000/bush-point.mp3",
+      cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
-      id: "mastcenter",
-      name: "MaST Center",
-      streamUrl: "https://icecast.orcasound.net:8000/mastcenter.mp3",
-      cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
+      id: "sunsetbay",
+      name: "Sunset Bay",
+      streamUrl: "http://icecast.orcasound.net:8000/sunset-bay.mp3",
+      cover: hydrophoneCoverMap.get("sunsetbay") || defaultCoverArt,
     },
   ];
 
@@ -318,18 +319,6 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const normalizeHydrophoneUrl = (rawUrl) => {
-    try {
-      const parsed = new URL(rawUrl);
-      parsed.protocol = "https:";
-      parsed.port = "";
-      parsed.search = "";
-      return parsed.toString();
-    } catch {
-      return "";
-    }
-  };
-
   const fetchHydrophoneStatus = async () => {
     try {
       const response = await fetch("https://icecast.orcasound.net/status-json.xsl");
@@ -345,7 +334,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       list.forEach((entry) => {
         const listenUrl = entry?.listenurl || entry?.url || "";
-        const normalizedUrl = normalizeHydrophoneUrl(listenUrl);
+        const endpoint = typeof listenUrl === "string" ? listenUrl.trim() : "";
         const fromUrl = typeof listenUrl === "string" ? listenUrl.split("/").pop() : "";
         const mountId = parseHydrophoneId((fromUrl || "").replace(/\.[^/.]+$/, ""));
         const nameId = parseHydrophoneId(entry?.server_name) || parseHydrophoneId(entry?.server_description);
@@ -354,8 +343,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
         if (targetId) {
           counts.set(targetId, Number.isFinite(listeners) ? listeners : null);
-          if (normalizedUrl) {
-            endpoints.set(targetId, normalizedUrl);
+          if (endpoint) {
+            endpoints.set(targetId, endpoint);
           }
         }
       });
