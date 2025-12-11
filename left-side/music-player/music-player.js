@@ -75,37 +75,37 @@ window.addEventListener("DOMContentLoaded", () => {
     {
       id: "mastcenter",
       name: "MaST Center",
-      streamUrl: "http://icecast.orcasound.net:8000/mast-center.mp3",
+      streamUrl: "https://live.orcasound.net/listen/mast-center",
       cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
     },
     {
       id: "orcasoundlab",
       name: "Orcasound Lab",
-      streamUrl: "http://icecast.orcasound.net:8000/orcasound-lab.mp3",
+      streamUrl: "https://live.orcasound.net/listen/orcasound-lab",
       cover: hydrophoneCoverMap.get("orcasoundlab") || defaultCoverArt,
     },
     {
       id: "andrewsbay",
       name: "Andrews Bay",
-      streamUrl: "http://icecast.orcasound.net:8000/andrews-bay.mp3",
+      streamUrl: "https://live.orcasound.net/listen/andrews-bay",
       cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
     },
     {
       id: "porttownsend",
       name: "Port Townsend",
-      streamUrl: "http://icecast.orcasound.net:8000/port-townsend.mp3",
+      streamUrl: "https://live.orcasound.net/listen/port-townsend",
       cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
     },
     {
       id: "bushpoint",
       name: "Bush Point",
-      streamUrl: "http://icecast.orcasound.net:8000/bush-point.mp3",
+      streamUrl: "https://live.orcasound.net/listen/bush-point",
       cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
       id: "sunsetbay",
       name: "Sunset Bay",
-      streamUrl: "http://icecast.orcasound.net:8000/sunset-bay.mp3",
+      streamUrl: "https://live.orcasound.net/listen/sunset-bay",
       cover: hydrophoneCoverMap.get("sunsetbay") || defaultCoverArt,
     },
   ];
@@ -263,6 +263,34 @@ window.addEventListener("DOMContentLoaded", () => {
   const parseHydrophoneId = (value) => {
     const normalized = normalizeKey(value);
     return normalized.replace(/[^a-z0-9]/g, "");
+  };
+
+  const normalizeHydrophoneEndpoint = (endpoint) => {
+    if (typeof endpoint !== "string" || !endpoint.trim()) {
+      return null;
+    }
+
+    try {
+      const url = new URL(endpoint.trim(), "https://live.orcasound.net");
+
+      const mountSegment = url.pathname.split("/").pop();
+      if (!mountSegment) {
+        return null;
+      }
+
+      const sanitizedMount = mountSegment.replace(/[^a-z0-9.-]/gi, "");
+      if (!sanitizedMount) {
+        return null;
+      }
+
+      url.protocol = "https:";
+      url.host = "live.orcasound.net";
+      url.pathname = `/listen/${sanitizedMount}`;
+
+      return url.toString();
+    } catch {
+      return null;
+    }
   };
 
   const primeHydrophoneAutoplay = async () => {
@@ -850,7 +878,8 @@ window.addEventListener("DOMContentLoaded", () => {
       const countValue = counts.get(id);
       const endpointValue = endpoints.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
-      station.streamUrl = endpointValue || station.streamUrl;
+      const normalizedEndpoint = normalizeHydrophoneEndpoint(endpointValue);
+      station.streamUrl = normalizedEndpoint || station.streamUrl;
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
