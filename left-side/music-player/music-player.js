@@ -75,37 +75,37 @@ window.addEventListener("DOMContentLoaded", () => {
     {
       id: "mastcenter",
       name: "MaST Center",
-      streamUrl: "http://icecast.orcasound.net:8000/mast-center.mp3",
+      streamUrl: "https://live.orcasound.net/listen/mast-center",
       cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
     },
     {
       id: "orcasoundlab",
       name: "Orcasound Lab",
-      streamUrl: "http://icecast.orcasound.net:8000/orcasound-lab.mp3",
+      streamUrl: "https://live.orcasound.net/listen/orcasound-lab",
       cover: hydrophoneCoverMap.get("orcasoundlab") || defaultCoverArt,
     },
     {
       id: "andrewsbay",
       name: "Andrews Bay",
-      streamUrl: "http://icecast.orcasound.net:8000/andrews-bay.mp3",
+      streamUrl: "https://live.orcasound.net/listen/andrews-bay",
       cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
     },
     {
       id: "porttownsend",
       name: "Port Townsend",
-      streamUrl: "http://icecast.orcasound.net:8000/port-townsend.mp3",
+      streamUrl: "https://live.orcasound.net/listen/port-townsend",
       cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
     },
     {
       id: "bushpoint",
       name: "Bush Point",
-      streamUrl: "http://icecast.orcasound.net:8000/bush-point.mp3",
+      streamUrl: "https://live.orcasound.net/listen/bush-point",
       cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
       id: "sunsetbay",
       name: "Sunset Bay",
-      streamUrl: "http://icecast.orcasound.net:8000/sunset-bay.mp3",
+      streamUrl: "https://live.orcasound.net/listen/sunset-bay",
       cover: hydrophoneCoverMap.get("sunsetbay") || defaultCoverArt,
     },
   ];
