@@ -265,6 +265,36 @@ window.addEventListener("DOMContentLoaded", () => {
     return normalized.replace(/[^a-z0-9]/g, "");
   };
 
+  const normalizeHydrophoneEndpoint = (endpoint) => {
+    if (typeof endpoint !== "string" || !endpoint.trim()) {
+      return null;
+    }
+
+    const trimmed = endpoint.trim();
+
+    try {
+      const url = new URL(trimmed, "https://live.orcasound.net");
+      const mountSegment = (url.pathname.split("/").pop() || "").replace(/\.[^/.]+$/, "");
+
+      if (!mountSegment) {
+        return null;
+      }
+
+      if (url.protocol === "https:") {
+        return url.toString();
+      }
+
+      const sanitizedMount = mountSegment.replace(/[^a-z0-9-]/gi, "");
+      if (!sanitizedMount) {
+        return null;
+      }
+
+      return `https://live.orcasound.net/listen/${sanitizedMount}`;
+    } catch {
+      return null;
+    }
+  };
+
   const primeHydrophoneAutoplay = async () => {
     try {
       const primer = new Audio(silentHydrophonePrimer);
@@ -850,7 +880,8 @@ window.addEventListener("DOMContentLoaded", () => {
       const countValue = counts.get(id);
       const endpointValue = endpoints.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
-      station.streamUrl = endpointValue || station.streamUrl;
+      const normalizedEndpoint = normalizeHydrophoneEndpoint(endpointValue);
+      station.streamUrl = normalizedEndpoint || station.streamUrl;
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
