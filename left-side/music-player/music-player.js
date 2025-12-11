@@ -270,26 +270,24 @@ window.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-    const trimmed = endpoint.trim();
-
     try {
-      const url = new URL(trimmed, "https://live.orcasound.net");
-      const mountSegment = (url.pathname.split("/").pop() || "").replace(/\.[^/.]+$/, "");
+      const url = new URL(endpoint.trim(), "https://live.orcasound.net");
 
+      const mountSegment = url.pathname.split("/").pop();
       if (!mountSegment) {
         return null;
       }
 
-      if (url.protocol === "https:") {
-        return url.toString();
-      }
-
-      const sanitizedMount = mountSegment.replace(/[^a-z0-9-]/gi, "");
+      const sanitizedMount = mountSegment.replace(/[^a-z0-9.-]/gi, "");
       if (!sanitizedMount) {
         return null;
       }
 
-      return `https://live.orcasound.net/listen/${sanitizedMount}`;
+      url.protocol = "https:";
+      url.host = "live.orcasound.net";
+      url.pathname = `/listen/${sanitizedMount}`;
+
+      return url.toString();
     } catch {
       return null;
     }
