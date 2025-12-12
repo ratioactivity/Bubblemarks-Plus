@@ -876,10 +876,7 @@ window.addEventListener("DOMContentLoaded", () => {
     hydrophoneStations.forEach((station) => {
       const id = parseHydrophoneId(station.id);
       const countValue = counts.get(id);
-      const endpointValue = endpoints.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
-      const normalizedEndpoint = normalizeHydrophoneEndpoint(endpointValue);
-      station.streamUrl = normalizedEndpoint || station.streamUrl;
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
