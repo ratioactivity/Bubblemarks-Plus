@@ -172,7 +172,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const MUSIC_MODE_STORAGE_KEY = "bubblemarks-music-source";
   const CALLS_REPEAT_STORAGE_KEY = "bubblemarks-calls-repeat";
-  const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
+  const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg"]);
 
   const readStoredMode = () => {
     try {
@@ -240,6 +240,40 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   };
 
+  const ensureFileUrl = (source) => {
+    if (!source || typeof source !== "string") {
+      return null;
+    }
+
+    try {
+      const url = new URL(source);
+      return url.href;
+    } catch {
+      const normalized = source.replace(/\\/g, "/");
+      const prefixed = normalized.match(/^[a-zA-Z]:\//) ? `/${normalized}` : normalized;
+      try {
+        const encoded = encodeURI(prefixed.replace(/^\/+/, "/"));
+        return `file://${encoded.startsWith("/") ? encoded : `/${encoded}`}`;
+      } catch {
+        return null;
+      }
+    }
+  };
+
+  const getSourceExtension = (source) => {
+    if (!source || typeof source !== "string") {
+      return "";
+    }
+
+    try {
+      const url = new URL(ensureFileUrl(source));
+      const match = url.pathname.match(/\.([^.\\/]+)$/);
+      return match ? `.${match[1].toLowerCase()}` : "";
+    } catch {
+      return "";
+    }
+  };
+
   const createQueueState = () => ({
     mode: null,
     tracks: [],
@@ -252,6 +286,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   let queueState = createQueueState();
+  const failedLocalSources = new Set();
 
   let currentTrackIndex = 0;
   const audio = musicController.audio;
@@ -1240,6 +1275,7 @@ window.addEventListener("DOMContentLoaded", () => {
       updateSourcePills(mode);
       stopLocalPlayback();
       resetProgressDisplay();
+      failedLocalSources.clear();
 
       const library = await ensureLocalLibrary(mode, { refresh });
 
@@ -1255,10 +1291,18 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const supportedTracks = (library.tracks || []).filter((track) => {
-        const extension = track?.source ? track.source.split(".").pop()?.toLowerCase() : "";
-        const dotExtension = extension ? `.${extension}` : "";
-        return supportedLocalFormats.has(dotExtension);
+      const supportedTracks = [];
+      (library.tracks || []).forEach((track) => {
+        const fileUrl = ensureFileUrl(track?.source || track?.path);
+        const extension = getSourceExtension(fileUrl);
+        if (!fileUrl || !supportedLocalFormats.has(extension)) {
+          if (!fileUrl) {
+            console.warn("[Bubblemarks] Skipping invalid local track", track);
+          }
+          return;
+        }
+
+        supportedTracks.push(normalizeLocalTrack({ ...track, source: fileUrl }, mode));
       });
 
       if (supportedTracks.length === 0) {
@@ -1267,7 +1311,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const shuffled = shuffleArray(supportedTracks).map((track) => normalizeLocalTrack(track, mode));
+      const shuffled = shuffleArray(supportedTracks);
       const singlePlay = mode === "calls" && !callsRepeatEnabled;
       queueState = {
         mode,
@@ -2045,6 +2089,48 @@ window.addEventListener("DOMContentLoaded", () => {
       refreshNowPlaying(true);
     });
 
+    const handleLocalPlaybackError = (detail = {}) => {
+      if (!queueState.mode || detail.mode !== "widget") {
+        return false;
+      }
+
+      const failedSource = ensureFileUrl(
+        detail.source || queueState.tracks[queueState.index]?.source
+      );
+      const failedLabel = detail.metadata?.title || formatSourceName(failedSource) || "Local track";
+
+      if (failedSource) {
+        failedLocalSources.add(failedSource);
+        queueState.tracks = queueState.tracks.filter(
+          (track) => ensureFileUrl(track.source) !== failedSource
+        );
+        queueState.index = Math.min(queueState.index, Math.max(queueState.tracks.length - 1, 0));
+      }
+
+      console.warn(
+        `[Bubblemarks] Skipping failed local track: ${failedLabel}`,
+        failedSource || detail.source || "<unknown>",
+        detail.error || detail.reason || "Playback error"
+      );
+
+      if (queueState.tracks.length === 0) {
+        setSourceStatus(`Playback failed: ${detail.reason || "no supported source"}.`, "error");
+        queueState = createQueueState();
+        return true;
+      }
+
+      const nextIndex = getNextQueueIndex();
+      if (nextIndex >= 0) {
+        setSourceStatus(`Skipping: ${failedLabel}. ${detail.reason || "Playback error"}`, "warning");
+        playQueueIndex(nextIndex % queueState.tracks.length);
+        return true;
+      }
+
+      setSourceStatus(`Playback failed: ${detail.reason || "no supported source"}.`, "error");
+      queueState = createQueueState();
+      return true;
+    };
+
     const handleHydrophonePlaybackEvent = (detail = {}) => {
       const { type, mode, attempt, delay, source, reason } = detail;
 
@@ -2053,6 +2139,8 @@ window.addEventListener("DOMContentLoaded", () => {
       if (type === "playback-error") {
         if (mode === "hydrophone") {
           setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
+        } else if (handleLocalPlaybackError(detail)) {
+          return;
         } else {
           setSourceStatus(`Playback issue: ${reasonLabel}`, "error");
         }

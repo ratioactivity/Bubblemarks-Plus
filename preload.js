@@ -31,7 +31,7 @@ contextBridge.exposeInMainWorld("spotifyAPI", {
   },
 });
 
-const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
+const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg"]);
 
 const MUSIC_FOLDERS = {
   bubblemarks: { label: "Bubblemarks FM", folder: "Bubblemarks FM" },
@@ -64,18 +64,29 @@ const toAbsolutePath = (inputPath) => {
 };
 
 const normalizeTracks = (folderKey, folderPath, entries = []) => {
-  return entries
+  const tracks = [];
+
+  entries
     .filter((entry) => SUPPORTED_AUDIO_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
-    .map((entry) => {
+    .forEach((entry) => {
       const targetPath = toAbsolutePath(path.join(folderPath, entry.name));
-      const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
-      return {
-        id: entry.name,
-        title,
-        artist: MUSIC_FOLDERS[folderKey]?.label || "Local Audio",
-        source: pathToFileURL(targetPath).href,
-      };
+
+      try {
+        const fileUrl = pathToFileURL(targetPath).href;
+        const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
+        tracks.push({
+          id: entry.name,
+          title,
+          artist: MUSIC_FOLDERS[folderKey]?.label || "Local Audio",
+          source: fileUrl,
+          path: targetPath,
+        });
+      } catch (error) {
+        console.warn(`[Bubblemarks] Unable to build URL for ${targetPath}:`, error);
+      }
     });
+
+  return tracks;
 };
 
 const scanAudioFolder = async (folderKey) => {
