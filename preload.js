@@ -40,18 +40,34 @@ const MUSIC_FOLDERS = {
 };
 
 const resolveMusicRoots = () => {
-  const userHome = process.env.USERPROFILE || process.env.HOME || path.win32.join("C:", "Users", "User");
-  const preferredDesktop = path.win32.join("C:\\", "Users", "User", "Desktop", "coding projects", "BMP Project Files");
-  const userDesktop = path.join(userHome, "Desktop", "coding projects", "BMP Project Files");
-  const userMusic = path.join(userHome, "Music");
+  const userHomeRaw = process.env.USERPROFILE || process.env.HOME || path.win32.join("C:", "Users", "User");
+  const userHome = path.win32.isAbsolute(userHomeRaw) ? userHomeRaw : path.resolve(userHomeRaw);
+
+  const preferredDesktop = path.win32.resolve(
+    "C:",
+    "Users",
+    "User",
+    "Desktop",
+    "coding projects",
+    "BMP Project Files"
+  );
+  const userDesktop = path.resolve(userHome, "Desktop", "coding projects", "BMP Project Files");
+  const userMusic = path.resolve(userHome, "Music");
   return [preferredDesktop, userDesktop, userMusic];
+};
+
+const toAbsolutePath = (inputPath) => {
+  if (path.isAbsolute(inputPath) || path.win32.isAbsolute(inputPath)) {
+    return inputPath;
+  }
+  return path.resolve(inputPath);
 };
 
 const normalizeTracks = (folderKey, folderPath, entries = []) => {
   return entries
     .filter((entry) => SUPPORTED_AUDIO_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
     .map((entry) => {
-      const targetPath = path.join(folderPath, entry.name);
+      const targetPath = toAbsolutePath(path.join(folderPath, entry.name));
       const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
       return {
         id: entry.name,

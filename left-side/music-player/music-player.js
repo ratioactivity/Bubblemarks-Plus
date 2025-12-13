@@ -2047,11 +2047,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const handleHydrophonePlaybackEvent = (detail = {}) => {
       const { type, mode, attempt, delay, source, reason } = detail;
-      if (mode !== "hydrophone") {
+
+      const reasonLabel = typeof reason === "string" && reason.trim() ? reason : "Stream error";
+
+      if (type === "playback-error") {
+        if (mode === "hydrophone") {
+          setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
+        } else {
+          setSourceStatus(`Playback issue: ${reasonLabel}`, "error");
+        }
         return;
       }
 
-      const reasonLabel = typeof reason === "string" && reason.trim() ? reason : "Stream error";
+      if (mode !== "hydrophone") {
+        return;
+      }
 
       if (type === "hydrophone-retry") {
         const attemptLabel = Number.isFinite(attempt) ? `Attempt ${attempt}` : "Retrying";
@@ -2066,8 +2076,6 @@ window.addEventListener("DOMContentLoaded", () => {
           detail.metadata?.name || musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
         setHydrophoneStatus(`${stationName} unavailable: ${reasonLabel}.`, "error", 6000);
         refreshNowPlaying(true);
-      } else if (type === "playback-error") {
-        setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
       }
     };
 
