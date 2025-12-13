@@ -113,11 +113,95 @@
             <p class="music-player-heading">Orcasound Live</p>
             <p class="music-player-subtitle">Tune into Pacific Northwest hydrophones</p>
           </div>
-          <div class="music-player-badge" aria-hidden="true">🌊</div>
+          <button
+            type="button"
+            class="music-player-badge music-player-help"
+            data-hydrophone-help-button
+            aria-label="Hydrophone help"
+            title="Hydrophone help"
+          >
+            ?
+          </button>
         </header>
 
         <div class="hydrophone-grid" data-hydrophone-list aria-live="polite"></div>
       </div>
     </section>
+  </div>
+</div>
+
+<div class="hydrophone-help-modal" data-hydrophone-help-modal hidden aria-hidden="true">
+  <div class="hydrophone-help-backdrop" data-hydrophone-help-backdrop></div>
+  <div
+    class="hydrophone-help-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="hydrophone-help-title"
+    tabindex="-1"
+    data-hydrophone-help-dialog
+  >
+    <header class="hydrophone-help-header">
+      <div class="hydrophone-help-title">
+        <p class="hydrophone-help-heading" id="hydrophone-help-title">Hydrophone Help</p>
+        <p class="hydrophone-help-subtitle">Troubleshoot refreshed timestamps</p>
+      </div>
+      <button
+        type="button"
+        class="hydrophone-help-close"
+        aria-label="Close hydrophone help"
+        data-hydrophone-help-close
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="hydrophone-help-body">
+      <p class="hydrophone-help-intro">
+        Hydrophones not working? Timestamps probably got refreshed. Try this:
+      </p>
+      <ol class="hydrophone-help-steps">
+        <li>
+          Go to the following link. Change "rpi_orcasound_lab" to match whatever hydrophone you are using (ex.
+          "rpi_sunset_bay").
+          <div class="hydrophone-help-link-row">
+            <a
+              href="https://audio.orcasound.net/rpi_orcasound_lab/latest.txt"
+              class="hydrophone-help-link"
+              data-help-link
+            >
+              <code>https://audio.orcasound.net/rpi_orcasound_lab/latest.txt</code>
+            </a>
+            <button type="button" class="hydrophone-help-copy" data-copy-text="https://audio.orcasound.net/rpi_orcasound_lab/latest.txt">
+              Copy
+            </button>
+          </div>
+          <p class="hydrophone-help-note">This will download a .txt file.</p>
+        </li>
+        <li>
+          Open that .txt file. It will return something like "1732749200".
+          <div class="hydrophone-help-code">1732749200</div>
+        </li>
+        <li>
+          Build the stream URL.
+          <div class="hydrophone-help-link-row">
+            <a
+              href="https://audio.orcasound.net/rpi_HYDROPHONE_NAME/hls/TIMESTAMP/live.m3u8"
+              class="hydrophone-help-link"
+              data-help-link
+            >
+              <code>https://audio.orcasound.net/rpi_HYDROPHONE_NAME/hls/TIMESTAMP/live.m3u8</code>
+            </a>
+            <button
+              type="button"
+              class="hydrophone-help-copy"
+              data-copy-text="https://audio.orcasound.net/rpi_HYDROPHONE_NAME/hls/TIMESTAMP/live.m3u8"
+            >
+              Copy
+            </button>
+          </div>
+        </li>
+      </ol>
+      <p class="hydrophone-help-footer">Update URLs in code.</p>
+    </div>
   </div>
 </div>
