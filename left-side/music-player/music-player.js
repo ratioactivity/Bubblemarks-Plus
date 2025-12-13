@@ -75,37 +75,37 @@ window.addEventListener("DOMContentLoaded", () => {
     {
       id: "mastcenter",
       name: "MaST Center",
-      streamUrl: "https://live.orcasound.net/listen/mast-center",
+      streamUrl: "https://audio.orcasound.net/rpi_mast_center/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
     },
     {
       id: "orcasoundlab",
       name: "Orcasound Lab",
-      streamUrl: "https://live.orcasound.net/listen/orcasound-lab",
+      streamUrl: "https://audio.orcasound.net/rpi_orcasound_lab/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("orcasoundlab") || defaultCoverArt,
     },
     {
       id: "andrewsbay",
       name: "Andrews Bay",
-      streamUrl: "https://live.orcasound.net/listen/andrews-bay",
+      streamUrl: "https://audio.orcasound.net/rpi_andrews_bay/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
     },
     {
       id: "porttownsend",
       name: "Port Townsend",
-      streamUrl: "https://live.orcasound.net/listen/port-townsend",
+      streamUrl: "https://audio.orcasound.net/rpi_port_townsend/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
     },
     {
       id: "bushpoint",
       name: "Bush Point",
-      streamUrl: "https://live.orcasound.net/listen/bush-point",
+      streamUrl: "https://audio.orcasound.net/rpi_bush_point/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
       id: "sunsetbay",
       name: "Sunset Bay",
-      streamUrl: "https://live.orcasound.net/listen/sunset-bay",
+      streamUrl: "https://audio.orcasound.net/rpi_sunset_bay/hls/1765528218/live.m3u8",
       cover: hydrophoneCoverMap.get("sunsetbay") || defaultCoverArt,
     },
   ];
