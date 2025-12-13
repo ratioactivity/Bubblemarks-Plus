@@ -39,6 +39,8 @@ protocol.registerSchemesAsPrivileged([
 
 app.setAppUserModelId(APP_ID);
 
+app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
+
 console.log("✅ script validated");
 
 let mainWindow = null;
