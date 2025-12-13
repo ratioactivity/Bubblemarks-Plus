@@ -967,9 +967,13 @@ window.addEventListener("DOMContentLoaded", () => {
       const parser = new DOMParser();
       const parsed = parser.parseFromString(markup, "text/html");
       const importedPlayer = parsed.getElementById("music-player");
+      const helpModal = parsed.querySelector("[data-hydrophone-help-modal]");
 
       if (importedPlayer) {
         widgetHost.replaceChildren(importedPlayer);
+        if (helpModal && !widgetHost.querySelector("[data-hydrophone-help-modal]")) {
+          widgetHost.appendChild(helpModal);
+        }
       } else {
         widgetHost.innerHTML = markup;
       }
@@ -995,6 +999,113 @@ window.addEventListener("DOMContentLoaded", () => {
     mpCover = widgetHost.querySelector(".music-player-art");
     const discLibrary = widgetHost.querySelector("[data-disc-library]");
     const discLibraryEmpty = widgetHost.querySelector("[data-disc-empty]");
+    const hydrophoneHelpButton = widgetHost.querySelector("[data-hydrophone-help-button]");
+    const hydrophoneHelpModal = widgetHost.querySelector("[data-hydrophone-help-modal]");
+    const hydrophoneHelpDialog = widgetHost.querySelector("[data-hydrophone-help-dialog]");
+    const hydrophoneHelpClose = widgetHost.querySelector("[data-hydrophone-help-close]");
+    const hydrophoneHelpBackdrop = widgetHost.querySelector("[data-hydrophone-help-backdrop]");
+
+    let lastHydrophoneHelpTrigger = null;
+
+    const copyToClipboard = async (text) => {
+      if (!text) {
+        return false;
+      }
+
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const helper = document.createElement("textarea");
+          helper.value = text;
+          helper.setAttribute("aria-hidden", "true");
+          helper.style.position = "fixed";
+          helper.style.opacity = "0";
+          document.body.appendChild(helper);
+          helper.select();
+          document.execCommand("copy");
+          helper.remove();
+        }
+        return true;
+      } catch (error) {
+        console.warn("[Bubblemarks] Unable to copy text", error);
+        return false;
+      }
+    };
+
+    const handleHydrophoneHelpKeydown = (event) => {
+      if (event.key === "Escape") {
+        setHydrophoneHelpVisibility(false);
+      }
+    };
+
+    const setHydrophoneHelpVisibility = (visible) => {
+      if (!hydrophoneHelpModal) {
+        return;
+      }
+
+      hydrophoneHelpModal.toggleAttribute("hidden", !visible);
+      hydrophoneHelpModal.setAttribute("aria-hidden", visible ? "false" : "true");
+
+      if (visible) {
+        lastHydrophoneHelpTrigger = document.activeElement;
+        if (hydrophoneHelpDialog && typeof hydrophoneHelpDialog.focus === "function") {
+          hydrophoneHelpDialog.focus();
+        }
+        document.addEventListener("keydown", handleHydrophoneHelpKeydown, true);
+      } else {
+        document.removeEventListener("keydown", handleHydrophoneHelpKeydown, true);
+        if (lastHydrophoneHelpTrigger && typeof lastHydrophoneHelpTrigger.focus === "function") {
+          lastHydrophoneHelpTrigger.focus();
+        }
+      }
+    };
+
+    const hydrateHydrophoneHelp = () => {
+      if (hydrophoneHelpButton && hydrophoneHelpModal) {
+        hydrophoneHelpButton.addEventListener("click", () => setHydrophoneHelpVisibility(true));
+      }
+
+      if (hydrophoneHelpClose) {
+        hydrophoneHelpClose.addEventListener("click", () => setHydrophoneHelpVisibility(false));
+      }
+
+      if (hydrophoneHelpBackdrop) {
+        hydrophoneHelpBackdrop.addEventListener("click", (event) => {
+          if (event.target === hydrophoneHelpBackdrop) {
+            setHydrophoneHelpVisibility(false);
+          }
+        });
+      }
+
+      const helpLinks = Array.from(widgetHost.querySelectorAll("[data-help-link]"));
+      helpLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const url = link.getAttribute("href") || link.textContent || "";
+          if (url) {
+            event.preventDefault();
+            openExternal(url);
+          }
+        });
+      });
+
+      const copyButtons = Array.from(widgetHost.querySelectorAll("[data-copy-text]"));
+      copyButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          const text = button.dataset.copyText || "";
+          const originalLabel = button.textContent;
+          const success = await copyToClipboard(text);
+          if (success) {
+            button.textContent = "Copied!";
+            window.setTimeout(() => {
+              button.textContent = originalLabel;
+            }, 1200);
+          }
+        });
+      });
+    };
+
+    hydrateHydrophoneHelp();
 
     const setActiveTab = (targetTab) => {
       const selected = targetTab || "main";
