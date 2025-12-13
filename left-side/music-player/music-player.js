@@ -876,10 +876,7 @@ window.addEventListener("DOMContentLoaded", () => {
     hydrophoneStations.forEach((station) => {
       const id = parseHydrophoneId(station.id);
       const countValue = counts.get(id);
-      const endpointValue = endpoints.get(id);
       station.listenerCount = Number.isFinite(countValue) ? countValue : null;
-      const normalizedEndpoint = normalizeHydrophoneEndpoint(endpointValue);
-      station.streamUrl = normalizedEndpoint || station.streamUrl;
     });
 
     if (musicController.mode === "hydrophone" && musicController.currentMetadata) {
@@ -1632,16 +1629,23 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      const reasonLabel = typeof reason === "string" && reason.trim() ? reason : "Stream error";
+
       if (type === "hydrophone-retry") {
         const attemptLabel = Number.isFinite(attempt) ? `Attempt ${attempt}` : "Retrying";
         const delayLabel = Number.isFinite(delay) ? ` in ${Math.round(delay / 1000)}s` : "";
         setHydrophoneStatus(`${attemptLabel}${delayLabel}...`, "warning");
       } else if (type === "hydrophone-recovered") {
-        const stationName = musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
+        const stationName =
+          detail.metadata?.name || musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
         setHydrophoneStatus(`${stationName} is live.`, "success", 4000);
+      } else if (type === "hydrophone-failed") {
+        const stationName =
+          detail.metadata?.name || musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
+        setHydrophoneStatus(`${stationName} unavailable: ${reasonLabel}.`, "error", 6000);
+        refreshNowPlaying(true);
       } else if (type === "playback-error") {
-        const reasonLabel = typeof reason === "string" ? reason : "Stream error";
-        setHydrophoneStatus(`${reasonLabel}. Reconnecting...`, "error");
+        setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
       }
     };
 

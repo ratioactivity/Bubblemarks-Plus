@@ -10,6 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
       this.onTrackEnd = null;
       this.hydrophoneRetryTimer = null;
       this.hydrophoneRetryCount = 0;
+      this.maxHydrophoneRetries = 3;
 
       this.audio.addEventListener("ended", () => {
         if (typeof this.onTrackEnd === "function") {
@@ -28,6 +29,27 @@ window.addEventListener("DOMContentLoaded", () => {
       this.audio.addEventListener("canplay", () => {
         this.handleHydrophoneRecovery();
       });
+    }
+
+    describeAudioError(error, fallback = "Stream error") {
+      if (!error) {
+        return fallback;
+      }
+
+      const code = Number(error?.code);
+
+      switch (code) {
+        case 1:
+          return "Stream aborted";
+        case 2:
+          return "Network error";
+        case 3:
+          return "Decode error";
+        case 4:
+          return "Stream not supported";
+        default:
+          return fallback;
+      }
     }
 
     dispatchStatus(type, detail = {}) {
@@ -54,8 +76,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     handlePlaybackIssue(reason, event) {
       const error = event?.error || this.audio?.error || null;
+      const reasonLabel = this.describeAudioError(error, reason);
       this.dispatchStatus("playback-error", {
-        reason,
+        reason: reasonLabel,
         mode: this.mode,
         source: this.currentSource,
         metadata: this.currentMetadata,
@@ -63,20 +86,34 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       if (this.mode === "hydrophone" && this.currentSource) {
-        this.scheduleHydrophoneRetry(reason);
+        this.scheduleHydrophoneRetry(reasonLabel);
       }
     }
 
     scheduleHydrophoneRetry(reason = "error") {
-      const delay = Math.min(5000, 1000 * (this.hydrophoneRetryCount + 1));
-      this.hydrophoneRetryCount += 1;
-
       if (this.hydrophoneRetryTimer) {
         clearTimeout(this.hydrophoneRetryTimer);
       }
 
       const source = this.currentSource;
       const metadata = this.currentMetadata;
+      const nextAttempt = this.hydrophoneRetryCount + 1;
+
+      if (nextAttempt > this.maxHydrophoneRetries) {
+        this.dispatchStatus("hydrophone-failed", {
+          reason,
+          attempt: this.hydrophoneRetryCount,
+          source,
+          metadata,
+          mode: this.mode,
+        });
+        this.stop();
+        return;
+      }
+
+      this.hydrophoneRetryCount = nextAttempt;
+      const delay = Math.min(5000, 1000 * nextAttempt);
+
       this.dispatchStatus("hydrophone-retry", {
         reason,
         attempt: this.hydrophoneRetryCount,
@@ -121,7 +158,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
       const playPromise = this.audio.play();
       if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
+        playPromise.catch((error) => {
+          const reason = error?.message || "Playback blocked";
+          this.handlePlaybackIssue(reason, { error });
+        });
       }
 
       return true;
@@ -196,6 +236,12 @@ window.addEventListener("DOMContentLoaded", () => {
           : metadata && typeof metadata === "object"
             ? metadata
             : null;
+
+      this.hydrophoneRetryCount = 0;
+      if (this.hydrophoneRetryTimer) {
+        clearTimeout(this.hydrophoneRetryTimer);
+        this.hydrophoneRetryTimer = null;
+      }
 
       return this.playSource(source, {
         loop: false,
