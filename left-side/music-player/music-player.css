@@ -317,6 +317,76 @@
   width: 100%;
 }
 
+#music-player .music-source-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0.4rem 0.45rem;
+  border-radius: calc(var(--soft-radius, 16px) * 0.65);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(226, 239, 255, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.92);
+}
+
+#music-player .music-source-loop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#music-player .music-source-pill {
+  border: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255, 247, 255, 0.96), rgba(216, 233, 255, 0.94));
+  color: #5e4f80;
+  font-family: var(--font-heading, "Bigbesty", "Papernotes", cursive);
+  font-size: 0.94rem;
+  cursor: pointer;
+  box-shadow: 0 8px 14px rgba(146, 169, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+#music-player .music-source-pill--icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+#music-player .music-source-pill:hover,
+#music-player .music-source-pill:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(255, 194, 220, 0.28), 0 10px 16px rgba(146, 169, 255, 0.2);
+}
+
+#music-player .music-source-pill:active {
+  transform: translateY(0);
+}
+
+#music-player .music-source-pill.is-active,
+#music-player .music-source-pill[aria-pressed="true"] {
+  background: linear-gradient(160deg, rgba(255, 212, 238, 0.96), rgba(184, 209, 255, 0.95));
+  color: #7a6af7;
+  box-shadow: 0 10px 18px rgba(255, 194, 220, 0.28), 0 10px 16px rgba(146, 169, 255, 0.2);
+}
+
+#music-player .music-source-status {
+  margin: 0;
+  padding: 0.35rem 0.45rem;
+  font-family: "Papernotes", "Comic Sans MS", "Segoe UI", sans-serif;
+  color: rgba(75, 61, 85, 0.78);
+  font-size: 0.92rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: calc(var(--soft-radius, 16px) * 0.6);
+}
+
 @media (max-width: 540px) {
   #music-player .music-player-card {
     padding: 0.9rem;

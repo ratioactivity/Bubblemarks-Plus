@@ -173,6 +173,7 @@ window.addEventListener("DOMContentLoaded", () => {
   let mpArtist;
   let mpMode;
   let mpCover;
+  let mpSourceStatus;
   let widgetPlayButton;
   let hydrophoneStatusEl;
   let hydrophoneStatusTimer;
@@ -868,6 +869,10 @@ window.addEventListener("DOMContentLoaded", () => {
     if (mpMode) {
       mpMode.textContent = label;
     }
+    if (mpSourceStatus) {
+      const sourceSummary = label && artist ? `${label}: ${artist}` : artist || label;
+      mpSourceStatus.textContent = sourceSummary || "Ready to play";
+    }
     applyMainCover(cover);
     updatePlayButtons(!paused);
   };
@@ -1000,6 +1005,7 @@ window.addEventListener("DOMContentLoaded", () => {
     mpTitle = widgetHost.querySelector(".music-player-title");
     mpArtist = widgetHost.querySelector(".music-player-artist");
     mpMode = widgetHost.querySelector(".music-player-label");
+    mpSourceStatus = widgetHost.querySelector("[data-source-status]");
     mpCover = widgetHost.querySelector(".music-player-art");
     const discLibrary = widgetHost.querySelector("[data-disc-library]");
     const discLibraryEmpty = widgetHost.querySelector("[data-disc-empty]");
