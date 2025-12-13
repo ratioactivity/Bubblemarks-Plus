@@ -31,61 +31,94 @@ contextBridge.exposeInMainWorld("spotifyAPI", {
   },
 });
 
-const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
+const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg"]);
 
 const MUSIC_FOLDERS = {
-  bubblemarks: "Bubblemarks FM",
-  songs: "Orca Songs",
-  calls: "Orca Calls",
+  bubblemarks: { label: "Bubblemarks FM", folder: "Bubblemarks FM" },
+  songs: { label: "Orca Songs", folder: "orca sounds long" },
+  calls: { label: "Orca Calls", folder: "orca sounds" },
 };
 
-const resolveMusicRoot = () => {
-  const userHome = process.env.USERPROFILE || process.env.HOME || "C:\\Users\\Public";
-  return path.join(userHome, "Music");
+const resolveMusicRoots = () => {
+  const userHomeRaw = process.env.USERPROFILE || process.env.HOME || path.win32.join("C:", "Users", "User");
+  const userHome = path.win32.isAbsolute(userHomeRaw) ? userHomeRaw : path.resolve(userHomeRaw);
+
+  const preferredDesktop = path.win32.resolve(
+    "C:",
+    "Users",
+    "User",
+    "Desktop",
+    "coding projects",
+    "BMP Project Files"
+  );
+  const userDesktop = path.resolve(userHome, "Desktop", "coding projects", "BMP Project Files");
+  const userMusic = path.resolve(userHome, "Music");
+  return [preferredDesktop, userDesktop, userMusic];
 };
 
-const normalizeTracks = (folderKey, entries = []) => {
-  return entries
+const toAbsolutePath = (inputPath) => {
+  if (path.isAbsolute(inputPath) || path.win32.isAbsolute(inputPath)) {
+    return inputPath;
+  }
+  return path.resolve(inputPath);
+};
+
+const normalizeTracks = (folderKey, folderPath, entries = []) => {
+  const tracks = [];
+
+  entries
     .filter((entry) => SUPPORTED_AUDIO_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
-    .map((entry) => {
-      const folderPath = resolveMusicRoot();
-      const targetPath = path.join(folderPath, MUSIC_FOLDERS[folderKey], entry.name);
-      const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
-      return {
-        id: entry.name,
-        title,
-        artist: MUSIC_FOLDERS[folderKey] || "Local Audio",
-        source: pathToFileURL(targetPath).href,
-      };
+    .forEach((entry) => {
+      const targetPath = toAbsolutePath(path.join(folderPath, entry.name));
+
+      try {
+        const fileUrl = pathToFileURL(targetPath).href;
+        const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
+        tracks.push({
+          id: entry.name,
+          title,
+          artist: MUSIC_FOLDERS[folderKey]?.label || "Local Audio",
+          source: fileUrl,
+          path: targetPath,
+        });
+      } catch (error) {
+        console.warn(`[Bubblemarks] Unable to build URL for ${targetPath}:`, error);
+      }
     });
+
+  return tracks;
 };
 
 const scanAudioFolder = async (folderKey) => {
-  const folderName = MUSIC_FOLDERS[folderKey];
-  if (!folderName) {
-    return { id: folderKey, tracks: [], missing: true, path: resolveMusicRoot() };
+  const folderName = MUSIC_FOLDERS[folderKey]?.folder;
+  const roots = resolveMusicRoots();
+
+  if (!folderName || roots.length === 0) {
+    return { id: folderKey, tracks: [], missing: true, path: resolveMusicRoots()[0] };
   }
 
-  const musicRoot = resolveMusicRoot();
-  const folderPath = path.join(musicRoot, folderName);
-  const result = { id: folderKey, tracks: [], missing: false, path: folderPath };
+  const candidatePaths = roots.map((rootPath) => path.join(rootPath, folderName));
+  const result = { id: folderKey, tracks: [], missing: true, path: candidatePaths[0] };
 
-  try {
-    const stats = await fsp.stat(folderPath);
-    if (!stats.isDirectory()) {
-      result.missing = true;
+  for (const folderPath of candidatePaths) {
+    try {
+      const stats = await fsp.stat(folderPath);
+      if (!stats.isDirectory()) {
+        continue;
+      }
+
+      const entries = await fsp.readdir(folderPath, { withFileTypes: true });
+      const files = entries.filter((entry) => entry.isFile());
+      result.path = folderPath;
+      result.missing = false;
+      result.tracks = normalizeTracks(folderKey, folderPath, files);
       return result;
+    } catch (error) {
+      console.warn(`[Bubblemarks] Unable to read music folder "${folderPath}":`, error);
     }
-
-    const entries = await fsp.readdir(folderPath, { withFileTypes: true });
-    const files = entries.filter((entry) => entry.isFile());
-    result.tracks = normalizeTracks(folderKey, files);
-    return result;
-  } catch (error) {
-    console.warn(`[Bubblemarks] Unable to read music folder "${folderPath}":`, error);
-    result.missing = true;
-    return result;
   }
+
+  return result;
 };
 
 contextBridge.exposeInMainWorld("musicLibrary", {
