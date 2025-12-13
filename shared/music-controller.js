@@ -15,6 +15,9 @@ window.addEventListener("DOMContentLoaded", () => {
       this.hydrophoneRetryCount = 0;
       this.maxHydrophoneRetries = 3;
       this.hydrophoneAutoplayPrimed = false;
+      this.hls = null;
+      this.hlsSource = null;
+      this.hlsLoader = null;
 
       this.audio.addEventListener("ended", () => {
         if (typeof this.onTrackEnd === "function") {
@@ -167,7 +170,92 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    playSource(source, { loop = false, mode = null, metadata = null } = {}) {
+    canPlayNativeHls() {
+      return Boolean(this.audio.canPlayType("application/vnd.apple.mpegurl"));
+    }
+
+    isHlsSource(source) {
+      return typeof source === "string" && source.toLowerCase().includes(".m3u8");
+    }
+
+    cleanupHls() {
+      if (this.hls) {
+        try {
+          this.hls.destroy();
+        } catch (error) {
+          console.warn("[Bubblemarks] Unable to clean up HLS instance", error);
+        }
+      }
+      this.hls = null;
+      this.hlsSource = null;
+    }
+
+    async loadHlsLibrary() {
+      if (window.Hls) {
+        return window.Hls;
+      }
+
+      if (this.hlsLoader) {
+        return this.hlsLoader;
+      }
+
+      this.hlsLoader = new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.14/dist/hls.min.js";
+        script.async = true;
+        script.onload = () => resolve(window.Hls || null);
+        script.onerror = (error) => {
+          console.warn("[Bubblemarks] Failed to load hls.js", error);
+          this.hlsLoader = null;
+          resolve(null);
+        };
+        document.head.appendChild(script);
+      });
+
+      return this.hlsLoader;
+    }
+
+    tryPlayAudio() {
+      const playPromise = this.audio.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch((error) => {
+          const reason = error?.message || "Playback blocked";
+          this.handlePlaybackIssue(reason, { error });
+        });
+      }
+    }
+
+    setupHlsPlayback(HlsConstructor, source) {
+      this.cleanupHls();
+
+      if (!HlsConstructor || typeof HlsConstructor.isSupported !== "function") {
+        return false;
+      }
+
+      if (!HlsConstructor.isSupported()) {
+        return false;
+      }
+
+      const hls = new HlsConstructor();
+      this.hls = hls;
+      this.hlsSource = source;
+
+      hls.on(HlsConstructor.Events.ERROR, (_event, data) => {
+        const error = data?.details || data?.type || "HLS error";
+        this.handlePlaybackIssue(error, { error: data });
+      });
+
+      hls.on(HlsConstructor.Events.MANIFEST_PARSED, () => {
+        this.tryPlayAudio();
+      });
+
+      hls.attachMedia(this.audio);
+      hls.loadSource(source);
+
+      return true;
+    }
+
+    async playSource(source, { loop = false, mode = null, metadata = null } = {}) {
       if (!source) {
         return false;
       }
@@ -176,8 +264,17 @@ window.addEventListener("DOMContentLoaded", () => {
       this.currentSource = source;
       this.currentMetadata = metadata;
 
+      this.cleanupHls();
+
       if (mode) {
         this.setMode(mode);
+      }
+
+      if (this.isHlsSource(source) && !this.canPlayNativeHls()) {
+        const HlsConstructor = await this.loadHlsLibrary();
+        if (this.setupHlsPlayback(HlsConstructor, source)) {
+          return true;
+        }
       }
 
       this.audio.src = source;
@@ -188,13 +285,7 @@ window.addEventListener("DOMContentLoaded", () => {
         console.warn("[Bubblemarks] Unable to refresh audio source", error);
       }
 
-      const playPromise = this.audio.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch((error) => {
-          const reason = error?.message || "Playback blocked";
-          this.handlePlaybackIssue(reason, { error });
-        });
-      }
+      this.tryPlayAudio();
 
       return true;
     }
@@ -293,6 +384,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     stop() {
+      this.cleanupHls();
       this.audio.pause();
       try {
         this.audio.currentTime = 0;
