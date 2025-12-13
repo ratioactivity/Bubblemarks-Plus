@@ -51,7 +51,7 @@ const normalizeTracks = (folderKey, folderPath, entries = []) => {
   return entries
     .filter((entry) => SUPPORTED_AUDIO_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
     .map((entry) => {
-      const targetPath = path.join(folderPath, MUSIC_FOLDERS[folderKey].folder, entry.name);
+      const targetPath = path.join(folderPath, entry.name);
       const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
       return {
         id: entry.name,
