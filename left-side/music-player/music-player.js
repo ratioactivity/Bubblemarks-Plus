@@ -971,11 +971,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
       if (importedPlayer) {
         widgetHost.replaceChildren(importedPlayer);
-        if (helpModal && !widgetHost.querySelector("[data-hydrophone-help-modal]")) {
-          widgetHost.appendChild(helpModal);
+        if (helpModal && !document.querySelector("[data-hydrophone-help-modal]")) {
+          document.body.appendChild(helpModal);
         }
       } else {
         widgetHost.innerHTML = markup;
+        const fallbackModal = widgetHost.querySelector("[data-hydrophone-help-modal]");
+        if (fallbackModal && !document.querySelector("[data-hydrophone-help-modal]")) {
+          document.body.appendChild(fallbackModal);
+        }
       }
     } catch (error) {
       widgetHost.innerHTML = `<p class="music-player-fallback">Music nook is stretching... (${error.message})</p>`;
@@ -1000,10 +1004,10 @@ window.addEventListener("DOMContentLoaded", () => {
     const discLibrary = widgetHost.querySelector("[data-disc-library]");
     const discLibraryEmpty = widgetHost.querySelector("[data-disc-empty]");
     const hydrophoneHelpButton = widgetHost.querySelector("[data-hydrophone-help-button]");
-    const hydrophoneHelpModal = widgetHost.querySelector("[data-hydrophone-help-modal]");
-    const hydrophoneHelpDialog = widgetHost.querySelector("[data-hydrophone-help-dialog]");
-    const hydrophoneHelpClose = widgetHost.querySelector("[data-hydrophone-help-close]");
-    const hydrophoneHelpBackdrop = widgetHost.querySelector("[data-hydrophone-help-backdrop]");
+    const hydrophoneHelpModal = document.querySelector("[data-hydrophone-help-modal]");
+    const hydrophoneHelpDialog = document.querySelector("[data-hydrophone-help-dialog]");
+    const hydrophoneHelpClose = document.querySelector("[data-hydrophone-help-close]");
+    const hydrophoneHelpBackdrop = document.querySelector("[data-hydrophone-help-backdrop]");
 
     let lastHydrophoneHelpTrigger = null;
 

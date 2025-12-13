@@ -619,7 +619,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  z-index: 6;
+  z-index: 999;
 }
 
 .hydrophone-help-modal[hidden] {
