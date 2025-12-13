@@ -1,4 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
+  const SILENT_HYDROPHONE_PRIMER =
+    "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=";
+
   class MusicController {
     constructor() {
       this.audio = new Audio();
@@ -11,6 +14,7 @@ window.addEventListener("DOMContentLoaded", () => {
       this.hydrophoneRetryTimer = null;
       this.hydrophoneRetryCount = 0;
       this.maxHydrophoneRetries = 3;
+      this.hydrophoneAutoplayPrimed = false;
 
       this.audio.addEventListener("ended", () => {
         if (typeof this.onTrackEnd === "function") {
@@ -54,6 +58,28 @@ window.addEventListener("DOMContentLoaded", () => {
 
     dispatchStatus(type, detail = {}) {
       window.dispatchEvent(new CustomEvent("musiccontroller", { detail: { type, ...detail } }));
+    }
+
+    async primeHydrophoneAutoplay() {
+      if (this.hydrophoneAutoplayPrimed) {
+        return true;
+      }
+
+      const primer = new Audio(SILENT_HYDROPHONE_PRIMER);
+      primer.muted = true;
+      primer.preload = "auto";
+      primer.crossOrigin = "anonymous";
+
+      try {
+        await primer.play();
+        primer.pause();
+        this.hydrophoneAutoplayPrimed = true;
+        return true;
+      } catch (error) {
+        console.warn("[Bubblemarks] Hydrophone autoplay primer failed", error);
+        this.hydrophoneAutoplayPrimed = false;
+        return false;
+      }
     }
 
     handleHydrophoneRecovery() {
@@ -156,6 +182,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
       this.audio.src = source;
 
+      try {
+        this.audio.load();
+      } catch (error) {
+        console.warn("[Bubblemarks] Unable to refresh audio source", error);
+      }
+
       const playPromise = this.audio.play();
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch((error) => {
@@ -243,11 +275,21 @@ window.addEventListener("DOMContentLoaded", () => {
         this.hydrophoneRetryTimer = null;
       }
 
-      return this.playSource(source, {
-        loop: false,
-        mode: "hydrophone",
-        metadata: normalizedMetadata,
-      });
+      const attemptPlay = () =>
+        this.playSource(source, {
+          loop: false,
+          mode: "hydrophone",
+          metadata: normalizedMetadata,
+        });
+
+      const primer = this.primeHydrophoneAutoplay();
+      if (primer && typeof primer.then === "function") {
+        primer.catch(() => {}).finally(attemptPlay);
+      } else {
+        attemptPlay();
+      }
+
+      return true;
     }
 
     stop() {
