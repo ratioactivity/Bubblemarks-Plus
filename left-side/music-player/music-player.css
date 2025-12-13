@@ -548,11 +548,9 @@
 }
 
 #music-player .hydrophone-card {
-  display: grid;
-  gap: 0.35rem;
-  align-items: start;
-  justify-items: center;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem 0.35rem;
   border-radius: calc(var(--soft-radius, 16px) * 0.55);
   background: linear-gradient(140deg, rgba(255, 255, 255, 0.9), rgba(220, 235, 255, 0.85));
@@ -600,22 +598,3 @@
   background: rgba(0, 0, 0, 0.32);
 }
 
-#music-player .hydrophone-meta {
-  display: grid;
-  gap: 0.14rem;
-  text-align: center;
-}
-
-#music-player .hydrophone-name {
-  margin: 0;
-  font-family: var(--font-heading, "Bigbesty", "Papernotes", cursive);
-  color: #7a6af7;
-  font-size: 1.02rem;
-}
-
-#music-player .hydrophone-count {
-  margin: 0;
-  color: rgba(75, 61, 85, 0.78);
-  font-family: "Papernotes", "Comic Sans MS", "Segoe UI", sans-serif;
-  font-size: 0.95rem;
-}
