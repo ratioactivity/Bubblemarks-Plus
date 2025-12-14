@@ -1105,13 +1105,7 @@ function initPetWidget() {
     }
 
     if (rewardDisc) {
-      ownedDiscs.push(rewardDisc);
-      try {
-        localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
-      } catch {
-        // ignore storage errors
-      }
-      renderDiscList();
+      addDiscToOwned(rewardDisc);
 
       if (musicButton) {
         musicButton.classList.add("music-icon-glow");
