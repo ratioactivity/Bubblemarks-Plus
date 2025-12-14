@@ -604,6 +604,25 @@ function initPetWidget() {
     return { ...details, name };
   }
 
+  function addDiscToOwned(discName) {
+    const normalizedName = typeof discName === "string" ? discName.trim() : "";
+    if (!normalizedName) {
+      return;
+    }
+
+    if (ownedDiscs.includes(normalizedName)) {
+      return;
+    }
+
+    ownedDiscs.push(normalizedName);
+    try {
+      localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
+    } catch {
+      // ignore storage errors
+    }
+    renderDiscList();
+  }
+
   function hideRewardIcon() {
     if (!rewardIconEl) return;
     rewardIconEl.style.display = "none";
@@ -1086,13 +1105,7 @@ function initPetWidget() {
     }
 
     if (rewardDisc) {
-      ownedDiscs.push(rewardDisc);
-      try {
-        localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
-      } catch {
-        // ignore storage errors
-      }
-      renderDiscList();
+      addDiscToOwned(rewardDisc);
 
       if (musicButton) {
         musicButton.classList.add("music-icon-glow");
@@ -1591,6 +1604,7 @@ function initPetWidget() {
       const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
       renderDiscRewardMessage(discReward, combinedMessage);
       if (discReward) {
+        addDiscToOwned(discName);
         playDiscRewardAudio(discReward);
       } else {
         playLevel100CelebrationSound();
@@ -1608,6 +1622,7 @@ function initPetWidget() {
       const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
       renderDiscRewardMessage(discReward, combinedMessage);
       if (discReward) {
+        addDiscToOwned(discName);
         playDiscRewardAudio(discReward);
       }
       finalizeReward();
@@ -1623,6 +1638,7 @@ function initPetWidget() {
       const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
       renderDiscRewardMessage(discReward, combinedMessage);
       if (discReward) {
+        addDiscToOwned(discName);
         playDiscRewardAudio(discReward);
       }
       finalizeReward();
@@ -1639,6 +1655,7 @@ function initPetWidget() {
     const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
     renderDiscRewardMessage(randomDiscReward, combinedMessage);
     if (randomDiscReward) {
+      addDiscToOwned(randomDiscName);
       playDiscRewardAudio(randomDiscReward);
     }
     finalizeReward();
