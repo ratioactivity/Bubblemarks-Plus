@@ -7,6 +7,10 @@ const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const resolveUserMusicRoot = () => {
+  const userHome = process.env.USERPROFILE || process.env.HOME || "C:\\Users\\Public";
+  return path.join(userHome, "Music");
+};
 const isDev = process.defaultApp || !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
@@ -187,6 +191,23 @@ function registerBubblemarksProtocol() {
         .posix
         .normalize([hostSegment, trimmedPath].filter(Boolean).join("/"))
         .replace(/^\/+|\/+$/g, "");
+
+      const normalizedParts = normalizedPath.split("/").filter(Boolean);
+      const primarySegment = normalizedParts[0] || "";
+
+      if (primarySegment === "media") {
+        const encodedTarget = normalizedParts.slice(1).join("/");
+        const decodedTarget = decodeURIComponent(encodedTarget);
+        const normalizedTargetPath = path.normalize(decodedTarget);
+        const musicRoot = path.normalize(resolveUserMusicRoot() + path.sep);
+
+        if (!normalizedTargetPath.startsWith(musicRoot)) {
+          console.warn("[Bubblemarks] Media request outside Music folder rejected", normalizedTargetPath);
+          return callback({ error: -10 });
+        }
+
+        return callback({ path: normalizedTargetPath });
+      }
 
       const resolvedTarget = (() => {
         if (normalizedPath === "" || normalizedPath === "index") {
