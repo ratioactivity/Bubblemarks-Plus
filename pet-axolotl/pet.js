@@ -661,8 +661,19 @@ function initPetWidget() {
     if (!Array.isArray(GENERIC_DISC_POOL) || GENERIC_DISC_POOL.length === 0) {
       return null;
     }
-    const index = Math.floor(Math.random() * GENERIC_DISC_POOL.length);
-    return GENERIC_DISC_POOL[index] || null;
+
+    const normalizedOwned = new Set(ownedDiscs.map((disc) => (typeof disc === "string" ? disc.trim() : disc)));
+    const availableDiscs = GENERIC_DISC_POOL.filter((disc) => {
+      const normalized = typeof disc === "string" ? disc.trim() : disc;
+      return Boolean(normalized) && !normalizedOwned.has(normalized);
+    });
+
+    if (availableDiscs.length === 0) {
+      return null;
+    }
+
+    const index = Math.floor(Math.random() * availableDiscs.length);
+    return availableDiscs[index] || null;
   }
 
   function buildCombinedMessage(base, reward) {
@@ -1626,6 +1637,10 @@ function initPetWidget() {
 
       const randomDiscName = selectRandomDiscName();
       if (!randomDiscName) {
+        const rewardLine = `✨ Level ${rewardInfo.level} reward! Pico already has every available music disc.`;
+        const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+        renderDiscRewardMessage(null, combinedMessage);
+        rewardedRewardKeys.add(rewardKey);
         return;
       }
 
