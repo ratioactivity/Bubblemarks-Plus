@@ -31,6 +31,21 @@ contextBridge.exposeInMainWorld("spotifyAPI", {
   },
 });
 
+contextBridge.exposeInMainWorld("quicklaunch", {
+  async open(target) {
+    if (typeof target !== "string") {
+      return { success: false, error: "Invalid launch target." };
+    }
+
+    try {
+      return await ipcRenderer.invoke("quicklaunch-open", target);
+    } catch (error) {
+      console.warn("[Bubblemarks] Renderer failed to request quicklaunch open", error);
+      return { success: false, error: error?.message || "Unable to open target." };
+    }
+  },
+});
+
 const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
 const MUSIC_FOLDERS = {

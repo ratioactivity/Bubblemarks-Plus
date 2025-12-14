@@ -5014,19 +5014,33 @@ function setupDataTools() {
       }, 3400);
     };
 
-    const handleLaunch = (deeplink, label) => {
+    const handleLaunch = async (deeplink, label) => {
       if (!deeplink) {
         showNotice(`${label} shortcut is missing its app path.`);
         return;
       }
 
+      const quicklaunchApi = window.quicklaunch;
+
+      if (!quicklaunchApi || typeof quicklaunchApi.open !== "function") {
+        showNotice(
+          `Couldn't open ${label}. Allow app launches or configure your OS/app path to proceed.`
+        );
+        return;
+      }
+
       try {
-        const openedWindow = window.open(deeplink);
-        if (!openedWindow) {
-          showNotice(
-            `Couldn't open ${label}. Allow app launches or configure your OS/app path to proceed.`
-          );
+        const result = await quicklaunchApi.open(deeplink);
+
+        if (result?.success) {
+          return;
         }
+
+        const message = result?.error
+          ? `${label} didn't open. Check your OS/app path settings and try again when ready.`
+          : `Couldn't open ${label}. Allow app launches or configure your OS/app path to proceed.`;
+
+        showNotice(message);
       } catch (error) {
         console.warn(`[Bubblemarks] Quicklaunch failed for ${label}:`, error);
         showNotice(
@@ -5057,8 +5071,8 @@ function setupDataTools() {
       const deeplink = button.getAttribute("data-quicklaunch-url");
       button.setAttribute("aria-label", `Open ${label}`);
 
-      button.addEventListener("click", () => {
-        handleLaunch(deeplink, label);
+      button.addEventListener("click", async () => {
+        await handleLaunch(deeplink, label);
       });
     });
   });
