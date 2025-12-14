@@ -568,6 +568,48 @@ function initPetWidget() {
     rewardAudio = audioEl;
   }
 
+  const cleanupRewardAudio = () => {
+    if (!rewardAudio) {
+      return;
+    }
+
+    try {
+      rewardAudio.pause();
+      rewardAudio.currentTime = 0;
+    } catch {
+      // ignore audio errors
+    }
+
+    rewardAudio = null;
+  };
+
+  const resetMusicPlayerVisibility = () => {
+    if (musicPlayerEl) {
+      musicPlayerEl.style.display = "none";
+      try {
+        musicPlayerEl.pause();
+        musicPlayerEl.currentTime = 0;
+      } catch {
+        // ignore audio errors
+      }
+    }
+
+    if (musicSourceEl) {
+      musicSourceEl.src = "";
+    }
+  };
+
+  const handleMusicPlayerStopped = () => {
+    cleanupRewardAudio();
+    resetMusicPlayerVisibility();
+  };
+
+  if (musicPlayerEl) {
+    ["pause", "ended", "error"].forEach((eventName) => {
+      musicPlayerEl.addEventListener(eventName, handleMusicPlayerStopped);
+    });
+  }
+
   function playDiscRewardAudio(rewardDetails) {
     if (!rewardDetails?.sound || !soundsEnabled) return;
 
@@ -1243,20 +1285,8 @@ function initPetWidget() {
       discAudio.currentTime = 0;
     }
 
-    if (rewardAudio) {
-      try {
-        rewardAudio.pause();
-        rewardAudio.currentTime = 0;
-      } catch {
-        // ignore audio errors
-      }
-      rewardAudio = null;
-    }
-
-    if (musicPlayerEl) {
-      musicPlayerEl.pause();
-      musicPlayerEl.currentTime = 0;
-    }
+    cleanupRewardAudio();
+    resetMusicPlayerVisibility();
     currentDisc = null;
 
     if (musicController) {
