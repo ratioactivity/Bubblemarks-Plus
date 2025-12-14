@@ -174,48 +174,22 @@ window.addEventListener("DOMContentLoaded", () => {
   const CALLS_REPEAT_STORAGE_KEY = "bubblemarks-calls-repeat";
   const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
-  const toBubblemarksMediaUrl = (value) => {
+  const toFileUrl = (value) => {
     if (typeof value !== "string" || !value.trim()) {
       return value;
     }
 
-    if (value.startsWith("bubblemarks://media/")) {
+    if (value.startsWith("file://")) {
       return value;
     }
 
-    const sanitized = value.replace(/\\/g, "/");
-    const parseFileUrlPath = () => {
-      try {
-        const parsed = new URL(sanitized);
-        if (parsed.protocol !== "file:") {
-          return null;
-        }
-        const decodedPath = decodeURIComponent(parsed.pathname || "");
-        if (process.platform === "win32" && decodedPath.startsWith("/") && /^[a-zA-Z]:/.test(decodedPath.slice(1))) {
-          return decodedPath.slice(1);
-        }
-        return decodedPath || null;
-      } catch {
-        return null;
-      }
-    };
-
-    const basePath = sanitized.startsWith("file://") ? parseFileUrlPath() : sanitized;
-
-    if (!basePath) {
+    const looksLikeWindowsPath = /^[a-zA-Z]:[\\/]/.test(value);
+    if (!looksLikeWindowsPath) {
       return value;
     }
 
-    const normalizedPath =
-      basePath.startsWith("/") && /^[a-zA-Z]:/.test(basePath.slice(1)) ? basePath.slice(1) : basePath;
-
-    const isAbsolutePath = normalizedPath.startsWith("/") || /^[a-zA-Z]:\//.test(normalizedPath);
-    if (!isAbsolutePath) {
-      return value;
-    }
-
-    const encodedPath = encodeURI(normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`);
-    return `bubblemarks://media${encodedPath}`;
+    const normalized = value.replace(/\\/g, "/");
+    return `file:///${encodeURI(normalized)}`;
   };
 
   const readStoredMode = () => {
@@ -281,7 +255,7 @@ window.addEventListener("DOMContentLoaded", () => {
       title,
       artist: safeTrack.artist || label,
       cover: safeTrack.cover || defaultAccent,
-      source: toBubblemarksMediaUrl(safeTrack.source),
+      source: toFileUrl(safeTrack.source),
     };
   };
 
@@ -1255,7 +1229,7 @@ window.addEventListener("DOMContentLoaded", () => {
       playQueueIndex(nextIndex);
     };
 
-    const playQueueIndex = (index) => {
+    const playQueueIndex = (index, { autoplay = true } = {}) => {
       const nextTrack = queueState.tracks[index];
       if (!nextTrack) {
         return false;
@@ -1266,7 +1240,29 @@ window.addEventListener("DOMContentLoaded", () => {
 
       const normalized = normalizeLocalTrack(nextTrack, queueState.mode);
       resetProgressDisplay();
-      setSourceStatus(`${normalized.artist}: ${normalized.title}`, "info");
+      setSourceStatus(
+        `${normalized.artist}: ${normalized.title}${autoplay ? "" : " (ready)"}`,
+        "info"
+      );
+
+      if (!autoplay) {
+        musicController.setMode("widget");
+        musicController.currentSource = normalized.source;
+        musicController.currentMetadata = normalized;
+        musicController.setAudioCrossOrigin(normalized.source);
+        audio.loop = false;
+        audio.src = normalized.source;
+        try {
+          audio.load();
+        } catch (error) {
+          console.warn("[Bubblemarks] Unable to refresh audio source", error);
+        }
+        audio.pause();
+        updatePlayButtons(false);
+        refreshNowPlaying(true);
+        return true;
+      }
+
       musicController.playSource(normalized.source, {
         loop: false,
         mode: "widget",
@@ -1276,7 +1272,7 @@ window.addEventListener("DOMContentLoaded", () => {
       return true;
     };
 
-    const startLocalMode = async (mode, { refresh = false } = {}) => {
+    const startLocalMode = async (mode, { refresh = false, autoplay = true } = {}) => {
       if (!LOCAL_AUDIO_SOURCES[mode]) {
         return;
       }
@@ -1326,7 +1322,7 @@ window.addEventListener("DOMContentLoaded", () => {
       };
 
       const startIndex = singlePlay ? Math.floor(Math.random() * shuffled.length) : 0;
-      playQueueIndex(startIndex);
+      playQueueIndex(startIndex, { autoplay });
     };
 
     const copyToClipboard = async (text) => {
@@ -1569,7 +1565,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const initialMode = readStoredMode() || "bubblemarks";
-    await startLocalMode(initialMode);
+    await startLocalMode(initialMode, { autoplay: false });
 
     const spotifyTitle = widgetHost.querySelector("[data-spotify-title]");
     const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
@@ -1952,6 +1948,15 @@ window.addEventListener("DOMContentLoaded", () => {
       widgetPlayButton.addEventListener("click", () => {
         musicController.setMode("widget");
         musicController.onTrackEnd = queueState.tracks.length ? handleQueueAdvance : null;
+        if (
+          queueState.tracks.length &&
+          (!musicController.currentSource ||
+            musicController.currentSource !== normalizeLocalTrack(queueState.tracks[queueState.index], queueState.mode).source)
+        ) {
+          playQueueIndex(queueState.index, { autoplay: true });
+          return;
+        }
+
         if (audio.paused) {
           audio.play();
         } else {
