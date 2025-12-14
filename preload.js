@@ -35,8 +35,8 @@ const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aa
 
 const MUSIC_FOLDERS = {
   bubblemarks: "Bubblemarks FM",
-  songs: "Orca Songs",
-  calls: "Orca Calls",
+  songs: "orca sounds",
+  calls: "orca sounds long",
 };
 
 const resolveMusicRoot = () => {
