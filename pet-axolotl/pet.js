@@ -239,7 +239,7 @@ function initPetWidget() {
   let lastKnownLevel = Number.isFinite(initialPetState?.level)
     ? initialPetState.level
     : 0;
-  let lastRewardedKey = null;
+  const rewardedRewardKeys = new Set();
   let happiness = 0;
   let hunger = 0;
   let sleepiness = 0;
@@ -604,6 +604,25 @@ function initPetWidget() {
     return { ...details, name };
   }
 
+  function addDiscToOwned(discName) {
+    const normalizedName = typeof discName === "string" ? discName.trim() : "";
+    if (!normalizedName) {
+      return;
+    }
+
+    if (ownedDiscs.includes(normalizedName)) {
+      return;
+    }
+
+    ownedDiscs.push(normalizedName);
+    try {
+      localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
+    } catch {
+      // ignore storage errors
+    }
+    renderDiscList();
+  }
+
   function hideRewardIcon() {
     if (!rewardIconEl) return;
     rewardIconEl.style.display = "none";
@@ -642,8 +661,19 @@ function initPetWidget() {
     if (!Array.isArray(GENERIC_DISC_POOL) || GENERIC_DISC_POOL.length === 0) {
       return null;
     }
-    const index = Math.floor(Math.random() * GENERIC_DISC_POOL.length);
-    return GENERIC_DISC_POOL[index] || null;
+
+    const normalizedOwned = new Set(ownedDiscs.map((disc) => (typeof disc === "string" ? disc.trim() : disc)));
+    const availableDiscs = GENERIC_DISC_POOL.filter((disc) => {
+      const normalized = typeof disc === "string" ? disc.trim() : disc;
+      return Boolean(normalized) && !normalizedOwned.has(normalized);
+    });
+
+    if (availableDiscs.length === 0) {
+      return null;
+    }
+
+    const index = Math.floor(Math.random() * availableDiscs.length);
+    return availableDiscs[index] || null;
   }
 
   function buildCombinedMessage(base, reward) {
@@ -1086,13 +1116,7 @@ function initPetWidget() {
     }
 
     if (rewardDisc) {
-      ownedDiscs.push(rewardDisc);
-      try {
-        localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
-      } catch {
-        // ignore storage errors
-      }
-      renderDiscList();
+      addDiscToOwned(rewardDisc);
 
       if (musicButton) {
         musicButton.classList.add("music-icon-glow");
@@ -1511,27 +1535,7 @@ function initPetWidget() {
     const levelsToInspect = ascendingLevels > 0 ? ascendingLevels : 1;
 
     let level100Reached = false;
-    let selectedReward = null;
-
-    const rewardPriority = {
-      level100: 3,
-      level50: 2,
-      level20: 1,
-      generic: 0,
-    };
-
-    const considerReward = (levelValue, rewardInfo) => {
-      if (!rewardInfo) return;
-      const priority = rewardPriority[rewardInfo.type] ?? -1;
-      const currentPriority = selectedReward ? selectedReward.priority : -1;
-      if (priority > currentPriority || (priority === currentPriority && levelValue > selectedReward.level)) {
-        selectedReward = {
-          ...rewardInfo,
-          level: levelValue,
-          priority,
-        };
-      }
-    };
+    const rewardsToGrant = [];
 
     for (let offset = 0; offset < levelsToInspect; offset += 1) {
       const candidateLevel = ascendingLevels > 0 ? priorLevel + offset + 1 : currentLevel;
@@ -1539,24 +1543,24 @@ function initPetWidget() {
       if (candidateLevel === 100) {
         level100Reached = true;
         if (!level100RewardGranted) {
-          considerReward(candidateLevel, { type: "level100", discName: LEVEL_DISC_REWARDS[100] });
+          rewardsToGrant.push({ type: "level100", level: candidateLevel, discName: LEVEL_DISC_REWARDS[100] });
         }
         continue;
       }
 
       if (candidateLevel === 50) {
-        considerReward(candidateLevel, { type: "level50", discName: LEVEL_DISC_REWARDS[50] });
+        rewardsToGrant.push({ type: "level50", level: candidateLevel, discName: LEVEL_DISC_REWARDS[50] });
         continue;
       }
 
       if (candidateLevel === 20) {
-        considerReward(candidateLevel, { type: "level20", discName: LEVEL_DISC_REWARDS[20] });
+        rewardsToGrant.push({ type: "level20", level: candidateLevel, discName: LEVEL_DISC_REWARDS[20] });
         continue;
       }
 
       const eligibleForFiveLevelReward = candidateLevel > 0 && candidateLevel % 5 === 0;
       if (eligibleForFiveLevelReward) {
-        considerReward(candidateLevel, { type: "generic" });
+        rewardsToGrant.push({ type: "generic", level: candidateLevel });
       }
     }
 
@@ -1564,84 +1568,92 @@ function initPetWidget() {
       createLevel100Icon();
     }
 
-    if (!selectedReward) {
+    if (rewardsToGrant.length === 0) {
       return;
     }
 
     const baseMessage = (meta.message ?? state.message ?? "").trim();
-    const rewardKey = `${selectedReward.type}-${selectedReward.level}`;
-    if (rewardKey && rewardKey === lastRewardedKey) {
-      return;
-    }
-    const finalizeReward = () => {
-      lastRewardedKey = rewardKey;
-    };
 
-    if (selectedReward.type === "level100") {
-      level100RewardGranted = true;
-      persistLevel100RewardFlag();
-
-      const celebrationMessage =
-        "🐾 Legendary milestone! Pico evolved into a Mythic Axolotl at Level 100!";
-      const discName = selectedReward.discName || LEVEL_DISC_REWARDS[100];
-      const discReward = discName ? getDiscRewardDetails(discName) : null;
-      const rewardLine = discName
-        ? `${celebrationMessage} 🎵 Pico unlocked the ${discName} music disc!`
-        : celebrationMessage;
-      const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
-      renderDiscRewardMessage(discReward, combinedMessage);
-      if (discReward) {
-        playDiscRewardAudio(discReward);
-      } else {
-        playLevel100CelebrationSound();
+    rewardsToGrant.forEach((rewardInfo) => {
+      const rewardKey = `${rewardInfo.type}-${rewardInfo.level}`;
+      if (rewardKey && rewardedRewardKeys.has(rewardKey)) {
+        return;
       }
-      finalizeReward();
-      return;
-    }
 
-    if (selectedReward.type === "level50") {
-      const discName = selectedReward.discName || LEVEL_DISC_REWARDS[50];
-      const discReward = discName ? getDiscRewardDetails(discName) : null;
-      const rewardLine = discName
-        ? `🌟 Level 50 reached! Pico unlocked the ${discName} music disc!`
-        : "🌟 Level 50 reached! Pico earns a legendary reward!";
-      const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
-      renderDiscRewardMessage(discReward, combinedMessage);
-      if (discReward) {
-        playDiscRewardAudio(discReward);
+      if (rewardInfo.type === "level100") {
+        level100RewardGranted = true;
+        persistLevel100RewardFlag();
+
+        const celebrationMessage =
+          "🐾 Legendary milestone! Pico evolved into a Mythic Axolotl at Level 100!";
+        const discName = rewardInfo.discName || LEVEL_DISC_REWARDS[100];
+        const discReward = discName ? getDiscRewardDetails(discName) : null;
+        const rewardLine = discName
+          ? `${celebrationMessage} 🎵 Pico unlocked the ${discName} music disc!`
+          : celebrationMessage;
+        const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+        renderDiscRewardMessage(discReward, combinedMessage);
+        if (discReward) {
+          addDiscToOwned(discName);
+          playDiscRewardAudio(discReward);
+        } else {
+          playLevel100CelebrationSound();
+        }
+        rewardedRewardKeys.add(rewardKey);
+        return;
       }
-      finalizeReward();
-      return;
-    }
 
-    if (selectedReward.type === "level20") {
-      const discName = selectedReward.discName || LEVEL_DISC_REWARDS[20];
-      const discReward = discName ? getDiscRewardDetails(discName) : null;
-      const rewardLine = discName
-        ? `🎁 Level 20 reward unlocked! Pico found the ${discName} music disc!`
-        : "🎁 Level 20 reward unlocked! Enjoy a special treat for Pico!";
-      const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
-      renderDiscRewardMessage(discReward, combinedMessage);
-      if (discReward) {
-        playDiscRewardAudio(discReward);
+      if (rewardInfo.type === "level50") {
+        const discName = rewardInfo.discName || LEVEL_DISC_REWARDS[50];
+        const discReward = discName ? getDiscRewardDetails(discName) : null;
+        const rewardLine = discName
+          ? `🌟 Level 50 reached! Pico unlocked the ${discName} music disc!`
+          : "🌟 Level 50 reached! Pico earns a legendary reward!";
+        const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+        renderDiscRewardMessage(discReward, combinedMessage);
+        if (discReward) {
+          addDiscToOwned(discName);
+          playDiscRewardAudio(discReward);
+        }
+        rewardedRewardKeys.add(rewardKey);
+        return;
       }
-      finalizeReward();
-      return;
-    }
 
-    const randomDiscName = selectRandomDiscName();
-    if (!randomDiscName) {
-      return;
-    }
+      if (rewardInfo.type === "level20") {
+        const discName = rewardInfo.discName || LEVEL_DISC_REWARDS[20];
+        const discReward = discName ? getDiscRewardDetails(discName) : null;
+        const rewardLine = discName
+          ? `🎁 Level 20 reward unlocked! Pico found the ${discName} music disc!`
+          : "🎁 Level 20 reward unlocked! Enjoy a special treat for Pico!";
+        const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+        renderDiscRewardMessage(discReward, combinedMessage);
+        if (discReward) {
+          addDiscToOwned(discName);
+          playDiscRewardAudio(discReward);
+        }
+        rewardedRewardKeys.add(rewardKey);
+        return;
+      }
 
-    const randomDiscReward = getDiscRewardDetails(randomDiscName);
-    const rewardLine = `✨ Level ${selectedReward.level} reward! Pico discovered the ${randomDiscName} music disc!`;
-    const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
-    renderDiscRewardMessage(randomDiscReward, combinedMessage);
-    if (randomDiscReward) {
-      playDiscRewardAudio(randomDiscReward);
-    }
-    finalizeReward();
+      const randomDiscName = selectRandomDiscName();
+      if (!randomDiscName) {
+        const rewardLine = `✨ Level ${rewardInfo.level} reward! Pico already has every available music disc.`;
+        const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+        renderDiscRewardMessage(null, combinedMessage);
+        rewardedRewardKeys.add(rewardKey);
+        return;
+      }
+
+      const randomDiscReward = getDiscRewardDetails(randomDiscName);
+      const rewardLine = `✨ Level ${rewardInfo.level} reward! Pico discovered the ${randomDiscName} music disc!`;
+      const combinedMessage = buildCombinedMessage(baseMessage, rewardLine);
+      renderDiscRewardMessage(randomDiscReward, combinedMessage);
+      if (randomDiscReward) {
+        addDiscToOwned(randomDiscName);
+        playDiscRewardAudio(randomDiscReward);
+      }
+      rewardedRewardKeys.add(rewardKey);
+    });
   }
 
   const CALLBACK_ACTIONS = new Set(["call-back", "callback"]);
@@ -2072,7 +2084,7 @@ function initPetWidget() {
     petXP = 0;
     petLevel = 0;
     lastKnownLevel = 0;
-    lastRewardedKey = null;
+    rewardedRewardKeys.clear();
     level100RewardGranted = false;
 
     clearLevel100Icon();
