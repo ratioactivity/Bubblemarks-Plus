@@ -172,7 +172,25 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const MUSIC_MODE_STORAGE_KEY = "bubblemarks-music-source";
   const CALLS_REPEAT_STORAGE_KEY = "bubblemarks-calls-repeat";
-  const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg"]);
+  const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
+
+  const toFileUrl = (value) => {
+    if (typeof value !== "string" || !value.trim()) {
+      return value;
+    }
+
+    if (value.startsWith("file://")) {
+      return value;
+    }
+
+    const looksLikeWindowsPath = /^[a-zA-Z]:[\\/]/.test(value);
+    if (!looksLikeWindowsPath) {
+      return value;
+    }
+
+    const normalized = value.replace(/\\/g, "/");
+    return `file:///${encodeURI(normalized)}`;
+  };
 
   const readStoredMode = () => {
     try {
@@ -237,41 +255,8 @@ window.addEventListener("DOMContentLoaded", () => {
       title,
       artist: safeTrack.artist || label,
       cover: safeTrack.cover || defaultAccent,
+      source: toFileUrl(safeTrack.source),
     };
-  };
-
-  const ensureFileUrl = (source) => {
-    if (!source || typeof source !== "string") {
-      return null;
-    }
-
-    try {
-      const url = new URL(source);
-      return url.href;
-    } catch {
-      const normalized = source.replace(/\\/g, "/");
-      const prefixed = normalized.match(/^[a-zA-Z]:\//) ? `/${normalized}` : normalized;
-      try {
-        const encoded = encodeURI(prefixed.replace(/^\/+/, "/"));
-        return `file://${encoded.startsWith("/") ? encoded : `/${encoded}`}`;
-      } catch {
-        return null;
-      }
-    }
-  };
-
-  const getSourceExtension = (source) => {
-    if (!source || typeof source !== "string") {
-      return "";
-    }
-
-    try {
-      const url = new URL(ensureFileUrl(source));
-      const match = url.pathname.match(/\.([^.\\/]+)$/);
-      return match ? `.${match[1].toLowerCase()}` : "";
-    } catch {
-      return "";
-    }
   };
 
   const createQueueState = () => ({
@@ -286,7 +271,6 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   let queueState = createQueueState();
-  const failedLocalSources = new Set();
 
   let currentTrackIndex = 0;
   const audio = musicController.audio;
@@ -1275,7 +1259,6 @@ window.addEventListener("DOMContentLoaded", () => {
       updateSourcePills(mode);
       stopLocalPlayback();
       resetProgressDisplay();
-      failedLocalSources.clear();
 
       const library = await ensureLocalLibrary(mode, { refresh });
 
@@ -1291,18 +1274,10 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const supportedTracks = [];
-      (library.tracks || []).forEach((track) => {
-        const fileUrl = ensureFileUrl(track?.source || track?.path);
-        const extension = getSourceExtension(fileUrl);
-        if (!fileUrl || !supportedLocalFormats.has(extension)) {
-          if (!fileUrl) {
-            console.warn("[Bubblemarks] Skipping invalid local track", track);
-          }
-          return;
-        }
-
-        supportedTracks.push(normalizeLocalTrack({ ...track, source: fileUrl }, mode));
+      const supportedTracks = (library.tracks || []).filter((track) => {
+        const extension = track?.source ? track.source.split(".").pop()?.toLowerCase() : "";
+        const dotExtension = extension ? `.${extension}` : "";
+        return supportedLocalFormats.has(dotExtension);
       });
 
       if (supportedTracks.length === 0) {
@@ -1311,7 +1286,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const shuffled = shuffleArray(supportedTracks);
+      const shuffled = shuffleArray(supportedTracks).map((track) => normalizeLocalTrack(track, mode));
       const singlePlay = mode === "calls" && !callsRepeatEnabled;
       queueState = {
         mode,
