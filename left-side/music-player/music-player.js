@@ -2095,13 +2095,67 @@ window.addEventListener("DOMContentLoaded", () => {
       refreshNowPlaying(true);
     });
 
+    const handleLocalPlaybackError = (detail = {}) => {
+      if (!queueState.mode || detail.mode !== "widget") {
+        return false;
+      }
+
+      const failedSource = ensureFileUrl(
+        detail.source || queueState.tracks[queueState.index]?.source
+      );
+      const failedLabel = detail.metadata?.title || formatSourceName(failedSource) || "Local track";
+
+      if (failedSource) {
+        failedLocalSources.add(failedSource);
+        queueState.tracks = queueState.tracks.filter(
+          (track) => ensureFileUrl(track.source) !== failedSource
+        );
+        queueState.index = Math.min(queueState.index, Math.max(queueState.tracks.length - 1, 0));
+      }
+
+      console.warn(
+        `[Bubblemarks] Skipping failed local track: ${failedLabel}`,
+        failedSource || detail.source || "<unknown>",
+        detail.error || detail.reason || "Playback error"
+      );
+
+      if (queueState.tracks.length === 0) {
+        setSourceStatus(`Playback failed: ${detail.reason || "no supported source"}.`, "error");
+        queueState = createQueueState();
+        return true;
+      }
+
+      const nextIndex = getNextQueueIndex();
+      if (nextIndex >= 0) {
+        setSourceStatus(`Skipping: ${failedLabel}. ${detail.reason || "Playback error"}`, "warning");
+        playQueueIndex(nextIndex % queueState.tracks.length);
+        return true;
+      }
+
+      setSourceStatus(`Playback failed: ${detail.reason || "no supported source"}.`, "error");
+      queueState = createQueueState();
+      return true;
+    };
+
     const handleHydrophonePlaybackEvent = (detail = {}) => {
       const { type, mode, attempt, delay, source, reason } = detail;
-      if (mode !== "hydrophone") {
+
+      const reasonLabel = typeof reason === "string" && reason.trim() ? reason : "Stream error";
+
+      if (type === "playback-error") {
+        if (mode === "hydrophone") {
+          setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
+        } else if (handleLocalPlaybackError(detail)) {
+          return;
+        } else {
+          setSourceStatus(`Playback issue: ${reasonLabel}`, "error");
+        }
         return;
       }
 
-      const reasonLabel = typeof reason === "string" && reason.trim() ? reason : "Stream error";
+      if (mode !== "hydrophone") {
+        return;
+      }
 
       if (type === "hydrophone-retry") {
         const attemptLabel = Number.isFinite(attempt) ? `Attempt ${attempt}` : "Retrying";
@@ -2116,8 +2170,6 @@ window.addEventListener("DOMContentLoaded", () => {
           detail.metadata?.name || musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
         setHydrophoneStatus(`${stationName} unavailable: ${reasonLabel}.`, "error", 6000);
         refreshNowPlaying(true);
-      } else if (type === "playback-error") {
-        setHydrophoneStatus(`${reasonLabel}. Retrying...`, "error");
       }
     };
 
