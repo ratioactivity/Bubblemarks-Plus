@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { fileURLToPath } = require("url");
 const { app, BrowserWindow, screen, shell, protocol, ipcMain } = require("electron");
 
 const ZENBOOK_WIDTH = 3840;
@@ -32,6 +33,45 @@ function registerMusicFolderHandler() {
       console.error(`[Bubblemarks] Failed to open Music folder at ${musicRoot}:`, error);
       return { path: musicRoot, error: error?.message || String(error) };
     }
+  });
+}
+
+function registerQuicklaunchHandler() {
+  const isWindowsPath = (value = "") => /^[a-zA-Z]:[\\/]/.test(value);
+
+  ipcMain.handle("quicklaunch-open", async (_event, target) => {
+    const normalizedTarget = typeof target === "string" ? target.trim() : "";
+
+    if (!normalizedTarget) {
+      return { success: false, error: "No launch target provided." };
+    }
+
+    const looksLikeProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(normalizedTarget);
+    const isFileUrl = normalizedTarget.toLowerCase().startsWith("file:");
+    const isFilesystemTarget = isFileUrl || isWindowsPath(normalizedTarget) || path.isAbsolute(normalizedTarget);
+
+    if (isFilesystemTarget) {
+      try {
+        const targetPath = isFileUrl ? fileURLToPath(new URL(normalizedTarget)) : normalizedTarget;
+        const result = await shell.openPath(targetPath);
+        return { success: !result, error: result || null };
+      } catch (error) {
+        console.warn(`[Bubblemarks] Quicklaunch failed to open path ${normalizedTarget}:`, error);
+        return { success: false, error: error?.message || String(error) };
+      }
+    }
+
+    if (looksLikeProtocol) {
+      try {
+        await shell.openExternal(normalizedTarget);
+        return { success: true, error: null };
+      } catch (error) {
+        console.warn(`[Bubblemarks] Quicklaunch failed to open protocol ${normalizedTarget}:`, error);
+        return { success: false, error: error?.message || String(error) };
+      }
+    }
+
+    return { success: false, error: "Unsupported launch target." };
   });
 }
 const isDev = process.defaultApp || !app.isPackaged;
@@ -396,6 +436,7 @@ function createWindow() {
 
     registerBubblemarksProtocol();
     registerMusicFolderHandler();
+    registerQuicklaunchHandler();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
       registerDefaultProtocolClient();
