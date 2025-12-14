@@ -1,12 +1,39 @@
 const fs = require("fs");
 const path = require("path");
-const { app, BrowserWindow, screen, shell, protocol } = require("electron");
+const { app, BrowserWindow, screen, shell, protocol, ipcMain } = require("electron");
 
 const ZENBOOK_WIDTH = 3840;
 const ZENBOOK_HEIGHT = 1110;
 const DIMENSION_TOLERANCE = 20;
 const APP_ID = "com.bubblemarks.sidebar";
 const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+const resolveUserMusicRoot = () => {
+  const userHome = process.env.USERPROFILE || process.env.HOME || "C:\\Users\\Public";
+  return path.join(userHome, "Music");
+};
+
+function registerMusicFolderHandler() {
+  ipcMain.handle("open-music-folder", async () => {
+    const musicRoot = resolveUserMusicRoot();
+
+    try {
+      await fs.promises.mkdir(musicRoot, { recursive: true });
+    } catch (error) {
+      console.warn(`[Bubblemarks] Unable to ensure Music folder exists at ${musicRoot}:`, error);
+    }
+
+    try {
+      const result = await shell.openPath(musicRoot);
+      if (result) {
+        console.warn(`[Bubblemarks] Opening Music folder reported: ${result}`);
+      }
+      return { path: musicRoot, error: result || null };
+    } catch (error) {
+      console.error(`[Bubblemarks] Failed to open Music folder at ${musicRoot}:`, error);
+      return { path: musicRoot, error: error?.message || String(error) };
+    }
+  });
+}
 const isDev = process.defaultApp || !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
@@ -188,6 +215,23 @@ function registerBubblemarksProtocol() {
         .normalize([hostSegment, trimmedPath].filter(Boolean).join("/"))
         .replace(/^\/+|\/+$/g, "");
 
+      const normalizedParts = normalizedPath.split("/").filter(Boolean);
+      const primarySegment = normalizedParts[0] || "";
+
+      if (primarySegment === "media") {
+        const encodedTarget = normalizedParts.slice(1).join("/");
+        const decodedTarget = decodeURIComponent(encodedTarget);
+        const normalizedTargetPath = path.normalize(decodedTarget);
+        const musicRoot = path.normalize(resolveUserMusicRoot() + path.sep);
+
+        if (!normalizedTargetPath.startsWith(musicRoot)) {
+          console.warn("[Bubblemarks] Media request outside Music folder rejected", normalizedTargetPath);
+          return callback({ error: -10 });
+        }
+
+        return callback({ path: normalizedTargetPath });
+      }
+
       const resolvedTarget = (() => {
         if (normalizedPath === "" || normalizedPath === "index") {
           return "index.html";
@@ -331,6 +375,7 @@ function createWindow() {
     }
 
     registerBubblemarksProtocol();
+    registerMusicFolderHandler();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
       registerDefaultProtocolClient();
