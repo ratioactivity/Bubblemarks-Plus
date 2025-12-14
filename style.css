@@ -1238,8 +1238,9 @@ body.bubblewarp-open {
 
 @media (min-width: 1400px) {
   .screenpad-layout {
+    display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
   }
 
