@@ -174,22 +174,48 @@ window.addEventListener("DOMContentLoaded", () => {
   const CALLS_REPEAT_STORAGE_KEY = "bubblemarks-calls-repeat";
   const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
-  const toFileUrl = (value) => {
+  const toBubblemarksMediaUrl = (value) => {
     if (typeof value !== "string" || !value.trim()) {
       return value;
     }
 
-    if (value.startsWith("file://")) {
+    if (value.startsWith("bubblemarks://media/")) {
       return value;
     }
 
-    const looksLikeWindowsPath = /^[a-zA-Z]:[\\/]/.test(value);
-    if (!looksLikeWindowsPath) {
+    const sanitized = value.replace(/\\/g, "/");
+    const parseFileUrlPath = () => {
+      try {
+        const parsed = new URL(sanitized);
+        if (parsed.protocol !== "file:") {
+          return null;
+        }
+        const decodedPath = decodeURIComponent(parsed.pathname || "");
+        if (process.platform === "win32" && decodedPath.startsWith("/") && /^[a-zA-Z]:/.test(decodedPath.slice(1))) {
+          return decodedPath.slice(1);
+        }
+        return decodedPath || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const basePath = sanitized.startsWith("file://") ? parseFileUrlPath() : sanitized;
+
+    if (!basePath) {
       return value;
     }
 
-    const normalized = value.replace(/\\/g, "/");
-    return `file:///${encodeURI(normalized)}`;
+    const normalizedPath =
+      basePath.startsWith("/") && /^[a-zA-Z]:/.test(basePath.slice(1)) ? basePath.slice(1) : basePath;
+
+    const isAbsolutePath = normalizedPath.startsWith("/") || /^[a-zA-Z]:\//.test(normalizedPath);
+    if (!isAbsolutePath) {
+      return value;
+    }
+
+    const encodedPath = encodeURI(normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`);
+    return `bubblemarks://media${encodedPath}`;
   };
 
   const readStoredMode = () => {
@@ -255,7 +281,7 @@ window.addEventListener("DOMContentLoaded", () => {
       title,
       artist: safeTrack.artist || label,
       cover: safeTrack.cover || defaultAccent,
-      source: toFileUrl(safeTrack.source),
+      source: toBubblemarksMediaUrl(safeTrack.source),
     };
   };
 

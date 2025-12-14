@@ -32,7 +32,6 @@ protocol.registerSchemesAsPrivileged([
       standard: true,
       secure: true,
       supportFetchAPI: true,
-      corsEnabled: true,
     },
   },
 ]);
@@ -157,7 +156,28 @@ function registerBubblemarksProtocol() {
     try {
       const url = new URL(request.url);
       const hostSegment = url.hostname ? url.hostname : "";
-      const rawPath = decodeURIComponent(url.pathname);
+      const rawPathname = decodeURIComponent(url.pathname || "");
+
+      if (hostSegment === "media") {
+        const normalizedMediaPath = (() => {
+          if (process.platform === "win32" && /^\/[a-zA-Z]:/.test(rawPathname)) {
+            return rawPathname.slice(1);
+          }
+          return rawPathname;
+        })();
+
+        const candidatePath = path.normalize(normalizedMediaPath);
+        const isAbsolutePath = path.isAbsolute(candidatePath);
+
+        if (!isAbsolutePath || !fs.existsSync(candidatePath)) {
+          console.error(`[Bubblemarks] Invalid media path requested: ${rawPathname}`);
+          return callback({ error: -6 });
+        }
+
+        return callback({ path: candidatePath });
+      }
+
+      const rawPath = rawPathname;
       const trimmedPath = rawPath.startsWith("/") ? rawPath.slice(1) : rawPath;
       const requestUrlLower = (request.url || "").toLowerCase();
       const pathCandidates = [hostSegment, trimmedPath, rawPath, url.pathname]
