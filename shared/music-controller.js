@@ -217,7 +217,9 @@ window.addEventListener("DOMContentLoaded", () => {
     setAudioCrossOrigin(source) {
       const value = typeof source === "string" ? source.trim() : "";
       const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value);
-      const isFileLike = !value || value.startsWith("file:") || value.startsWith("data:") || !hasProtocol;
+      const isBubblemarksScheme = value.startsWith("bubblemarks://");
+      const isFileLike =
+        !value || value.startsWith("file:") || value.startsWith("data:") || isBubblemarksScheme || !hasProtocol;
 
       if (isFileLike) {
         if (typeof this.audio.removeAttribute === "function") {

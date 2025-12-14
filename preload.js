@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const fsp = require("fs/promises");
 const path = require("path");
-const { pathToFileURL } = require("url");
+const BUBBLEMARKS_PROTOCOL = "bubblemarks";
 
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
@@ -51,11 +51,12 @@ const normalizeTracks = (folderKey, entries = []) => {
       const folderPath = resolveMusicRoot();
       const targetPath = path.join(folderPath, MUSIC_FOLDERS[folderKey], entry.name);
       const title = path.basename(entry.name, path.extname(entry.name)).replace(/[-_]+/g, " ");
+      const normalizedPath = targetPath.replace(/\\/g, "/");
       return {
         id: entry.name,
         title,
         artist: MUSIC_FOLDERS[folderKey] || "Local Audio",
-        source: pathToFileURL(targetPath).href,
+        source: `${BUBBLEMARKS_PROTOCOL}://media/${encodeURI(normalizedPath)}`,
       };
     });
 };
