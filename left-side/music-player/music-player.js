@@ -1272,7 +1272,7 @@ window.addEventListener("DOMContentLoaded", () => {
       return true;
     };
 
-    const startLocalMode = async (mode, { refresh = false, autoplay = true } = {}) => {
+    const startLocalMode = async (mode, { refresh = false, autoplay = false } = {}) => {
       if (!LOCAL_AUDIO_SOURCES[mode]) {
         return;
       }
@@ -1549,7 +1549,7 @@ window.addEventListener("DOMContentLoaded", () => {
     sourceButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const targetMode = button.dataset.source;
-        startLocalMode(targetMode);
+        startLocalMode(targetMode, { autoplay: false });
       });
     });
 
@@ -1559,7 +1559,7 @@ window.addEventListener("DOMContentLoaded", () => {
         persistCallsRepeat(callsRepeatEnabled);
         updateCallsLoopToggle();
         if (queueState.mode === "calls") {
-          startLocalMode("calls");
+          startLocalMode("calls", { autoplay: false });
         }
       });
     }
