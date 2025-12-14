@@ -322,7 +322,7 @@
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0.4rem 0.45rem;
   border-radius: calc(var(--soft-radius, 16px) * 0.65);
   background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(226, 239, 255, 0.92));
@@ -376,12 +376,8 @@
   box-shadow: 0 10px 18px rgba(255, 194, 220, 0.28), 0 10px 16px rgba(146, 169, 255, 0.2);
 }
 
-#music-player .music-source-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-#music-player .music-source-actions .music-btn {
+#music-player .music-add-songs {
+  margin-left: auto;
   min-width: 120px;
   justify-content: center;
 }
