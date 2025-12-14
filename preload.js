@@ -98,4 +98,13 @@ contextBridge.exposeInMainWorld("musicLibrary", {
       return map;
     }, {});
   },
+
+  async openMusicFolder() {
+    try {
+      return await ipcRenderer.invoke("open-music-folder");
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to open Music folder", error);
+      return { error: error?.message || "Unable to open Music folder." };
+    }
+  },
 });

@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { app, BrowserWindow, screen, shell, protocol } = require("electron");
+const { app, BrowserWindow, screen, shell, protocol, ipcMain } = require("electron");
 
 const ZENBOOK_WIDTH = 3840;
 const ZENBOOK_HEIGHT = 1110;
@@ -11,6 +11,29 @@ const resolveUserMusicRoot = () => {
   const userHome = process.env.USERPROFILE || process.env.HOME || "C:\\Users\\Public";
   return path.join(userHome, "Music");
 };
+
+function registerMusicFolderHandler() {
+  ipcMain.handle("open-music-folder", async () => {
+    const musicRoot = resolveUserMusicRoot();
+
+    try {
+      await fs.promises.mkdir(musicRoot, { recursive: true });
+    } catch (error) {
+      console.warn(`[Bubblemarks] Unable to ensure Music folder exists at ${musicRoot}:`, error);
+    }
+
+    try {
+      const result = await shell.openPath(musicRoot);
+      if (result) {
+        console.warn(`[Bubblemarks] Opening Music folder reported: ${result}`);
+      }
+      return { path: musicRoot, error: result || null };
+    } catch (error) {
+      console.error(`[Bubblemarks] Failed to open Music folder at ${musicRoot}:`, error);
+      return { path: musicRoot, error: error?.message || String(error) };
+    }
+  });
+}
 const isDev = process.defaultApp || !app.isPackaged;
 const SPOTIFY_OAUTH_CHANNEL = "spotify-oauth-callback";
 
@@ -372,6 +395,7 @@ function createWindow() {
     }
 
     registerBubblemarksProtocol();
+    registerMusicFolderHandler();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
       registerDefaultProtocolClient();

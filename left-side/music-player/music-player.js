@@ -1124,10 +1124,21 @@ window.addEventListener("DOMContentLoaded", () => {
     const hydrophoneHelpBackdrop = document.querySelector("[data-hydrophone-help-backdrop]");
     const sourceButtons = Array.from(widgetHost.querySelectorAll("[data-source]"));
     const callsLoopToggle = widgetHost.querySelector("[data-loop-toggle]");
+    const addSongsButton = widgetHost.querySelector("[data-add-songs]");
 
     let lastHydrophoneHelpTrigger = null;
 
     const localLibraryCache = new Map();
+
+    const openMusicFolder = async () => {
+      if (typeof window.musicLibrary?.openMusicFolder === "function") {
+        try {
+          await window.musicLibrary.openMusicFolder();
+        } catch (error) {
+          console.warn("[Bubblemarks] Unable to open Music folder:", error);
+        }
+      }
+    };
 
     const resetProgressDisplay = () => {
       if (seek) {
@@ -1545,6 +1556,12 @@ window.addEventListener("DOMContentLoaded", () => {
     setInterval(loadHydrophoneListeners, 60000);
 
     updateCallsLoopToggle();
+
+    if (addSongsButton) {
+      addSongsButton.addEventListener("click", () => {
+        openMusicFolder();
+      });
+    }
 
     sourceButtons.forEach((button) => {
       button.addEventListener("click", () => {
