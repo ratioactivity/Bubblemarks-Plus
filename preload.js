@@ -1,7 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const fsp = require("fs/promises");
 const path = require("path");
-const { pathToFileURL } = require("url");
 
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
@@ -33,10 +32,20 @@ contextBridge.exposeInMainWorld("spotifyAPI", {
 
 const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
+const BUBBLEMARKS_PROTOCOL = "bubblemarks";
+
 const MUSIC_FOLDERS = {
   bubblemarks: "Bubblemarks FM",
   songs: "orca sounds",
   calls: "orca sounds long",
+};
+
+const toBubblemarksMediaUrl = (targetPath) => {
+  const normalizedPath = path.normalize(targetPath);
+  const posixPath = normalizedPath.replace(/\\/g, "/");
+  const prefixedPath = posixPath.startsWith("/") ? posixPath : `/${posixPath}`;
+  const encodedPath = encodeURI(prefixedPath);
+  return `${BUBBLEMARKS_PROTOCOL}://media${encodedPath}`;
 };
 
 const resolveMusicRoot = () => {
@@ -55,7 +64,7 @@ const normalizeTracks = (folderKey, entries = []) => {
         id: entry.name,
         title,
         artist: MUSIC_FOLDERS[folderKey] || "Local Audio",
-        source: pathToFileURL(targetPath).href,
+        source: toBubblemarksMediaUrl(targetPath),
       };
     });
 };
