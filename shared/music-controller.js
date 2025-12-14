@@ -6,7 +6,6 @@ window.addEventListener("DOMContentLoaded", () => {
     constructor() {
       this.audio = new Audio();
       this.audio.preload = "metadata";
-      this.audio.crossOrigin = "anonymous";
       this.mode = "idle";
       this.currentSource = null;
       this.currentMetadata = null;
@@ -215,6 +214,22 @@ window.addEventListener("DOMContentLoaded", () => {
       return this.hlsLoader;
     }
 
+    setAudioCrossOrigin(source) {
+      const value = typeof source === "string" ? source.trim() : "";
+      const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value);
+      const isFileLike = !value || value.startsWith("file:") || value.startsWith("data:") || !hasProtocol;
+
+      if (isFileLike) {
+        if (typeof this.audio.removeAttribute === "function") {
+          this.audio.removeAttribute("crossorigin");
+        }
+        this.audio.crossOrigin = null;
+        return;
+      }
+
+      this.audio.crossOrigin = "anonymous";
+    }
+
     tryPlayAudio() {
       const playPromise = this.audio.play();
       if (playPromise && typeof playPromise.catch === "function") {
@@ -260,6 +275,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return false;
       }
 
+      this.setAudioCrossOrigin(source);
       this.audio.loop = loop === true;
       this.currentSource = source;
       this.currentMetadata = metadata;
