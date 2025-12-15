@@ -1436,47 +1436,61 @@ window.addEventListener("DOMContentLoaded", () => {
 
     hydrateHydrophoneHelp();
 
+    let measuredPanelMinHeight = 0;
+    let panelSyncScheduled = false;
+
     const syncPanelHeight = () => {
       const panelsContainer = widgetHost.querySelector(".music-player-panels");
       if (!panelsContainer || !panels.length) {
         return;
       }
 
-      let maxHeight = 0;
+      if (panelSyncScheduled) {
+        return;
+      }
 
-      panels.forEach((panel) => {
-        const isHidden = !panel.classList.contains("active");
-        const previousStyles = {
-          display: panel.style.display,
-          position: panel.style.position,
-          visibility: panel.style.visibility,
-          inset: panel.style.inset,
-          pointerEvents: panel.style.pointerEvents,
-        };
+      panelSyncScheduled = true;
 
-        if (isHidden) {
-          panel.style.display = "block";
-          panel.style.position = "absolute";
-          panel.style.visibility = "hidden";
-          panel.style.inset = "0";
-          panel.style.pointerEvents = "none";
-        }
+      window.requestAnimationFrame(() => {
+        panelSyncScheduled = false;
 
-        const { height } = panel.getBoundingClientRect();
-        maxHeight = Math.max(maxHeight, height);
+        let maxHeight = 0;
 
-        if (isHidden) {
-          panel.style.display = previousStyles.display;
-          panel.style.position = previousStyles.position;
-          panel.style.visibility = previousStyles.visibility;
-          panel.style.inset = previousStyles.inset;
-          panel.style.pointerEvents = previousStyles.pointerEvents;
+        panels.forEach((panel) => {
+          const isHidden = !panel.classList.contains("active");
+          const previousStyles = {
+            display: panel.style.display,
+            position: panel.style.position,
+            visibility: panel.style.visibility,
+            inset: panel.style.inset,
+            pointerEvents: panel.style.pointerEvents,
+          };
+
+          if (isHidden) {
+            panel.style.display = "block";
+            panel.style.position = "absolute";
+            panel.style.visibility = "hidden";
+            panel.style.inset = "0";
+            panel.style.pointerEvents = "none";
+          }
+
+          const { height } = panel.getBoundingClientRect();
+          maxHeight = Math.max(maxHeight, height);
+
+          if (isHidden) {
+            panel.style.display = previousStyles.display;
+            panel.style.position = previousStyles.position;
+            panel.style.visibility = previousStyles.visibility;
+            panel.style.inset = previousStyles.inset;
+            panel.style.pointerEvents = previousStyles.pointerEvents;
+          }
+        });
+
+        if (maxHeight > 0) {
+          measuredPanelMinHeight = Math.max(measuredPanelMinHeight, Math.ceil(maxHeight));
+          panelsContainer.style.minHeight = `${measuredPanelMinHeight}` + "px";
         }
       });
-
-      if (maxHeight > 0) {
-        panelsContainer.style.minHeight = `${Math.ceil(maxHeight)}px`;
-      }
     };
 
     const setActiveTab = (targetTab) => {
@@ -1674,6 +1688,8 @@ window.addEventListener("DOMContentLoaded", () => {
       if (spotifyAuthPanel) {
         spotifyAuthPanel.style.display = visible ? "block" : "none";
       }
+
+      syncPanelHeight();
     };
 
     const applySpotifyNowPlaying = (track) => {
@@ -1718,6 +1734,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       refreshNowPlaying(true);
+      syncPanelHeight();
     };
 
     const setSpotifyStatus = (message) => {
