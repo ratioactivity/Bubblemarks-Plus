@@ -19,6 +19,9 @@
 .music-player-panels {
   width: 100%;
   overflow: hidden;
+  position: relative;
+  min-height: 0;
+  transition: min-height 0.25s ease;
 }
 
 .music-player-panel {
