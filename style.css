@@ -63,7 +63,6 @@ body.notion-embed .app-shell {
 #bubblemarks-left {
   position: sticky;
   top: clamp(1rem, 2vw, 1.75rem);
-  align-self: flex-start;
   display: flex;
   flex-direction: column;
   gap: clamp(0.55rem, 1.2vw, 1.1rem);
@@ -536,7 +535,6 @@ body.notion-embed .app-shell {
   width: 350px;
   min-width: 350px;
   max-width: 350px;
-  align-self: flex-start;
 }
 
 .pet-widget {
