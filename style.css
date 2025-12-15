@@ -36,8 +36,8 @@ body.notion-embed .app-shell {
 }
 
 .app-shell {
-  overflow-y: auto;
-  max-height: 100vh;
+  overflow: visible;
+  max-height: none;
 }
 
 .left-side {
