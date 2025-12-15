@@ -1439,6 +1439,15 @@ window.addEventListener("DOMContentLoaded", () => {
     let measuredPanelMinHeight = 0;
     let panelSyncScheduled = false;
 
+    const applyPanelMinHeight = () => {
+      const panelsContainer = widgetHost.querySelector(".music-player-panels");
+      if (!panelsContainer || measuredPanelMinHeight <= 0) {
+        return;
+      }
+
+      panelsContainer.style.minHeight = `${measuredPanelMinHeight}` + "px";
+    };
+
     const syncPanelHeight = () => {
       const panelsContainer = widgetHost.querySelector(".music-player-panels");
       if (!panelsContainer || !panels.length) {
@@ -1488,9 +1497,34 @@ window.addEventListener("DOMContentLoaded", () => {
 
         if (maxHeight > 0) {
           measuredPanelMinHeight = Math.max(measuredPanelMinHeight, Math.ceil(maxHeight));
-          panelsContainer.style.minHeight = `${measuredPanelMinHeight}` + "px";
+          applyPanelMinHeight();
         }
       });
+    };
+
+    const observePanelHeights = () => {
+      const panelsContainer = widgetHost.querySelector(".music-player-panels");
+      if (!panelsContainer || !panels.length || typeof ResizeObserver !== "function") {
+        return;
+      }
+
+      const observer = new ResizeObserver((entries) => {
+        let updated = false;
+
+        entries.forEach((entry) => {
+          const { height } = entry.contentRect || {};
+          if (Number.isFinite(height) && height > measuredPanelMinHeight) {
+            measuredPanelMinHeight = Math.ceil(height);
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          applyPanelMinHeight();
+        }
+      });
+
+      panels.forEach((panel) => observer.observe(panel));
     };
 
     const setActiveTab = (targetTab) => {
@@ -1615,6 +1649,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     renderHydrophoneList();
+    observePanelHeights();
     syncPanelHeight();
     loadHydrophoneListeners();
     setInterval(loadHydrophoneListeners, 60000);
