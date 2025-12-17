@@ -28,96 +28,98 @@
   </div>
   <div class="screenpad-layout">
     <aside id="bubblemarks-left" class="left-side" aria-label="Bubblemarks widgets">
-      <div id="clock-widget" class="clock-card" aria-live="polite">
-        <div class="clock-stars" aria-hidden="true">
-          <img src="bubblemarks://assets/singlestar1.gif" alt="" class="clock-star clock-star--one" />
-          <img src="bubblemarks://assets/singlestar2.gif" alt="" class="clock-star clock-star--two" />
-          <img src="bubblemarks://assets/singlestar3.gif" alt="" class="clock-star clock-star--three" />
-          <img src="bubblemarks://assets/singlestar1.gif" alt="" class="clock-star clock-star--four" />
-        </div>
-        <div class="clock-inner">
-          <div class="clock-heading">
-            <div class="clock-month" id="clock-month"></div>
-            <div class="clock-date" id="clock-date"></div>
+      <div class="left-shell-body">
+        <div id="clock-widget" class="clock-card" aria-live="polite">
+          <div class="clock-stars" aria-hidden="true">
+            <img src="bubblemarks://assets/singlestar1.gif" alt="" class="clock-star clock-star--one" />
+            <img src="bubblemarks://assets/singlestar2.gif" alt="" class="clock-star clock-star--two" />
+            <img src="bubblemarks://assets/singlestar3.gif" alt="" class="clock-star clock-star--three" />
+            <img src="bubblemarks://assets/singlestar1.gif" alt="" class="clock-star clock-star--four" />
           </div>
-          <div class="clock-time" id="clock-time"></div>
-          <div class="clock-calendar" id="clock-calendar"></div>
+          <div class="clock-inner">
+            <div class="clock-heading">
+              <div class="clock-month" id="clock-month"></div>
+              <div class="clock-date" id="clock-date"></div>
+            </div>
+            <div class="clock-time" id="clock-time"></div>
+            <div class="clock-calendar" id="clock-calendar"></div>
+          </div>
         </div>
+        <div id="quicklaunch-widget" class="quicklaunch-card" aria-label="Quick launch bar">
+          <div class="quicklaunch-card__header">
+            <span class="quicklaunch-card__title">Quick Launch</span>
+            <span class="quicklaunch-card__hint">Tiny portals to your apps</span>
+          </div>
+          <div class="quicklaunch-bar" role="group" aria-label="Quick launch shortcuts">
+            <button
+              class="quicklaunch-button"
+              type="button"
+              data-quicklaunch-label="Snipping Tool"
+              data-quicklaunch-url="ms-screenclip:"
+            >
+              <img
+                src="bubblemarks://assets/snippingtool-icon.png"
+                alt=""
+                aria-hidden="true"
+                class="quicklaunch-button__icon"
+              />
+              <span class="quicklaunch-button__label">Snipping Tool</span>
+            </button>
+            <button
+              class="quicklaunch-button"
+              type="button"
+              data-quicklaunch-label="Notepad"
+              data-quicklaunch-url="file:///C:/Users/User/Desktop/Notepad.lnk"
+            >
+              <img
+                src="bubblemarks://assets/notepad-icon.png"
+                alt=""
+                aria-hidden="true"
+                class="quicklaunch-button__icon"
+              />
+              <span class="quicklaunch-button__label">Notepad</span>
+            </button>
+            <button
+              class="quicklaunch-button"
+              type="button"
+              data-quicklaunch-label="Opera"
+              data-quicklaunch-url="file:///C:/Users/User/Desktop/Opera%20GX%20Browser.lnk"
+            >
+              <img
+                src="bubblemarks://assets/opera-icon.png"
+                alt=""
+                aria-hidden="true"
+                class="quicklaunch-button__icon"
+              />
+              <span class="quicklaunch-button__label">Opera</span>
+            </button>
+            <button
+              class="quicklaunch-button"
+              type="button"
+              data-quicklaunch-label="Spotify"
+              data-quicklaunch-url="spotify:"
+            >
+              <img
+                src="bubblemarks://assets/spotify-icon.png"
+                alt=""
+                aria-hidden="true"
+                class="quicklaunch-button__icon"
+              />
+              <span class="quicklaunch-button__label">Spotify</span>
+            </button>
+          </div>
+        </div>
+        <div id="notes-widget" class="notes-card">
+          <div class="notes-card__header">
+            <button id="notes-add" type="button" class="notes-card__add" aria-label="Add a new note">Add Note</button>
+          </div>
+          <div class="notes-card__body" role="region" aria-label="Saved notes">
+            <p id="notes-empty" class="notes-empty" aria-live="polite">No notes yet—start a fresh bubble!</p>
+            <div id="notes-list" class="notes-list" role="list"></div>
+          </div>
+        </div>
+        <div id="music-player-widget"></div>
       </div>
-      <div id="quicklaunch-widget" class="quicklaunch-card" aria-label="Quick launch bar">
-        <div class="quicklaunch-card__header">
-          <span class="quicklaunch-card__title">Quick Launch</span>
-          <span class="quicklaunch-card__hint">Tiny portals to your apps</span>
-        </div>
-        <div class="quicklaunch-bar" role="group" aria-label="Quick launch shortcuts">
-          <button
-            class="quicklaunch-button"
-            type="button"
-            data-quicklaunch-label="Snipping Tool"
-            data-quicklaunch-url="ms-screenclip:"
-          >
-            <img
-              src="bubblemarks://assets/snippingtool-icon.png"
-              alt=""
-              aria-hidden="true"
-              class="quicklaunch-button__icon"
-            />
-            <span class="quicklaunch-button__label">Snipping Tool</span>
-          </button>
-          <button
-            class="quicklaunch-button"
-            type="button"
-            data-quicklaunch-label="Notepad"
-            data-quicklaunch-url="file:///C:/Users/User/Desktop/Notepad.lnk"
-          >
-            <img
-              src="bubblemarks://assets/notepad-icon.png"
-              alt=""
-              aria-hidden="true"
-              class="quicklaunch-button__icon"
-            />
-            <span class="quicklaunch-button__label">Notepad</span>
-          </button>
-          <button
-            class="quicklaunch-button"
-            type="button"
-            data-quicklaunch-label="Opera"
-            data-quicklaunch-url="file:///C:/Users/User/Desktop/Opera%20GX%20Browser.lnk"
-          >
-            <img
-              src="bubblemarks://assets/opera-icon.png"
-              alt=""
-              aria-hidden="true"
-              class="quicklaunch-button__icon"
-            />
-            <span class="quicklaunch-button__label">Opera</span>
-          </button>
-          <button
-            class="quicklaunch-button"
-            type="button"
-            data-quicklaunch-label="Spotify"
-            data-quicklaunch-url="spotify:"
-          >
-            <img
-              src="bubblemarks://assets/spotify-icon.png"
-              alt=""
-              aria-hidden="true"
-              class="quicklaunch-button__icon"
-            />
-            <span class="quicklaunch-button__label">Spotify</span>
-          </button>
-        </div>
-      </div>
-      <div id="notes-widget" class="notes-card">
-        <div class="notes-card__header">
-          <button id="notes-add" type="button" class="notes-card__add" aria-label="Add a new note">Add Note</button>
-        </div>
-        <div class="notes-card__body" role="region" aria-label="Saved notes">
-          <p id="notes-empty" class="notes-empty" aria-live="polite">No notes yet—start a fresh bubble!</p>
-          <div id="notes-list" class="notes-list" role="list"></div>
-        </div>
-      </div>
-      <div id="music-player-widget"></div>
     </aside>
     <main class="app-shell">
     <header class="hero">

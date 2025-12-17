@@ -60,10 +60,6 @@ body.notion-embed .app-shell {
   min-height: var(--column-min-height);
 }
 
-.screenpad-layout > * {
-  min-height: var(--column-min-height);
-}
-
 #bubblemarks-left {
   position: sticky;
   top: clamp(1rem, 2vw, 1.75rem);
@@ -74,8 +70,7 @@ body.notion-embed .app-shell {
   width: 400px;
   min-width: 400px;
   max-width: 400px;
-  height: var(--column-min-height);
-  max-height: var(--column-min-height);
+  min-height: var(--column-min-height);
   padding: clamp(0.85rem, 1.8vw, 1.4rem);
   background: rgba(255, 255, 255, 0.35);
   border-radius: calc(var(--soft-radius) * 1.2);
@@ -83,8 +78,17 @@ body.notion-embed .app-shell {
   -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
   z-index: 1;
-  overflow-x: visible;
+  overflow: visible;
+}
+
+.left-shell-body {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.55rem, 1.2vw, 1.1rem);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  padding-right: clamp(0.05rem, 0.4vw, 0.35rem);
 }
 
 #notes-widget,
