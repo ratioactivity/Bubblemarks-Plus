@@ -1436,96 +1436,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     hydrateHydrophoneHelp();
 
-    let measuredPanelMinHeight = 0;
-    let panelSyncScheduled = false;
-
-    const applyPanelMinHeight = () => {
-      const panelsContainer = widgetHost.querySelector(".music-player-panels");
-      if (!panelsContainer || measuredPanelMinHeight <= 0) {
-        return;
-      }
-
-      panelsContainer.style.minHeight = `${measuredPanelMinHeight}` + "px";
-    };
-
-    const syncPanelHeight = () => {
-      const panelsContainer = widgetHost.querySelector(".music-player-panels");
-      if (!panelsContainer || !panels.length) {
-        return;
-      }
-
-      if (panelSyncScheduled) {
-        return;
-      }
-
-      panelSyncScheduled = true;
-
-      window.requestAnimationFrame(() => {
-        panelSyncScheduled = false;
-
-        let maxHeight = 0;
-
-        panels.forEach((panel) => {
-          const isHidden = !panel.classList.contains("active");
-          const previousStyles = {
-            display: panel.style.display,
-            position: panel.style.position,
-            visibility: panel.style.visibility,
-            inset: panel.style.inset,
-            pointerEvents: panel.style.pointerEvents,
-          };
-
-          if (isHidden) {
-            panel.style.display = "block";
-            panel.style.position = "absolute";
-            panel.style.visibility = "hidden";
-            panel.style.inset = "0";
-            panel.style.pointerEvents = "none";
-          }
-
-          const { height } = panel.getBoundingClientRect();
-          maxHeight = Math.max(maxHeight, height);
-
-          if (isHidden) {
-            panel.style.display = previousStyles.display;
-            panel.style.position = previousStyles.position;
-            panel.style.visibility = previousStyles.visibility;
-            panel.style.inset = previousStyles.inset;
-            panel.style.pointerEvents = previousStyles.pointerEvents;
-          }
-        });
-
-        if (maxHeight > 0) {
-          measuredPanelMinHeight = Math.max(measuredPanelMinHeight, Math.ceil(maxHeight));
-          applyPanelMinHeight();
-        }
-      });
-    };
-
-    const observePanelHeights = () => {
-      const panelsContainer = widgetHost.querySelector(".music-player-panels");
-      if (!panelsContainer || !panels.length || typeof ResizeObserver !== "function") {
-        return;
-      }
-
-      const observer = new ResizeObserver((entries) => {
-        let updated = false;
-
-        entries.forEach((entry) => {
-          const { height } = entry.contentRect || {};
-          if (Number.isFinite(height) && height > measuredPanelMinHeight) {
-            measuredPanelMinHeight = Math.ceil(height);
-            updated = true;
-          }
-        });
-
-        if (updated) {
-          applyPanelMinHeight();
-        }
-      });
-
-      panels.forEach((panel) => observer.observe(panel));
-    };
+    const syncPanelHeight = () => {};
 
     const setActiveTab = (targetTab) => {
       const selected = targetTab || "main";
@@ -1539,7 +1450,6 @@ window.addEventListener("DOMContentLoaded", () => {
         panel.classList.toggle("active", panel.dataset.panel === selected);
       });
 
-      syncPanelHeight();
     };
 
     navigateMusicPlayer.openTab = (targetTab = "main") => {
@@ -1566,7 +1476,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!hasDiscs) {
-        syncPanelHeight();
         return;
       }
 
@@ -1621,7 +1530,6 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       discLibrary.appendChild(fragment);
-      syncPanelHeight();
     };
 
     tabs.forEach((tab) => {
@@ -1640,8 +1548,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     renderDiscLibrary();
 
-    window.addEventListener("resize", syncPanelHeight);
-
     window.addEventListener("storage", (event) => {
       if (event.key === "ownedDiscs") {
         renderDiscLibrary();
@@ -1649,8 +1555,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     renderHydrophoneList();
-    observePanelHeights();
-    syncPanelHeight();
     loadHydrophoneListeners();
     setInterval(loadHydrophoneListeners, 60000);
 
@@ -1723,8 +1627,6 @@ window.addEventListener("DOMContentLoaded", () => {
       if (spotifyAuthPanel) {
         spotifyAuthPanel.style.display = visible ? "block" : "none";
       }
-
-      syncPanelHeight();
     };
 
     const applySpotifyNowPlaying = (track) => {
@@ -1769,7 +1671,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       refreshNowPlaying(true);
-      syncPanelHeight();
     };
 
     const setSpotifyStatus = (message) => {
