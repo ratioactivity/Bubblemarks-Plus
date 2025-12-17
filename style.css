@@ -5,7 +5,7 @@
   --card-width: 260px;
   --card-height: 180px;
   --gap: 16px;
-  --column-min-height: 1140px;
+  --column-min-height: clamp(1140px, 96vh, 1400px);
 }
 
 html,
@@ -44,7 +44,6 @@ body.notion-embed .app-shell {
   flex: 0 0 400px;
   max-width: 400px;
   min-width: 400px;
-  align-self: flex-start;
 }
 
 
@@ -58,6 +57,7 @@ body.notion-embed .app-shell {
   width: min(100%, 3840px);
   margin: 0 auto;
   overflow-x: visible;
+  min-height: var(--column-min-height);
 }
 
 #bubblemarks-left {
@@ -70,7 +70,6 @@ body.notion-embed .app-shell {
   width: 400px;
   min-width: 400px;
   max-width: 400px;
-  height: auto;
   min-height: var(--column-min-height);
   padding: clamp(0.85rem, 1.8vw, 1.4rem);
   background: rgba(255, 255, 255, 0.35);
@@ -79,7 +78,17 @@ body.notion-embed .app-shell {
   -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
   z-index: 1;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.left-shell-body {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.55rem, 1.2vw, 1.1rem);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: clamp(0.05rem, 0.4vw, 0.35rem);
 }
 
 #notes-widget,
@@ -523,7 +532,6 @@ body.notion-embed .app-shell {
 
 .screenpad-layout .app-shell {
   flex: 1 1 clamp(420px, calc(100vw - 780px), 760px);
-  min-height: var(--column-min-height);
 }
 
 .pet-column {
@@ -1241,10 +1249,6 @@ body.bubblewarp-open {
     align-items: stretch;
     justify-content: center;
   }
-
-  #bubblemarks-left {
-    align-self: flex-start;
-  }
 }
 
 @media (max-width: 1399px) {
@@ -1258,7 +1262,14 @@ body.bubblewarp-open {
   #bubblemarks-left {
     position: static;
     min-height: auto;
+    max-height: none;
+    height: auto;
+    overflow: visible;
     border-radius: calc(var(--soft-radius) * 1.2);
+  }
+
+  .screenpad-layout > * {
+    min-height: auto;
   }
 }
 
@@ -1770,7 +1781,7 @@ h6,
   position: relative;
   z-index: 1;
   width: clamp(420px, calc(100vw - 780px), 760px);
-  min-height: clamp(1140px, 96vh, 1400px);
+  min-height: var(--column-min-height);
   background: var(--surface);
   backdrop-filter: blur(28px);
   border-radius: calc(var(--soft-radius) * 1.2);
