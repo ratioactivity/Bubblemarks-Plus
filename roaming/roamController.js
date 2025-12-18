@@ -29,6 +29,7 @@ window.addEventListener("DOMContentLoaded", () => {
   let lastX = 0;
   let roamLoopTimeout = null;
   const roamSpritePreloadHost = ensureRoamSpritePreloadHost();
+  const roamOverlay = ensureRoamOverlay();
   const roamSprite = ensureRoamSprite();
   const roamSpriteVariantCounters = new Map();
   const roamControllerState = { active: false, returning: false };
@@ -98,17 +99,22 @@ window.addEventListener("DOMContentLoaded", () => {
       pendingRoamStart = true;
       return false;
     }
-    if (!tankWindow.contains(roamSprite)) {
-      tankWindow.appendChild(roamSprite);
+    if (!document.body.contains(roamOverlay)) {
+      document.body.appendChild(roamOverlay);
     }
+    if (!roamOverlay.contains(roamSprite)) {
+      roamOverlay.appendChild(roamSprite);
+    }
+    roamOverlay.style.display = "block";
     roamSpriteVisible = true;
     return true;
   }
 
   function detachRoamSprite() {
-    if (tankWindow.contains(roamSprite)) {
-      tankWindow.removeChild(roamSprite);
+    if (roamOverlay.contains(roamSprite)) {
+      roamOverlay.removeChild(roamSprite);
     }
+    roamOverlay.style.display = "none";
     moveSpriteToPreloadHost();
     roamSpriteVisible = false;
   }
@@ -158,6 +164,24 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     return sprite;
+  }
+
+  function ensureRoamOverlay() {
+    let overlay = document.querySelector("#pet-roam-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "pet-roam-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      const style = overlay.style;
+      style.position = "fixed";
+      style.inset = "0";
+      style.pointerEvents = "none";
+      style.overflow = "visible";
+      style.display = "none";
+      style.zIndex = "9999";
+      document.body.appendChild(overlay);
+    }
+    return overlay;
   }
 
   function getNextRoamSpriteVariant(src) {
@@ -232,12 +256,13 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const bounds = tankWindow.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     const spriteBounds = roamSprite.getBoundingClientRect();
-    const spriteWidth = spriteBounds.width || bounds.width * 0.35;
-    const spriteHeight = spriteBounds.height || bounds.height * 0.4;
-    const maxX = Math.max(0, bounds.width - spriteWidth);
-    const maxY = Math.max(0, bounds.height - spriteHeight);
+    const spriteWidth = spriteBounds.width || viewportWidth * 0.35;
+    const spriteHeight = spriteBounds.height || viewportHeight * 0.4;
+    const maxX = Math.max(0, viewportWidth - spriteWidth);
+    const maxY = Math.max(0, viewportHeight - spriteHeight);
     const nextX = Math.random() * maxX;
     const nextY = Math.random() * maxY;
     const faceLeft = nextX < lastX ? -1 : 1;
@@ -342,7 +367,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function ensureRoamSpriteHidden() {
-    if (!roamMode && !returning && (roamSpriteVisible || tankWindow.contains(roamSprite))) {
+    if (!roamMode && !returning && (roamSpriteVisible || roamOverlay.contains(roamSprite))) {
       hideRoamSpriteInstantly();
       showUISprite();
       setRoamControllerState({ active: false, returning: false });
