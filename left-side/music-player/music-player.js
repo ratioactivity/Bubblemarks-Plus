@@ -166,12 +166,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const LOCAL_AUDIO_SOURCES = {
     bubblemarks: { label: "Bubblemarks FM" },
-    songs: { label: "Orca Songs" },
-    calls: { label: "Orca Calls" },
   };
-
-  const MUSIC_MODE_STORAGE_KEY = "bubblemarks-music-source";
-  const CALLS_REPEAT_STORAGE_KEY = "bubblemarks-calls-repeat";
   const supportedLocalFormats = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
   const toFileUrl = (value) => {
@@ -191,53 +186,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const normalized = value.replace(/\\/g, "/");
     return `file:///${encodeURI(normalized)}`;
   };
-
-  const readStoredMode = () => {
-    try {
-      const stored = localStorage.getItem(MUSIC_MODE_STORAGE_KEY);
-      if (stored && LOCAL_AUDIO_SOURCES[stored]) {
-        return stored;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return null;
-  };
-
-  const persistStoredMode = (mode) => {
-    try {
-      if (mode && LOCAL_AUDIO_SOURCES[mode]) {
-        localStorage.setItem(MUSIC_MODE_STORAGE_KEY, mode);
-      }
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  const readCallsRepeat = () => {
-    try {
-      const stored = localStorage.getItem(CALLS_REPEAT_STORAGE_KEY);
-      if (stored === "true") {
-        return true;
-      }
-      if (stored === "false") {
-        return false;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return false;
-  };
-
-  const persistCallsRepeat = (value) => {
-    try {
-      localStorage.setItem(CALLS_REPEAT_STORAGE_KEY, value ? "true" : "false");
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  let callsRepeatEnabled = readCallsRepeat();
 
   const shuffleArray = (items = []) => {
     return [...items]
@@ -1090,6 +1038,30 @@ window.addEventListener("DOMContentLoaded", () => {
           document.body.appendChild(fallbackModal);
         }
       }
+
+      const ensureOrcaTab = () => {
+        const tabsContainer = widgetHost.querySelector(".music-player-tabs");
+        const panelsContainer = widgetHost.querySelector(".music-player-panels");
+        const hasOrcaTab = tabsContainer?.querySelector('[data-tab="orca"]');
+        const hasOrcaPanel = panelsContainer?.querySelector('[data-panel="orca"]');
+
+        if (hasOrcaTab && hasOrcaPanel) {
+          return;
+        }
+
+        const parsedOrcaTab = parsed.querySelector('[data-tab="orca"]');
+        const parsedOrcaPanel = parsed.querySelector('[data-panel="orca"]');
+
+        if (!hasOrcaTab && parsedOrcaTab && tabsContainer) {
+          tabsContainer.appendChild(parsedOrcaTab.cloneNode(true));
+        }
+
+        if (!hasOrcaPanel && parsedOrcaPanel && panelsContainer) {
+          panelsContainer.appendChild(parsedOrcaPanel.cloneNode(true));
+        }
+      };
+
+      ensureOrcaTab();
     } catch (error) {
       widgetHost.innerHTML = `<p class="music-player-fallback">Music nook is stretching... (${error.message})</p>`;
       console.log("✅ script validated");
@@ -1119,7 +1091,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const hydrophoneHelpClose = document.querySelector("[data-hydrophone-help-close]");
     const hydrophoneHelpBackdrop = document.querySelector("[data-hydrophone-help-backdrop]");
     const sourceButtons = Array.from(widgetHost.querySelectorAll("[data-source]"));
-    const callsLoopToggle = widgetHost.querySelector("[data-loop-toggle]");
     const addSongsButton = widgetHost.querySelector("[data-add-songs]");
 
     let lastHydrophoneHelpTrigger = null;
@@ -1164,15 +1135,6 @@ window.addEventListener("DOMContentLoaded", () => {
         button.classList.toggle("is-active", isActive);
         button.setAttribute("aria-pressed", isActive ? "true" : "false");
       });
-    };
-
-    const updateCallsLoopToggle = () => {
-      if (!callsLoopToggle) {
-        return;
-      }
-      callsLoopToggle.classList.toggle("is-active", callsRepeatEnabled);
-      callsLoopToggle.setAttribute("aria-pressed", callsRepeatEnabled ? "true" : "false");
-      callsLoopToggle.title = callsRepeatEnabled ? "Repeat Orca Calls" : "Single Orca Call";
     };
 
     const ensureLocalLibrary = async (mode, { refresh = false } = {}) => {
@@ -1284,7 +1246,6 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      persistStoredMode(mode);
       updateSourcePills(mode);
       stopLocalPlayback();
       resetProgressDisplay();
@@ -1316,20 +1277,18 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       const shuffled = shuffleArray(supportedTracks).map((track) => normalizeLocalTrack(track, mode));
-      const singlePlay = mode === "calls" && !callsRepeatEnabled;
       queueState = {
         mode,
         tracks: shuffled,
         index: 0,
         options: {
           shuffle: true,
-          repeatQueue: mode !== "calls" || callsRepeatEnabled,
-          singlePlay,
+          repeatQueue: true,
+          singlePlay: false,
         },
       };
 
-      const startIndex = singlePlay ? Math.floor(Math.random() * shuffled.length) : 0;
-      playQueueIndex(startIndex, { autoplay });
+      playQueueIndex(0, { autoplay });
     };
 
     const copyToClipboard = async (text) => {
@@ -1554,8 +1513,6 @@ window.addEventListener("DOMContentLoaded", () => {
     loadHydrophoneListeners();
     setInterval(loadHydrophoneListeners, 60000);
 
-    updateCallsLoopToggle();
-
     if (addSongsButton) {
       addSongsButton.addEventListener("click", () => {
         openMusicFolder();
@@ -1569,19 +1526,7 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    if (callsLoopToggle) {
-      callsLoopToggle.addEventListener("click", () => {
-        callsRepeatEnabled = !callsRepeatEnabled;
-        persistCallsRepeat(callsRepeatEnabled);
-        updateCallsLoopToggle();
-        if (queueState.mode === "calls") {
-          startLocalMode("calls", { autoplay: false });
-        }
-      });
-    }
-
-    const initialMode = readStoredMode() || "bubblemarks";
-    await startLocalMode(initialMode, { autoplay: false });
+    await startLocalMode("bubblemarks", { autoplay: false });
 
     const spotifyTitle = widgetHost.querySelector("[data-spotify-title]");
     const spotifyArtist = widgetHost.querySelector("[data-spotify-artist]");
