@@ -873,7 +873,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   paginationControls = document.getElementById("pagination-controls");
   prevPageBtn = document.getElementById("prev-page");
   nextPageBtn = document.getElementById("next-page");
-  const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
+  const menuToggle = document.getElementById("menu-toggle");
+  const menuModal = document.getElementById("menu-modal");
+  const menuGrid = document.getElementById("menu-grid");
+  const menuClose = document.getElementById("menu-close");
+  const menuBackdrop = menuModal?.querySelector("[data-menu-dismiss]");
+  const bubblewarpButtonTemplate = document.getElementById("bubblewarp-button-template");
+
   const bubblewarpOverlay = document.getElementById("bubblewarp-overlay");
   const bubblewarpClose = document.getElementById("bubblewarp-close");
   const bubblewarpBackdrop = bubblewarpOverlay?.querySelector("[data-bubblewarp-dismiss]");
@@ -881,14 +887,108 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".bubblewarp-overlay__frame"
   );
   const bubblewarpFrame = bubblewarpFrameContainer?.querySelector("iframe");
+  const bubblewarpLaunchButtons = [];
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
   const bubblewarpRestoreTargets = [appShell, petWidget].filter(Boolean);
   let bubblewarpPreviousVisibility = new Map();
+  let bubblewarpActiveControl = null;
+  let bubblewarpReturnFocus = null;
+  let menuReturnFocus = null;
 
-  const toggleBubblewarpView = (shouldShow) => {
-    if (!bubblewarpOverlay || !bubblewarpToggle) {
+  const toggleMenuModal = (shouldShow) => {
+    if (!menuModal || !menuToggle) {
+      return;
+    }
+
+    if (shouldShow) {
+      menuReturnFocus = document.activeElement;
+      menuModal.removeAttribute("hidden");
+      menuToggle.setAttribute("aria-expanded", "true");
+
+      window.requestAnimationFrame(() => {
+        menuClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    menuModal.setAttribute("hidden", "");
+    menuToggle.setAttribute("aria-expanded", "false");
+
+    const focusTarget = menuReturnFocus instanceof HTMLElement ? menuReturnFocus : menuToggle;
+
+    window.requestAnimationFrame(() => {
+      focusTarget?.focus({ preventScroll: true });
+    });
+
+    menuReturnFocus = null;
+  };
+
+  const createBubblewarpButton = (config = {}) => {
+    const templateButton = bubblewarpButtonTemplate?.content?.firstElementChild;
+
+    if (!templateButton) {
+      return null;
+    }
+
+    const button = templateButton.cloneNode(true);
+    const labelEl = button.querySelector(".bubblewarp-toggle__label");
+
+    button.setAttribute("aria-expanded", "false");
+
+    if (labelEl) {
+      labelEl.textContent = config.label || "";
+    }
+
+    if (config.id) {
+      button.id = config.id;
+    }
+
+    if (config.placeholder) {
+      button.classList.add("bubblewarp-toggle--placeholder");
+      button.setAttribute("aria-disabled", "true");
+    }
+
+    return button;
+  };
+
+  if (menuGrid) {
+    const menuButtons = [
+      { id: "menu-bubblewarp", label: "BubbleWarp", action: "launch" },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+      { label: "Coming Soon", placeholder: true },
+    ];
+
+    menuGrid.innerHTML = "";
+
+    menuButtons.forEach((config, index) => {
+      const button = createBubblewarpButton({ ...config });
+
+      if (!button) {
+        return;
+      }
+
+      button.dataset.menuButtonIndex = String(index + 1);
+
+      if (config.action === "launch") {
+        button.dataset.bubblewarpLaunch = "true";
+        bubblewarpLaunchButtons.push(button);
+      }
+
+      menuGrid.appendChild(button);
+    });
+  }
+
+  const toggleBubblewarpView = (shouldShow, { returnFocus, control } = {}) => {
+    if (!bubblewarpOverlay) {
       return;
     }
 
@@ -896,8 +996,10 @@ window.addEventListener("DOMContentLoaded", async () => {
       bubblewarpPreviousVisibility = new Map(
         bubblewarpRestoreTargets.map((target) => [target, target.hidden])
       );
+      bubblewarpActiveControl = control || null;
+      bubblewarpReturnFocus = returnFocus || document.activeElement;
       bubblewarpOverlay.removeAttribute("hidden");
-      bubblewarpToggle.setAttribute("aria-expanded", "true");
+      bubblewarpActiveControl?.setAttribute("aria-expanded", "true");
 
       bubblewarpRestoreTargets.forEach((target) => {
         target.hidden = true;
@@ -911,20 +1013,40 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     bubblewarpOverlay.setAttribute("hidden", "");
-    bubblewarpToggle.setAttribute("aria-expanded", "false");
+    bubblewarpActiveControl?.setAttribute("aria-expanded", "false");
 
     bubblewarpRestoreTargets.forEach((target) => {
       const originalState = bubblewarpPreviousVisibility.get(target);
       target.hidden = Boolean(originalState);
     });
 
-    window.requestAnimationFrame(() => {
-      bubblewarpToggle.focus({ preventScroll: true });
-    });
+    const focusTarget =
+      returnFocus || bubblewarpReturnFocus || bubblewarpActiveControl || bubblewarpLaunchButtons[0];
+
+    bubblewarpActiveControl = null;
+    bubblewarpReturnFocus = null;
+
+    if (focusTarget instanceof HTMLElement) {
+      window.requestAnimationFrame(() => {
+        focusTarget.focus({ preventScroll: true });
+      });
+    }
   };
 
-  if (bubblewarpToggle && bubblewarpOverlay) {
-    bubblewarpToggle.addEventListener("click", () => toggleBubblewarpView(true));
+  menuToggle?.addEventListener("click", () => toggleMenuModal(true));
+  menuClose?.addEventListener("click", () => toggleMenuModal(false));
+  menuBackdrop?.addEventListener("click", () => toggleMenuModal(false));
+
+  if (bubblewarpLaunchButtons.length && bubblewarpOverlay) {
+    bubblewarpLaunchButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleBubblewarpView(true, { returnFocus: button, control: button });
+        toggleMenuModal(false);
+      });
+    });
+  }
+
+  if (bubblewarpOverlay) {
     bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
