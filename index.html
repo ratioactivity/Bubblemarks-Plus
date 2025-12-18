@@ -236,89 +236,16 @@
 
     <div class="pet-column">
       <button
-        id="bubblewarp-toggle"
-        class="bubblewarp-toggle"
+        id="menu-toggle"
+        class="menu-toggle"
         type="button"
         aria-expanded="false"
-        aria-controls="bubblewarp-overlay"
+        aria-controls="menu-modal"
       >
-        <span class="bubblewarp-toggle__bubbles" aria-hidden="true">
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--one"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--two"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--three"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--four"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--five"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--six"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--seven"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--eight"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--nine"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--ten"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--eleven"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--twelve"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--thirteen"></span>
-          <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--fourteen"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
-          <span class="bubblewarp-toggle__bubble"></span>
+        <span class="menu-toggle__content">
+          <span class="menu-toggle__label">Menu</span>
+          <img src="bubblemarks://assets/singlestar1.gif" alt="" class="menu-toggle__star" />
         </span>
-        <span class="bubblewarp-toggle__logo" aria-hidden="true">
-          <img src="BubbleWarp/assets/icon128.png" alt="" />
-        </span>
-        <span class="bubblewarp-toggle__label">BubbleWarp</span>
-        <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
       </button>
       <section id="pet-widget" class="pet-widget" aria-label="Axolotl companion widget">
         <div class="pet-widget__frame">
@@ -488,6 +415,88 @@
       </div>
     </article>
   </template>
+
+  <template id="bubblewarp-button-template">
+    <button type="button" class="bubblewarp-toggle">
+      <span class="bubblewarp-toggle__bubbles" aria-hidden="true">
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--one"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--two"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--three"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--four"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--five"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--six"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--seven"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--eight"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--nine"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--ten"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--eleven"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--twelve"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--thirteen"></span>
+        <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--fourteen"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+        <span class="bubblewarp-toggle__bubble"></span>
+      </span>
+      <span class="bubblewarp-toggle__logo" aria-hidden="true">
+        <img src="BubbleWarp/assets/icon128.png" alt="" />
+      </span>
+      <span class="bubblewarp-toggle__label"></span>
+      <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
+    </button>
+  </template>
+
+  <div
+    id="menu-modal"
+    class="menu-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="menu-modal-title"
+    hidden
+  >
+    <div class="menu-modal__backdrop" data-menu-dismiss="true"></div>
+    <div class="menu-modal__dialog" role="document">
+      <div class="menu-modal__header">
+        <h2 id="menu-modal-title">BubbleWarp Menu</h2>
+        <button id="menu-close" class="menu-modal__close" type="button" aria-label="Close menu">✕</button>
+      </div>
+      <div class="menu-modal__grid" id="menu-grid" role="group" aria-label="BubbleWarp shortcuts"></div>
+    </div>
+  </div>
 
   <div
     id="bubblewarp-overlay"

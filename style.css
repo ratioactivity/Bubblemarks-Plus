@@ -557,6 +557,62 @@ body.notion-embed .app-shell {
   margin-inline: auto;
 }
 
+
+.menu-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: linear-gradient(135deg, #ffe0f5, #dfe9ff 60%, #cde7ff);
+  color: var(--accent);
+  font-family: "Bigbesty", "Papernotes", cursive;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  box-shadow: 0 12px 24px rgba(137, 170, 255, 0.22), 0 8px 18px rgba(255, 194, 220, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  isolation: isolate;
+}
+
+.menu-toggle:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 16px 30px rgba(137, 170, 255, 0.26), 0 10px 20px rgba(255, 194, 220, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.menu-toggle:active {
+  transform: translateY(1px);
+  box-shadow: 0 12px 22px rgba(137, 170, 255, 0.2), 0 8px 16px rgba(255, 194, 220, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.56);
+}
+
+.menu-toggle__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+}
+
+.menu-toggle__label {
+  letter-spacing: 0.6px;
+  text-shadow: 0 4px 10px rgba(255, 128, 200, 0.35);
+}
+
+.menu-toggle__star {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(255, 174, 220, 0.45));
+}
+
 @media (min-width: 3840px) {
   :root {
     --column-min-height: clamp(1500px, 98vh, 1700px);
@@ -597,6 +653,11 @@ body.notion-embed .app-shell {
   overflow: hidden;
   box-shadow: 0 12px 24px rgba(137, 170, 255, 0.22), 0 8px 18px rgba(255, 194, 220, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: filter 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.bubblewarp-toggle--placeholder {
+  opacity: 0.85;
+  filter: saturate(0.92);
 }
 
 .bubblewarp-toggle:hover {
@@ -1167,6 +1228,89 @@ body.notion-embed .app-shell {
 
 .hidden {
   display: none !important;
+}
+
+.menu-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  isolation: isolate;
+}
+
+.menu-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(14px);
+  z-index: 0;
+}
+
+.menu-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(980px, 100%);
+  max-height: min(92vh, 1120px);
+  background: var(--surface);
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: calc(var(--soft-radius) * 1.1);
+  box-shadow: 0 24px 44px rgba(87, 63, 108, 0.26);
+  padding: clamp(1.25rem, 2.6vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+}
+
+.menu-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.menu-modal__header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  color: var(--accent);
+  letter-spacing: 0.4px;
+}
+
+.menu-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-weight: 700;
+  padding: 8px 10px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 8px 18px rgba(143, 150, 199, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.menu-modal__close:hover {
+  filter: brightness(1.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 20px rgba(143, 150, 199, 0.28);
+}
+
+.menu-modal__close:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 6px 12px rgba(143, 150, 199, 0.24);
+}
+
+.menu-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.6vw, 1rem);
+}
+
+.menu-modal .bubblewarp-toggle {
+  margin: 0;
+  width: 100%;
 }
 
 .bubblewarp-overlay {
