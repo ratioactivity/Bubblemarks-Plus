@@ -1038,6 +1038,30 @@ window.addEventListener("DOMContentLoaded", () => {
           document.body.appendChild(fallbackModal);
         }
       }
+
+      const ensureOrcaTab = () => {
+        const tabsContainer = widgetHost.querySelector(".music-player-tabs");
+        const panelsContainer = widgetHost.querySelector(".music-player-panels");
+        const hasOrcaTab = tabsContainer?.querySelector('[data-tab="orca"]');
+        const hasOrcaPanel = panelsContainer?.querySelector('[data-panel="orca"]');
+
+        if (hasOrcaTab && hasOrcaPanel) {
+          return;
+        }
+
+        const parsedOrcaTab = parsed.querySelector('[data-tab="orca"]');
+        const parsedOrcaPanel = parsed.querySelector('[data-panel="orca"]');
+
+        if (!hasOrcaTab && parsedOrcaTab && tabsContainer) {
+          tabsContainer.appendChild(parsedOrcaTab.cloneNode(true));
+        }
+
+        if (!hasOrcaPanel && parsedOrcaPanel && panelsContainer) {
+          panelsContainer.appendChild(parsedOrcaPanel.cloneNode(true));
+        }
+      };
+
+      ensureOrcaTab();
     } catch (error) {
       widgetHost.innerHTML = `<p class="music-player-fallback">Music nook is stretching... (${error.message})</p>`;
       console.log("✅ script validated");
