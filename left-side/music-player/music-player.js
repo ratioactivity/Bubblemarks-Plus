@@ -519,7 +519,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const spotifyDefaults = {
     openUri: "spotify:",
-    fallbackUrl: "https://open.spotify.com/search/Baby%20Whiplash",
+    fallbackUrl: "https://open.spotify.com/",
     scopes: "user-read-playback-state user-modify-playback-state user-read-currently-playing",
   };
 
@@ -560,10 +560,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (!spotifySettings.playlistUrl) {
     spotifySettings.playlistUrl = spotifyDefaults.fallbackUrl;
-  }
-
-  if (!spotifySettings.babyWhiplashUrl) {
-    spotifySettings.babyWhiplashUrl = spotifyDefaults.fallbackUrl;
   }
 
   if (!spotifySettings.scopes) {
@@ -1594,7 +1590,10 @@ window.addEventListener("DOMContentLoaded", () => {
     const spotifyAuthPanel = widgetHost.querySelector("[data-spotify-auth]");
     const spotifyLoginButton = widgetHost.querySelector("[data-spotify-login]");
     const spotifyOpenButton = widgetHost.querySelector("[data-spotify-open]");
-    const spotifyPlayBabyButton = widgetHost.querySelector("[data-spotify-play-baby]");
+    const spotifyMiniBlocks = Array.from(widgetHost.querySelectorAll("[data-spotify-mini]"));
+    const spotifyMiniLoginButtons = Array.from(widgetHost.querySelectorAll("[data-spotify-mini-login]"));
+    const spotifyMiniReconnectButtons = Array.from(widgetHost.querySelectorAll("[data-spotify-mini-reconnect]"));
+    const spotifyMiniLogoutButtons = Array.from(widgetHost.querySelectorAll("[data-spotify-mini-logout]"));
     const spotifyControlButtons = Array.from(
       widgetHost.querySelectorAll("[data-spotify-control]")
     );
@@ -1679,9 +1678,68 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     };
 
+    const isSpotifyLoggedIn = () => {
+      return Boolean(tokenState.accessToken || tokenState.refreshToken);
+    };
+
+    const clearSpotifyTokens = async () => {
+      tokenState = { accessToken: null, refreshToken: null, expiresAt: 0 };
+      delete spotifySettings.accessToken;
+      delete spotifySettings.refreshToken;
+      localStorage.removeItem(SPOTIFY_TOKEN_KEY);
+      sessionStorage.removeItem(SPOTIFY_VERIFIER_KEY);
+      sessionStorage.removeItem(SPOTIFY_STATE_KEY);
+    };
+
+    const updateSpotifyMiniWidgets = (statusMessage = null) => {
+      const loggedIn = isSpotifyLoggedIn();
+      const statusText =
+        statusMessage ||
+        (loggedIn
+          ? "Spotify connected"
+          : spotifySettings.clientId
+            ? "Spotify not connected"
+            : "Add Spotify credentials to enable Spotify.");
+
+      spotifyMiniBlocks.forEach((block) => {
+        const statusLabel = block.querySelector("[data-spotify-mini-status]");
+        const loginBtn = block.querySelector("[data-spotify-mini-login]");
+        const reconnectBtn = block.querySelector("[data-spotify-mini-reconnect]");
+        const logoutBtn = block.querySelector("[data-spotify-mini-logout]");
+        const dot = block.querySelector(".spotify-mini__dot");
+
+        if (statusLabel) {
+          statusLabel.textContent = statusText;
+        }
+
+        if (dot) {
+          dot.style.background = loggedIn ? "#7fe3a1" : "#c0c7ff";
+          dot.style.boxShadow = loggedIn
+            ? "0 0 0 4px rgba(127, 227, 161, 0.25)"
+            : "0 0 0 4px rgba(192, 199, 255, 0.25)";
+        }
+
+        if (loginBtn) {
+          loginBtn.hidden = loggedIn;
+        }
+
+        if (reconnectBtn) {
+          reconnectBtn.hidden = !loggedIn;
+        }
+
+        if (logoutBtn) {
+          logoutBtn.hidden = !loggedIn;
+        }
+      });
+
+      toggleSpotifyAuthVisibility(!hasValidAccessToken());
+      updateSpotifyControls(hasValidAccessToken());
+    };
+
     const startSpotifyLogin = async () => {
       if (!spotifySettings.clientId || !spotifySettings.redirectUri) {
         setSpotifyStatus("Add your Spotify client ID and redirect URI to log in.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1705,12 +1763,23 @@ window.addEventListener("DOMContentLoaded", () => {
       const loginUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
       openExternal(loginUrl);
       setSpotifyStatus("Opening Spotify login in your browser...");
+      updateSpotifyMiniWidgets("Waiting for Spotify login...");
+    };
+
+    const logoutSpotify = async () => {
+      await clearSpotifyTokens();
+      applySpotifyNowPlaying(null);
+      spotifyPlaybackState.isPlaying = false;
+      updateSpotifyToggleLabel(false);
+      setSpotifyStatus("Connect Spotify to enable controls.");
+      updateSpotifyMiniWidgets("Spotify disconnected");
     };
 
     const handleOAuthCallbackUrl = async (callbackUrl) => {
       const handled = await handleSpotifyRedirect(callbackUrl);
       if (handled) {
         toggleSpotifyAuthVisibility(false);
+        updateSpotifyMiniWidgets("Spotify connected");
         await refreshSpotifyNowPlayingFromApi();
       }
     };
@@ -1791,6 +1860,7 @@ window.addEventListener("DOMContentLoaded", () => {
         toggleSpotifyAuthVisibility(false);
         updateSpotifyControls(true);
         setSpotifyStatus("Spotify API not configured. Buttons will open Spotify instead.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1800,6 +1870,7 @@ window.addEventListener("DOMContentLoaded", () => {
         updateSpotifyControls(false);
         toggleSpotifyAuthVisibility(true);
         setSpotifyStatus("Login to Spotify to enable controls.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1809,6 +1880,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if (!response) {
         updateSpotifyControls(false);
         setSpotifyStatus("Unable to reach Spotify right now.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1821,6 +1893,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
         updateSpotifyControls(true);
         setSpotifyStatus("Spotify linked. Ready when you press play.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1843,6 +1916,8 @@ window.addEventListener("DOMContentLoaded", () => {
         updateSpotifyControls(true);
         setSpotifyStatus("Spotify connected. Start something to see it here.");
       }
+
+      updateSpotifyMiniWidgets();
     };
 
     const controlSpotifyPlayback = async (action) => {
@@ -1857,6 +1932,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if (!token) {
         toggleSpotifyAuthVisibility(true);
         setSpotifyStatus("Login to Spotify to send playback controls.");
+        updateSpotifyMiniWidgets();
         return;
       }
 
@@ -1893,76 +1969,29 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       setSpotifyStatus("Spotify control unavailable right now.");
-    };
-
-    const playBabyWhiplash = async () => {
-      const fallbackUrl =
-        spotifySettings.babyWhiplashUrl || spotifySettings.playlistUrl || spotifyDefaults.fallbackUrl;
-
-      if (!spotifySettings.clientId) {
-        openExternal(fallbackUrl);
-        setSpotifyStatus("Opening Baby Whiplash in Spotify.");
-        return;
-      }
-
-      const token = await ensureSpotifyAccessToken();
-      if (!token) {
-        toggleSpotifyAuthVisibility(true);
-        setSpotifyStatus("Login to Spotify to play this track.");
-        return;
-      }
-
-      if (musicController.mode !== "spotify") {
-        stopLocalPlayback();
-      }
-
-      if (!spotifySettings.babyWhiplashUri) {
-        openExternal(fallbackUrl);
-        setSpotifyStatus("Opening Baby Whiplash in Spotify.");
-        return;
-      }
-
-      const body = spotifySettings.babyWhiplashUri.includes("playlist:")
-        ? { context_uri: spotifySettings.babyWhiplashUri }
-        : { uris: [spotifySettings.babyWhiplashUri] };
-
-      const response = await requestSpotify("/me/player/play", {
-        method: "PUT",
-        body: JSON.stringify(body),
-      }, token);
-
-      if (response && (response.ok || response.status === 204)) {
-        spotifyPlaybackState.isPlaying = true;
-        musicController.setMode("spotify");
-        setSpotifyStatus("Requested Baby Whiplash on Spotify.");
-        await refreshSpotifyNowPlayingFromApi();
-        return;
-      }
-
-      openExternal(fallbackUrl);
-      setSpotifyStatus("Couldn't control Spotify; opened playlist instead.");
+      updateSpotifyMiniWidgets();
     };
 
     await bootstrapSpotifyTokens();
-    toggleSpotifyAuthVisibility(!hasValidAccessToken());
-      if (!hasValidAccessToken()) {
-        setSpotifyStatus(
-          spotifySettings.clientId
-            ? "Login to Spotify to sync playback."
-            : "Add Spotify credentials to enable the widget."
-        );
-      }
+    updateSpotifyMiniWidgets();
+    if (!hasValidAccessToken()) {
+      setSpotifyStatus(
+        spotifySettings.clientId
+          ? "Login to Spotify to sync playback."
+          : "Add Spotify credentials to enable the widget."
+      );
+    }
 
-      if (window.spotifyAPI?.onOAuthCallback) {
-        window.spotifyAPI.onOAuthCallback((url) => {
-          handleOAuthCallbackUrl(url);
-        });
-      }
+    if (window.spotifyAPI?.onOAuthCallback) {
+      window.spotifyAPI.onOAuthCallback((url) => {
+        handleOAuthCallbackUrl(url);
+      });
+    }
 
-      if (!queueState.tracks.length) {
-        applyTrack(currentTrackIndex);
-      }
-      refreshNowPlaying(true);
+    if (!queueState.tracks.length) {
+      applyTrack(currentTrackIndex);
+    }
+    refreshNowPlaying(true);
 
     if (widgetPlayButton) {
       widgetPlayButton.addEventListener("click", () => {
@@ -2017,11 +2046,23 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    if (spotifyPlayBabyButton) {
-      spotifyPlayBabyButton.addEventListener("click", () => {
-        playBabyWhiplash();
+    spotifyMiniLoginButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        startSpotifyLogin();
       });
-    }
+    });
+
+    spotifyMiniReconnectButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        startSpotifyLogin();
+      });
+    });
+
+    spotifyMiniLogoutButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        logoutSpotify();
+      });
+    });
 
     spotifyControlButtons.forEach((button) => {
       button.addEventListener("click", () => {
