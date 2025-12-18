@@ -557,37 +557,41 @@ body.notion-embed .app-shell {
   margin-inline: auto;
 }
 
+
 .menu-toggle {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 12px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
   background: linear-gradient(135deg, #ffe0f5, #dfe9ff 60%, #cde7ff);
   color: var(--accent);
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
-  box-shadow: 0 12px 26px rgba(255, 170, 220, 0.25), 0 10px 22px rgba(134, 169, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-family: "Bigbesty", "Papernotes", cursive;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  box-shadow: 0 12px 24px rgba(137, 170, 255, 0.22), 0 8px 18px rgba(255, 194, 220, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
   isolation: isolate;
 }
 
 .menu-toggle:hover {
-  filter: brightness(1.04);
-  box-shadow: 0 14px 28px rgba(255, 170, 220, 0.3), 0 12px 24px rgba(134, 169, 255, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  filter: brightness(1.03);
+  box-shadow: 0 16px 30px rgba(137, 170, 255, 0.26), 0 10px 20px rgba(255, 194, 220, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
 }
 
 .menu-toggle:active {
   transform: translateY(1px);
-  box-shadow: 0 8px 16px rgba(255, 170, 220, 0.24), 0 6px 14px rgba(134, 169, 255, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 22px rgba(137, 170, 255, 0.2), 0 8px 16px rgba(255, 194, 220, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.56);
 }
 
 .menu-toggle__content {
