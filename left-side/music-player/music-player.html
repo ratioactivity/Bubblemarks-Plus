@@ -9,46 +9,80 @@
   <div class="music-player-panels">
     <section class="music-player-panel active" data-panel="main" role="tabpanel" aria-label="Main player">
       <div class="music-player-card music-player-card--main" role="region" aria-label="Mini music player">
-        <div class="music-player-track">
-          <div class="music-player-art" aria-hidden="true"></div>
-          <div class="music-player-meta">
-            <p class="music-player-label">Now Playing</p>
-            <p class="music-player-title">Cloud Drift</p>
-            <p class="music-player-artist">Bubblemarks FM</p>
-          </div>
-        </div>
-        <div class="music-player-controls">
-          <div class="music-player-buttons" role="group" aria-label="Playback controls">
-            <button type="button" class="music-btn music-btn--secondary" data-action="back" aria-label="Previous vibe">⟲</button>
-            <button type="button" class="music-btn" data-action="play" aria-label="Play or pause">▶</button>
-            <button type="button" class="music-btn music-btn--secondary" data-action="forward" aria-label="Next vibe">⟳</button>
-          </div>
-          <div class="music-player-progress" aria-label="Track progress">
-            <span class="music-time" data-time="current">0:00</span>
-            <input type="range" min="0" max="100" value="0" class="music-seek" aria-label="Seek through track" />
-            <span class="music-time" data-time="duration">0:00</span>
-          </div>
-          <label class="music-player-volume">
-            <span class="music-volume-label">Volume</span>
-            <input type="range" min="0" max="1" step="0.01" value="0.7" class="music-volume" aria-label="Adjust volume" />
-          </label>
-          <div class="music-source-row" role="group" aria-label="Quick source picks">
-            <button type="button" class="music-source-pill is-active" data-source="bubblemarks" aria-pressed="true">
-              Bubblemarks FM
-            </button>
-            <button type="button" class="music-source-pill" data-source="songs" aria-pressed="false">Orca Songs</button>
-            <div class="music-source-loop">
-              <button type="button" class="music-source-pill" data-source="calls" aria-pressed="false">Orca Calls</button>
-              <button type="button" class="music-source-pill music-source-pill--icon" data-loop-toggle aria-pressed="false">⟳</button>
+        <div class="music-player-card__body">
+          <div class="music-player-track">
+            <div class="music-player-art" aria-hidden="true"></div>
+            <div class="music-player-meta">
+              <p class="music-player-label">Now Playing</p>
+              <p class="music-player-title">Cloud Drift</p>
+              <p class="music-player-artist">Bubblemarks FM</p>
             </div>
-            <button
-              type="button"
-              class="music-btn music-btn--secondary music-add-songs"
-              data-add-songs
-              aria-label="Open Music folder"
-            >
-              Add Songs
-            </button>
+          </div>
+          <div class="music-player-controls">
+            <div class="music-player-buttons" role="group" aria-label="Playback controls">
+              <button
+                type="button"
+                class="music-btn music-btn--secondary"
+                data-action="back"
+                aria-label="Previous vibe"
+              >
+                ⟲
+              </button>
+              <button type="button" class="music-btn" data-action="play" aria-label="Play or pause">▶</button>
+              <button type="button" class="music-btn music-btn--secondary" data-action="forward" aria-label="Next vibe">
+                ⟳
+              </button>
+            </div>
+            <div class="music-player-progress" aria-label="Track progress">
+              <span class="music-time" data-time="current">0:00</span>
+              <input type="range" min="0" max="100" value="0" class="music-seek" aria-label="Seek through track" />
+              <span class="music-time" data-time="duration">0:00</span>
+            </div>
+            <label class="music-player-volume">
+              <span class="music-volume-label">Volume</span>
+              <input type="range" min="0" max="1" step="0.01" value="0.7" class="music-volume" aria-label="Adjust volume" />
+            </label>
+            <div class="music-source-row" role="group" aria-label="Quick source picks">
+              <button type="button" class="music-source-pill is-active" data-source="bubblemarks" aria-pressed="true">
+                Bubblemarks FM
+              </button>
+              <button type="button" class="music-source-pill" data-source="songs" aria-pressed="false">Orca Songs</button>
+              <div class="music-source-loop">
+                <button type="button" class="music-source-pill" data-source="calls" aria-pressed="false">Orca Calls</button>
+                <button type="button" class="music-source-pill music-source-pill--icon" data-loop-toggle aria-pressed="false">⟳</button>
+              </div>
+              <button
+                type="button"
+                class="music-btn music-btn--secondary music-add-songs"
+                data-add-songs
+                aria-label="Open Music folder"
+              >
+                Add Songs
+              </button>
+            </div>
+            <div class="spotify-mini" data-spotify-mini="main" aria-live="polite">
+              <div class="spotify-mini__pill">
+                <span class="spotify-mini__dot" aria-hidden="true"></span>
+                <span class="spotify-mini__status" data-spotify-mini-status>Spotify not connected</span>
+                <div class="spotify-mini__actions">
+                  <button type="button" class="spotify-mini__btn" data-spotify-mini-login aria-label="Log into Spotify">
+                    Log into Spotify
+                  </button>
+                  <button type="button" class="spotify-mini__btn" data-spotify-mini-reconnect aria-label="Reconnect Spotify" hidden>
+                    Reconnect
+                  </button>
+                  <button
+                    type="button"
+                    class="spotify-mini__btn spotify-mini__btn--ghost"
+                    data-spotify-mini-logout
+                    aria-label="Logout of Spotify"
+                    hidden
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -64,8 +98,12 @@
           <div class="music-player-badge" aria-hidden="true">💿</div>
         </header>
 
-        <div class="disc-library-empty" data-disc-empty>Collect discs with BubblePet to see them here.</div>
-        <div class="disc-library" data-disc-library aria-live="polite"></div>
+        <div class="music-player-card__body">
+          <div class="music-player-scroll">
+            <div class="disc-library-empty" data-disc-empty>Collect discs with BubblePet to see them here.</div>
+            <div class="disc-library" data-disc-library aria-live="polite"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -79,48 +117,72 @@
           <div class="music-player-badge" aria-hidden="true">🎧</div>
         </header>
 
-        <div class="spotify-now-playing" aria-live="polite">
-          <div class="spotify-cover" data-spotify-cover aria-hidden="true"></div>
-          <div class="spotify-meta">
-            <p class="spotify-label">Now Playing</p>
-            <p class="spotify-title" data-spotify-title>Spotify idle</p>
-            <p class="spotify-artist" data-spotify-artist>Open Spotify to start</p>
+        <div class="music-player-card__body">
+          <div class="music-player-scroll music-player-scroll--spotify">
+            <div class="spotify-now-playing" aria-live="polite">
+              <div class="spotify-cover" data-spotify-cover aria-hidden="true"></div>
+              <div class="spotify-meta">
+                <p class="spotify-label">Now Playing</p>
+                <p class="spotify-title" data-spotify-title>Spotify idle</p>
+                <p class="spotify-artist" data-spotify-artist>Open Spotify to start</p>
+              </div>
+            </div>
+
+            <div class="spotify-actions" role="group" aria-label="Spotify quick actions">
+              <button type="button" class="music-btn" data-spotify-open aria-label="Open Spotify app">Open Spotify App</button>
+              <div class="spotify-mini spotify-mini--inline" data-spotify-mini="tab" aria-live="polite">
+                <div class="spotify-mini__pill">
+                  <span class="spotify-mini__dot" aria-hidden="true"></span>
+                  <span class="spotify-mini__status" data-spotify-mini-status>Spotify not connected</span>
+                  <div class="spotify-mini__actions">
+                    <button type="button" class="spotify-mini__btn" data-spotify-mini-login aria-label="Log into Spotify">
+                      Log into Spotify
+                    </button>
+                    <button type="button" class="spotify-mini__btn" data-spotify-mini-reconnect aria-label="Reconnect Spotify" hidden>
+                      Reconnect
+                    </button>
+                    <button
+                      type="button"
+                      class="spotify-mini__btn spotify-mini__btn--ghost"
+                      data-spotify-mini-logout
+                      aria-label="Logout of Spotify"
+                      hidden
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="spotify-auth" data-spotify-auth aria-live="polite">
+              <p class="spotify-auth__title">Login to Spotify</p>
+              <p class="spotify-auth__hint">Authenticate to control playback and see what’s playing.</p>
+              <button type="button" class="music-btn" data-spotify-login aria-label="Log in to Spotify">
+                Connect Spotify
+              </button>
+            </div>
+
+            <div class="spotify-controls" role="group" aria-label="Spotify playback controls">
+              <button
+                type="button"
+                class="music-btn music-btn--secondary"
+                data-spotify-control="prev"
+                aria-label="Previous track"
+              >
+                ⟲
+              </button>
+              <button type="button" class="music-btn" data-spotify-control="toggle" aria-label="Play or pause">
+                ▶
+              </button>
+              <button type="button" class="music-btn music-btn--secondary" data-spotify-control="next" aria-label="Next track">
+                ⟳
+              </button>
+            </div>
+
+            <p class="spotify-status" data-spotify-status>Connect Spotify to enable controls.</p>
           </div>
         </div>
-
-        <div class="spotify-actions" role="group" aria-label="Spotify quick actions">
-          <button type="button" class="music-btn" data-spotify-open aria-label="Open Spotify app">Open Spotify App</button>
-          <button
-            type="button"
-            class="music-btn music-btn--secondary"
-            data-spotify-play-baby
-            aria-label="Play Baby Whiplash"
-          >
-            Play Baby Whiplash
-          </button>
-        </div>
-
-        <div class="spotify-auth" data-spotify-auth aria-live="polite">
-          <p class="spotify-auth__title">Login to Spotify</p>
-          <p class="spotify-auth__hint">Authenticate to control playback and see what’s playing.</p>
-          <button type="button" class="music-btn" data-spotify-login aria-label="Log in to Spotify">
-            Connect Spotify
-          </button>
-        </div>
-
-        <div class="spotify-controls" role="group" aria-label="Spotify playback controls">
-          <button type="button" class="music-btn music-btn--secondary" data-spotify-control="prev" aria-label="Previous track">
-            ⟲
-          </button>
-          <button type="button" class="music-btn" data-spotify-control="toggle" aria-label="Play or pause">
-            ▶
-          </button>
-          <button type="button" class="music-btn music-btn--secondary" data-spotify-control="next" aria-label="Next track">
-            ⟳
-          </button>
-        </div>
-
-        <p class="spotify-status" data-spotify-status>Connect Spotify to enable controls.</p>
       </div>
     </section>
 
@@ -142,7 +204,11 @@
           </button>
         </header>
 
-        <div class="hydrophone-grid" data-hydrophone-list aria-live="polite"></div>
+        <div class="music-player-card__body">
+          <div class="music-player-scroll">
+            <div class="hydrophone-grid" data-hydrophone-list aria-live="polite"></div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
