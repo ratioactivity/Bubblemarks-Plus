@@ -450,6 +450,28 @@
   </div>
 
   <div
+    id="sketchpad-overlay"
+    class="sketchpad-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Sketchpad"
+    hidden
+    style="position: fixed; inset: 0; background: #fff;"
+  >
+    <button
+      type="button"
+      class="sketchpad-overlay__close"
+      aria-label="Close sketchpad"
+    >
+      ✕
+    </button>
+    <div class="sketchpad-overlay__toolbar" role="toolbar" aria-label="Sketchpad tools">
+      <span>Tools</span>
+    </div>
+    <canvas class="sketchpad-overlay__canvas"></canvas>
+  </div>
+
+  <div
     id="bubblewarp-menu-modal"
     class="bubblewarp-menu-modal"
     role="dialog"
