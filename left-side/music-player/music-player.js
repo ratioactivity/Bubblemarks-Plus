@@ -63,7 +63,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ["mastcenter", "assets/cover-mastcenter.png"],
     ["orcasoundlab", "assets/cover-orcasoundlab.png"],
     ["porttownsend", "assets/cover-porttownsend.png"],
-    ["sunsetbay", "assets/cover-orcasoundlab.png"],
+    ["sunsetbay", "assets/cover-sunsetbay.png"],
   ]);
 
   const defaultCoverArt = "assets/cover-orcasoundlab.png";
