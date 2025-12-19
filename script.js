@@ -881,7 +881,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".bubblewarp-overlay__frame"
   );
   const bubblewarpFrame = bubblewarpFrameContainer?.querySelector("iframe");
-  const bubblewarpMenuTrigger = document.getElementById("bubblewarp-menu-trigger");
+  const bubblewarpMenuTrigger = bubblewarpToggle;
   const bubblewarpMenuModal = document.getElementById("bubblewarp-menu-modal");
   const bubblewarpMenuBackdrop = bubblewarpMenuModal?.querySelector(
     "[data-bubblewarp-menu-dismiss]"
@@ -908,7 +908,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         bubblewarpRestoreTargets.map((target) => [target, target.hidden])
       );
       bubblewarpOverlay.removeAttribute("hidden");
-      bubblewarpToggle.setAttribute("aria-expanded", "true");
 
       bubblewarpRestoreTargets.forEach((target) => {
         target.hidden = true;
@@ -922,7 +921,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     bubblewarpOverlay.setAttribute("hidden", "");
-    bubblewarpToggle.setAttribute("aria-expanded", "false");
 
     bubblewarpRestoreTargets.forEach((target) => {
       const originalState = bubblewarpPreviousVisibility.get(target);
@@ -934,8 +932,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   };
 
-  if (bubblewarpToggle && bubblewarpOverlay) {
-    bubblewarpToggle.addEventListener("click", () => toggleBubblewarpView(true));
+  if (bubblewarpOverlay) {
     bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
@@ -946,6 +943,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     bubblewarpMenuModal.removeAttribute("hidden");
+    bubblewarpMenuTrigger?.setAttribute("aria-expanded", "true");
     document.body.classList.add("menu-modal-open");
     window.requestAnimationFrame(() => {
       bubblewarpMenuClose?.focus({ preventScroll: true });
@@ -958,6 +956,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     bubblewarpMenuModal.setAttribute("hidden", "");
+    bubblewarpMenuTrigger?.setAttribute("aria-expanded", "false");
     document.body.classList.remove("menu-modal-open");
     window.requestAnimationFrame(() => {
       bubblewarpMenuTrigger?.focus({ preventScroll: true });
