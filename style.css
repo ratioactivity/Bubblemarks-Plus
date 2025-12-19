@@ -1248,34 +1248,63 @@ body.bubblewarp-open {
 }
 
 .bubblewarp-menu-trigger {
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+  background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
+  color: #4b4275;
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.7);
+}
+
+.bubblewarp-menu-trigger .bubblewarp-toggle__label {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.bubblewarp-menu-trigger .bubblewarp-toggle__logo,
+.bubblewarp-menu-trigger .bubblewarp-toggle__chevron {
+  visibility: hidden;
+}
+
+.bubblewarp-menu-trigger::after {
+  content: "";
   position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: linear-gradient(135deg, #ffe4f4, #dff2ff 55%, #fef6dc);
-  color: #5b4c74;
-  font-family: var(--font-heading);
-  font-size: 0.72rem;
-  letter-spacing: 0.2px;
-  box-shadow: 0 10px 18px rgba(146, 169, 255, 0.2), 0 6px 12px rgba(255, 194, 220, 0.2);
-  cursor: pointer;
+  inset: 8px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 12px),
+    radial-gradient(circle at 70% 25%, rgba(255, 255, 255, 0.85) 0, rgba(255, 255, 255, 0) 10px),
+    radial-gradient(circle at 35% 70%, rgba(255, 244, 252, 0.9) 0, rgba(255, 244, 252, 0) 14px),
+    radial-gradient(circle at 80% 75%, rgba(255, 255, 255, 0.8) 0, rgba(255, 255, 255, 0) 12px);
+  background-size: 160% 160%;
+  transition: opacity 0.2s ease;
 }
 
-.bubblewarp-menu-trigger img {
-  width: 12px;
-  height: 12px;
+.bubblewarp-menu-trigger:hover::after,
+.bubblewarp-menu-trigger:focus-visible::after {
+  opacity: 1;
+  animation: menu-glitter 1.6s ease-in-out infinite;
 }
 
-.bubblewarp-menu-trigger:focus-visible,
-.bubblewarp-menu-trigger:hover {
-  outline: none;
-  box-shadow: 0 12px 22px rgba(146, 169, 255, 0.26), 0 8px 16px rgba(255, 194, 220, 0.24);
+@keyframes menu-glitter {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+    background-position: 0% 0%;
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.15);
+    background-position: 60% 40%;
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+    background-position: 100% 100%;
+  }
 }
 
 .bubblewarp-menu-modal {
@@ -1341,6 +1370,31 @@ body.bubblewarp-open {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), 0 6px 14px rgba(88, 120, 180, 0.28);
   box-shadow: 0 16px 28px rgba(137, 170, 255, 0.22), 0 10px 20px rgba(255, 194, 220, 0.18);
   cursor: pointer;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp.bubblewarp-toggle {
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp.bubblewarp-toggle:hover {
+  filter: brightness(1.03);
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
+  font-size: 1.1rem;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo img {
+  width: 38px;
+  height: 38px;
 }
 
 .bubblewarp-menu-modal__button:focus-visible,
