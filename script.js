@@ -873,7 +873,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   paginationControls = document.getElementById("pagination-controls");
   prevPageBtn = document.getElementById("prev-page");
   nextPageBtn = document.getElementById("next-page");
-  const bubblewarpToggle = document.getElementById("bubblewarp-toggle");
   const bubblewarpOverlay = document.getElementById("bubblewarp-overlay");
   const bubblewarpClose = document.getElementById("bubblewarp-close");
   const bubblewarpBackdrop = bubblewarpOverlay?.querySelector("[data-bubblewarp-dismiss]");
@@ -881,8 +880,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".bubblewarp-overlay__frame"
   );
   const bubblewarpFrame = bubblewarpFrameContainer?.querySelector("iframe");
-  const bubblewarpMenuTrigger = bubblewarpToggle;
   const bubblewarpMenuModal = document.getElementById("bubblewarp-menu-modal");
+  const bubblewarpMenuTrigger = document.getElementById("bubblewarp-menu-trigger");
   const bubblewarpMenuBackdrop = bubblewarpMenuModal?.querySelector(
     "[data-bubblewarp-menu-dismiss]"
   );
@@ -899,7 +898,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let bubblewarpPreviousVisibility = new Map();
 
   const toggleBubblewarpView = (shouldShow) => {
-    if (!bubblewarpOverlay || !bubblewarpToggle) {
+    if (!bubblewarpOverlay) {
       return;
     }
 
@@ -928,7 +927,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     window.requestAnimationFrame(() => {
-      bubblewarpToggle.focus({ preventScroll: true });
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
     });
   };
 

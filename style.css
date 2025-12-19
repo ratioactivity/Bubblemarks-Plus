@@ -1247,6 +1247,16 @@ body.bubblewarp-open {
   width: 100%;
 }
 
+.bubblewarp-menu-trigger {
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+}
+
+.bubblewarp-menu-trigger .bubblewarp-toggle__label {
+  margin: 0;
+}
+
 .bubblewarp-menu-modal {
   position: fixed;
   inset: 0;
@@ -1310,6 +1320,31 @@ body.bubblewarp-open {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), 0 6px 14px rgba(88, 120, 180, 0.28);
   box-shadow: 0 16px 28px rgba(137, 170, 255, 0.22), 0 10px 20px rgba(255, 194, 220, 0.18);
   cursor: pointer;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp.bubblewarp-toggle {
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp.bubblewarp-toggle:hover {
+  filter: brightness(1.03);
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
+  font-size: 1.1rem;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo img {
+  width: 38px;
+  height: 38px;
 }
 
 .bubblewarp-menu-modal__button:focus-visible,
