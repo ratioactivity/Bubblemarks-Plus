@@ -891,11 +891,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   const bubblewarpMenuButtons = bubblewarpMenuModal
     ? Array.from(bubblewarpMenuModal.querySelectorAll(".bubblewarp-menu-modal__button"))
     : [];
+  const sketchpadOverlay = document.getElementById("sketchpad-overlay");
+  const sketchpadClose = sketchpadOverlay?.querySelector(".sketchpad-overlay__close");
+  const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
   const bubblewarpRestoreTargets = [appShell, petWidget].filter(Boolean);
   let bubblewarpPreviousVisibility = new Map();
+  const sketchpadRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let sketchpadPreviousVisibility = new Map();
 
   const toggleBubblewarpView = (shouldShow) => {
     if (!bubblewarpOverlay) {
@@ -936,6 +941,45 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
 
+  const toggleSketchpadView = (shouldShow) => {
+    if (!sketchpadOverlay) {
+      return;
+    }
+
+    if (shouldShow) {
+      sketchpadPreviousVisibility = new Map(
+        sketchpadRestoreTargets.map((target) => [target, target.hidden])
+      );
+      sketchpadOverlay.removeAttribute("hidden");
+
+      sketchpadRestoreTargets.forEach((target) => {
+        target.hidden = true;
+      });
+
+      window.requestAnimationFrame(() => {
+        sketchpadClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    sketchpadOverlay.setAttribute("hidden", "");
+
+    sketchpadRestoreTargets.forEach((target) => {
+      const originalState = sketchpadPreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    window.requestAnimationFrame(() => {
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
+    });
+  };
+
+  if (sketchpadOverlay) {
+    sketchpadClose?.addEventListener("click", () => toggleSketchpadView(false));
+    sketchpadBackdrop?.addEventListener("click", () => toggleSketchpadView(false));
+  }
+
   const openMenuModal = () => {
     if (!bubblewarpMenuModal) {
       return;
@@ -970,14 +1014,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     const bubblewarpMenuPrimary = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"bubblewarp\"]"
     );
+    const sketchpadMenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"sketchpad\"]"
+    );
 
     bubblewarpMenuPrimary?.addEventListener("click", () => {
       closeMenuModal();
       toggleBubblewarpView(true);
     });
 
+    sketchpadMenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      toggleSketchpadView(true);
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
-      if (button !== bubblewarpMenuPrimary) {
+      if (button !== bubblewarpMenuPrimary && button !== sketchpadMenuButton) {
         button.addEventListener("click", closeMenuModal);
       }
     });
@@ -985,6 +1037,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !bubblewarpMenuModal.hasAttribute("hidden")) {
         closeMenuModal();
+      }
+    });
+  }
+
+  if (sketchpadOverlay) {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !sketchpadOverlay.hasAttribute("hidden")) {
+        toggleSketchpadView(false);
       }
     });
   }
