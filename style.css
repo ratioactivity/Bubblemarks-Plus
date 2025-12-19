@@ -1257,6 +1257,11 @@ body.bubblewarp-open {
   margin: 0;
 }
 
+.bubblewarp-menu-trigger .bubblewarp-toggle__logo,
+.bubblewarp-menu-trigger .bubblewarp-toggle__chevron {
+  visibility: hidden;
+}
+
 .bubblewarp-menu-modal {
   position: fixed;
   inset: 0;
