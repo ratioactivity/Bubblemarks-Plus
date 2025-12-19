@@ -75,40 +75,151 @@ window.addEventListener("DOMContentLoaded", () => {
     {
       id: "mastcenter",
       name: "MaST Center",
-      streamUrl: "https://audio.orcasound.net/rpi_mast_center/hls/1765528218/live.m3u8",
+      node: "rpi_mast_center",
       cover: hydrophoneCoverMap.get("mastcenter") || defaultCoverArt,
     },
     {
       id: "orcasoundlab",
       name: "Orcasound Lab",
-      streamUrl: "https://audio.orcasound.net/rpi_orcasound_lab/hls/1765528218/live.m3u8",
+      node: "rpi_orcasound_lab",
       cover: hydrophoneCoverMap.get("orcasoundlab") || defaultCoverArt,
     },
     {
       id: "andrewsbay",
       name: "Andrews Bay",
-      streamUrl: "https://audio.orcasound.net/rpi_andrews_bay/hls/1765528218/live.m3u8",
+      node: "rpi_andrews_bay",
       cover: hydrophoneCoverMap.get("andrewsbay") || defaultCoverArt,
     },
     {
       id: "porttownsend",
       name: "Port Townsend",
-      streamUrl: "https://audio.orcasound.net/rpi_port_townsend/hls/1765528218/live.m3u8",
+      node: "rpi_port_townsend",
       cover: hydrophoneCoverMap.get("porttownsend") || defaultCoverArt,
     },
     {
       id: "bushpoint",
       name: "Bush Point",
-      streamUrl: "https://audio.orcasound.net/rpi_bush_point/hls/1765528218/live.m3u8",
+      node: "rpi_bush_point",
       cover: hydrophoneCoverMap.get("bushpoint") || defaultCoverArt,
     },
     {
       id: "sunsetbay",
       name: "Sunset Bay",
-      streamUrl: "https://audio.orcasound.net/rpi_sunset_bay/hls/1765528218/live.m3u8",
+      node: "rpi_sunset_bay",
       cover: hydrophoneCoverMap.get("sunsetbay") || defaultCoverArt,
     },
   ];
+
+  const HYDROPHONE_TIMESTAMP_CACHE_KEY = "bubblemarks-hydrophone-timestamps";
+  const hydrophoneTimestampCache = new Map();
+  let showHydrophoneHelp = () => {};
+
+  const loadHydrophoneTimestampCache = () => {
+    try {
+      const raw = localStorage.getItem(HYDROPHONE_TIMESTAMP_CACHE_KEY);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        Object.entries(parsed).forEach(([node, timestamp]) => {
+          if (typeof timestamp === "string" && /^\d+$/.test(timestamp)) {
+            hydrophoneTimestampCache.set(node, timestamp);
+          }
+        });
+      }
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to read hydrophone cache", error);
+    }
+  };
+
+  const persistHydrophoneTimestampCache = () => {
+    try {
+      const payload = Object.fromEntries(hydrophoneTimestampCache.entries());
+      localStorage.setItem(HYDROPHONE_TIMESTAMP_CACHE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.warn("[Bubblemarks] Unable to store hydrophone cache", error);
+    }
+  };
+
+  const isValidTimestamp = (value) => typeof value === "string" && /^\d+$/.test(value.trim());
+
+  const buildHydrophoneStreamUrl = (node, timestamp) => {
+    return `https://audio.orcasound.net/${node}/hls/${timestamp}/live.m3u8`;
+  };
+
+  const updateHydrophoneTimestampCache = (node, timestamp) => {
+    if (!node || !isValidTimestamp(timestamp)) {
+      return;
+    }
+    hydrophoneTimestampCache.set(node, timestamp);
+    persistHydrophoneTimestampCache();
+  };
+
+  const fetchHydrophoneTimestamp = async (node) => {
+    const target = `https://audio.orcasound.net/${node}/latest.txt?ts=${Date.now()}`;
+    const response = await fetch(target);
+    if (!response.ok) {
+      throw new Error(`Unable to load ${node} latest.txt`);
+    }
+    const text = (await response.text()).trim();
+    if (!isValidTimestamp(text)) {
+      throw new Error(`Invalid timestamp for ${node}`);
+    }
+    updateHydrophoneTimestampCache(node, text);
+    return text;
+  };
+
+  const resolveHydrophoneStreamUrl = async (station) => {
+    if (!station?.node) {
+      throw new Error("Missing hydrophone node");
+    }
+    try {
+      const timestamp = await fetchHydrophoneTimestamp(station.node);
+      return { streamUrl: buildHydrophoneStreamUrl(station.node, timestamp), usedCache: false };
+    } catch (error) {
+      const cachedTimestamp = hydrophoneTimestampCache.get(station.node);
+      if (cachedTimestamp) {
+        return {
+          streamUrl: buildHydrophoneStreamUrl(station.node, cachedTimestamp),
+          usedCache: true,
+        };
+      }
+      throw error;
+    }
+  };
+
+  const playHydrophoneStation = async (station) => {
+    if (!station) {
+      return;
+    }
+    stopLocalPlayback();
+    setHydrophoneStatus(`Connecting to ${station.name}...`, "info");
+    await primeHydrophoneAutoplay();
+
+    try {
+      const { streamUrl, usedCache } = await resolveHydrophoneStreamUrl(station);
+      if (usedCache) {
+        setHydrophoneStatus("Using last known stream timestamp...", "warning", 3500);
+      }
+      station.lastStreamUrl = streamUrl;
+      const metadata = {
+        ...station,
+        artist: "Orcasound live",
+        listenerCount: station.listenerCount,
+      };
+      musicController.audio.crossOrigin = "anonymous";
+      musicController.audio.preload = "auto";
+      musicController.playHydrophone(streamUrl, metadata);
+      refreshNowPlaying(true);
+    } catch (error) {
+      setHydrophoneStatus(`Unable to load ${station.name}.`, "error", 6000);
+      showHydrophoneHelp(true);
+      console.warn("[Bubblemarks] Hydrophone timestamp failed", error);
+    }
+  };
+
+  loadHydrophoneTimestampCache();
 
   const petAssetBase = "bubblemarks://pet-axolotl/assets/";
   const discAssets = {
@@ -1004,9 +1115,11 @@ window.addEventListener("DOMContentLoaded", () => {
           cover: activeStation.cover || musicController.currentMetadata.cover,
         };
 
-        const nextStream = activeStation.streamUrl || musicController.currentSource;
+        const nextStream = activeStation.lastStreamUrl || musicController.currentSource;
         const shouldRefreshStream =
-          typeof nextStream === "string" && nextStream && nextStream !== musicController.currentSource;
+          typeof activeStation.lastStreamUrl === "string" &&
+          activeStation.lastStreamUrl &&
+          nextStream !== musicController.currentSource;
 
         musicController.currentMetadata = updatedMetadata;
 
@@ -1050,12 +1163,7 @@ window.addEventListener("DOMContentLoaded", () => {
             listenerCount: station.listenerCount,
           };
           stopLocalPlayback();
-          setHydrophoneStatus(`Connecting to ${station.name}...`, "info");
-          await primeHydrophoneAutoplay();
-          musicController.audio.crossOrigin = "anonymous";
-          musicController.audio.preload = "auto";
-          musicController.playHydrophone(station.streamUrl, metadata);
-          refreshNowPlaying(true);
+          await playHydrophoneStation(station);
         });
       }
     });
@@ -1384,6 +1492,10 @@ window.addEventListener("DOMContentLoaded", () => {
           lastHydrophoneHelpTrigger.focus();
         }
       }
+    };
+
+    showHydrophoneHelp = (visible = true) => {
+      setHydrophoneHelpVisibility(visible);
     };
 
     const hydrateHydrophoneHelp = () => {
@@ -1995,6 +2107,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (widgetPlayButton) {
       widgetPlayButton.addEventListener("click", () => {
+        if (musicController.mode === "hydrophone") {
+          const currentId = parseHydrophoneId(
+            musicController.currentMetadata?.id || musicController.currentMetadata?.name
+          );
+          const station = hydrophoneStations.find(
+            (entry) => parseHydrophoneId(entry.id) === currentId
+          );
+          if (station) {
+            playHydrophoneStation(station);
+            return;
+          }
+        }
+
         musicController.setMode("widget");
         musicController.onTrackEnd = queueState.tracks.length ? handleQueueAdvance : null;
         if (
@@ -2231,6 +2356,7 @@ window.addEventListener("DOMContentLoaded", () => {
           detail.metadata?.name || musicController.currentMetadata?.name || formatSourceName(source) || "Hydrophone";
         setHydrophoneStatus(`${stationName} unavailable: ${reasonLabel}.`, "error", 6000);
         refreshNowPlaying(true);
+        showHydrophoneHelp(true);
       }
     };
 
