@@ -1251,15 +1251,53 @@ body.bubblewarp-open {
   justify-content: center;
   gap: 0;
   text-align: center;
+  background: linear-gradient(180deg, #fbd5ec 0%, #d0ebff 100%);
+  color: #4b4275;
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.7);
 }
 
 .bubblewarp-menu-trigger .bubblewarp-toggle__label {
   margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.1;
 }
 
 .bubblewarp-menu-trigger .bubblewarp-toggle__logo,
 .bubblewarp-menu-trigger .bubblewarp-toggle__chevron {
   visibility: hidden;
+}
+
+.bubblewarp-menu-trigger::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 12px),
+    radial-gradient(circle at 70% 25%, rgba(255, 255, 255, 0.85) 0, rgba(255, 255, 255, 0) 10px),
+    radial-gradient(circle at 35% 70%, rgba(255, 244, 252, 0.9) 0, rgba(255, 244, 252, 0) 14px),
+    radial-gradient(circle at 80% 75%, rgba(255, 255, 255, 0.8) 0, rgba(255, 255, 255, 0) 12px);
+  transition: opacity 0.2s ease;
+}
+
+.bubblewarp-menu-trigger:hover::after,
+.bubblewarp-menu-trigger:focus-visible::after {
+  opacity: 1;
+  animation: menu-glitter 1.2s ease-in-out infinite;
+}
+
+@keyframes menu-glitter {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.15);
+  }
 }
 
 .bubblewarp-menu-modal {
