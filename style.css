@@ -1242,6 +1242,35 @@ body.bubblewarp-open {
   overflow: hidden;
 }
 
+.sketchpad-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.sketchpad-overlay__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: clamp(0.75rem, 1.6vw, 1rem);
+  padding: 0.45rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(135deg, #c5f1ff, #c7dfff 55%, #d7ccff);
+  color: #4b4275;
+  box-shadow: 0 12px 22px rgba(137, 170, 255, 0.22), 0 8px 18px rgba(255, 194, 220, 0.18);
+}
+
+.sketchpad-overlay__canvas {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .bubblewarp-toggle-wrap {
   position: relative;
   width: 100%;
