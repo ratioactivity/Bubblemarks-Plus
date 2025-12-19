@@ -1242,6 +1242,118 @@ body.bubblewarp-open {
   overflow: hidden;
 }
 
+.bubblewarp-toggle-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.bubblewarp-menu-trigger {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #ffe4f4, #dff2ff 55%, #fef6dc);
+  color: #5b4c74;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.2px;
+  box-shadow: 0 10px 18px rgba(146, 169, 255, 0.2), 0 6px 12px rgba(255, 194, 220, 0.2);
+  cursor: pointer;
+}
+
+.bubblewarp-menu-trigger img {
+  width: 12px;
+  height: 12px;
+}
+
+.bubblewarp-menu-trigger:focus-visible,
+.bubblewarp-menu-trigger:hover {
+  outline: none;
+  box-shadow: 0 12px 22px rgba(146, 169, 255, 0.26), 0 8px 16px rgba(255, 194, 220, 0.24);
+}
+
+.bubblewarp-menu-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.bubblewarp-menu-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 18, 48, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.bubblewarp-menu-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(860px, 92vw);
+  padding: clamp(1.5rem, 2.6vw, 2.2rem);
+  border-radius: calc(var(--soft-radius) * 1.2);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(245, 248, 255, 0.92));
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 28px 50px rgba(84, 62, 103, 0.32);
+}
+
+.bubblewarp-menu-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, rgba(255, 244, 253, 0.96), rgba(223, 241, 255, 0.94));
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(146, 169, 255, 0.24);
+}
+
+.bubblewarp-menu-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.8rem, 1.6vw, 1.2rem);
+  margin-top: 2.4rem;
+}
+
+.bubblewarp-menu-modal__button {
+  min-height: 110px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(135deg, #c5f1ff, #c7dfff 55%, #d7ccff);
+  color: #ffffff;
+  font-family: "Bigbesty", "Papernotes", cursive;
+  font-size: 1.25rem;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), 0 6px 14px rgba(88, 120, 180, 0.28);
+  box-shadow: 0 16px 28px rgba(137, 170, 255, 0.22), 0 10px 20px rgba(255, 194, 220, 0.18);
+  cursor: pointer;
+}
+
+.bubblewarp-menu-modal__button:focus-visible,
+.bubblewarp-menu-modal__button:hover {
+  outline: none;
+  filter: brightness(1.03);
+  box-shadow: 0 20px 34px rgba(137, 170, 255, 0.28), 0 12px 22px rgba(255, 194, 220, 0.22);
+}
+
+body.menu-modal-open {
+  overflow: hidden;
+}
+
 @media (min-width: 1400px) {
   .screenpad-layout {
     display: flex;
