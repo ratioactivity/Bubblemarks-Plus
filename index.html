@@ -237,14 +237,15 @@
     </main>
 
     <div class="pet-column">
-      <button
-        id="bubblewarp-toggle"
-        class="bubblewarp-toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="bubblewarp-overlay"
-      >
-        <span class="bubblewarp-toggle__bubbles" aria-hidden="true">
+      <div class="bubblewarp-toggle-wrap">
+        <button
+          id="bubblewarp-toggle"
+          class="bubblewarp-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="bubblewarp-overlay"
+        >
+          <span class="bubblewarp-toggle__bubbles" aria-hidden="true">
           <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--one"></span>
           <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--two"></span>
           <span class="bubblewarp-toggle__bubble bubblewarp-toggle__bubble--three"></span>
@@ -319,9 +320,20 @@
         <span class="bubblewarp-toggle__logo" aria-hidden="true">
           <img src="BubbleWarp/assets/icon128.png" alt="" />
         </span>
-        <span class="bubblewarp-toggle__label">BubbleWarp</span>
-        <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
-      </button>
+          <span class="bubblewarp-toggle__label">BubbleWarp</span>
+          <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
+        </button>
+        <button
+          id="bubblewarp-menu-trigger"
+          class="bubblewarp-menu-trigger"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="bubblewarp-menu-modal"
+        >
+          <img src="bubblemarks://assets/singlestar1.gif" alt="" aria-hidden="true" />
+          <span class="bubblewarp-menu-trigger__label">Menu</span>
+        </button>
+      </div>
       <section id="pet-widget" class="pet-widget" aria-label="Axolotl companion widget">
         <div class="pet-widget__frame">
           <iframe
@@ -515,6 +527,80 @@
         loading="lazy"
         referrerpolicy="no-referrer"
       ></iframe>
+    </div>
+  </div>
+
+  <div
+    id="bubblewarp-menu-modal"
+    class="bubblewarp-menu-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="BubbleWarp menu"
+    hidden
+  >
+    <div class="bubblewarp-menu-modal__backdrop" data-bubblewarp-menu-dismiss="true"></div>
+    <div class="bubblewarp-menu-modal__dialog" tabindex="-1">
+      <button
+        type="button"
+        class="bubblewarp-menu-modal__close"
+        data-bubblewarp-menu-dismiss="true"
+        aria-label="Close menu"
+      >
+        ✕
+      </button>
+      <div class="bubblewarp-menu-modal__grid" role="group" aria-label="BubbleWarp menu options">
+        <button type="button" class="bubblewarp-menu-modal__button" data-bubblewarp-menu-action="bubblewarp">
+          BubbleWarp
+        </button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button"
+          data-bubblewarp-menu-action="placeholder"
+          aria-label="Coming soon"
+        ></button>
+      </div>
     </div>
   </div>
 

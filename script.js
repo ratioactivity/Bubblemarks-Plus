@@ -881,6 +881,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".bubblewarp-overlay__frame"
   );
   const bubblewarpFrame = bubblewarpFrameContainer?.querySelector("iframe");
+  const bubblewarpMenuTrigger = document.getElementById("bubblewarp-menu-trigger");
+  const bubblewarpMenuModal = document.getElementById("bubblewarp-menu-modal");
+  const bubblewarpMenuBackdrop = bubblewarpMenuModal?.querySelector(
+    "[data-bubblewarp-menu-dismiss]"
+  );
+  const bubblewarpMenuClose = bubblewarpMenuModal?.querySelector(
+    ".bubblewarp-menu-modal__close"
+  );
+  const bubblewarpMenuButtons = bubblewarpMenuModal
+    ? Array.from(bubblewarpMenuModal.querySelectorAll(".bubblewarp-menu-modal__button"))
+    : [];
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -927,6 +938,57 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubblewarpToggle.addEventListener("click", () => toggleBubblewarpView(true));
     bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
+  }
+
+  const openMenuModal = () => {
+    if (!bubblewarpMenuModal) {
+      return;
+    }
+
+    bubblewarpMenuModal.removeAttribute("hidden");
+    document.body.classList.add("menu-modal-open");
+    window.requestAnimationFrame(() => {
+      bubblewarpMenuClose?.focus({ preventScroll: true });
+    });
+  };
+
+  const closeMenuModal = () => {
+    if (!bubblewarpMenuModal) {
+      return;
+    }
+
+    bubblewarpMenuModal.setAttribute("hidden", "");
+    document.body.classList.remove("menu-modal-open");
+    window.requestAnimationFrame(() => {
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
+    });
+  };
+
+  if (bubblewarpMenuTrigger && bubblewarpMenuModal) {
+    bubblewarpMenuTrigger.addEventListener("click", openMenuModal);
+    bubblewarpMenuBackdrop?.addEventListener("click", closeMenuModal);
+    bubblewarpMenuClose?.addEventListener("click", closeMenuModal);
+
+    const bubblewarpMenuPrimary = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"bubblewarp\"]"
+    );
+
+    bubblewarpMenuPrimary?.addEventListener("click", () => {
+      closeMenuModal();
+      toggleBubblewarpView(true);
+    });
+
+    bubblewarpMenuButtons.forEach((button) => {
+      if (button !== bubblewarpMenuPrimary) {
+        button.addEventListener("click", closeMenuModal);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !bubblewarpMenuModal.hasAttribute("hidden")) {
+        closeMenuModal();
+      }
+    });
   }
 
   if (!grid) console.error("Missing #bookmarks element in DOM");
