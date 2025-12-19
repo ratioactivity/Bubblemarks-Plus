@@ -1374,9 +1374,6 @@ body.bubblewarp-open {
 
 .bubblewarp-menu-modal__button--bubblewarp {
   padding: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
 }
 
 .bubblewarp-menu-modal__button--bubblewarp.bubblewarp-toggle {
