@@ -1386,12 +1386,12 @@ body.bubblewarp-open {
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo img {
-  width: 38px;
-  height: 38px;
+  width: 46px;
+  height: 46px;
 }
 
 .bubblewarp-menu-modal__button:focus-visible,
