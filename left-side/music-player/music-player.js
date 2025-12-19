@@ -63,7 +63,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ["mastcenter", "assets/cover-mastcenter.png"],
     ["orcasoundlab", "assets/cover-orcasoundlab.png"],
     ["porttownsend", "assets/cover-porttownsend.png"],
-    ["sunsetbay", "assets/cover-orcasoundlab.png"],
+    ["sunsetbay", "assets/cover-sunsetbay.png"],
   ]);
 
   const defaultCoverArt = "assets/cover-orcasoundlab.png";
@@ -2108,16 +2108,11 @@ window.addEventListener("DOMContentLoaded", () => {
     if (widgetPlayButton) {
       widgetPlayButton.addEventListener("click", () => {
         if (musicController.mode === "hydrophone") {
-          const currentId = parseHydrophoneId(
-            musicController.currentMetadata?.id || musicController.currentMetadata?.name
-          );
-          const station = hydrophoneStations.find(
-            (entry) => parseHydrophoneId(entry.id) === currentId
-          );
-          if (station) {
-            playHydrophoneStation(station);
-            return;
-          }
+          stopLocalPlayback();
+          setHydrophoneStatus("Hydrophone stopped.", "info", 2000);
+          updatePlayButtons(false);
+          refreshNowPlaying(true);
+          return;
         }
 
         musicController.setMode("widget");
