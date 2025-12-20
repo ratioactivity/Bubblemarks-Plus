@@ -1446,13 +1446,33 @@ body.sketchpad-open {
   filter: brightness(1.03);
 }
 
+.bubblewarp-menu-modal__button--sketchpad.bubblewarp-toggle {
+  margin-bottom: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #ff80d0, #7a5ac8);
+  box-shadow: 0 16px 28px rgba(163, 137, 255, 0.26), 0 10px 20px rgba(214, 198, 255, 0.2);
+}
+
+.bubblewarp-menu-modal__button--sketchpad.bubblewarp-toggle:hover {
+  filter: brightness(1.04);
+}
+
+.bubblewarp-menu-modal__button--sketchpad .bubblewarp-toggle__logo img {
+  width: 64px;
+  height: 64px;
+}
+
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
   font-size: 1.35rem;
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo img {
-  width: 46px;
-  height: 46px;
+  width: 64px;
+  height: 64px;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo {
+  margin-left: 8px;
 }
 
 .bubblewarp-menu-modal__button:focus-visible,
