@@ -1031,6 +1031,46 @@ window.addEventListener("DOMContentLoaded", async () => {
     paletteColor: SKETCHPAD_PALETTES.rainbow[0].value,
   };
   const sketchpadBackgroundColor = "#ffffff";
+  const sketchpadToastDuration = 2400;
+
+  const showSketchpadToast = (message) => {
+    let stack = document.getElementById("sketchpad-toast-stack");
+    if (!stack) {
+      stack = document.createElement("div");
+      stack.id = "sketchpad-toast-stack";
+      stack.className = "quicklaunch-toast-stack";
+      stack.setAttribute("role", "status");
+      stack.setAttribute("aria-live", "polite");
+      stack.setAttribute("aria-atomic", "true");
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement("div");
+    toast.className = "quicklaunch-toast";
+    toast.textContent = message;
+    stack.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.add("quicklaunch-toast--visible");
+    });
+
+    window.setTimeout(() => {
+      toast.classList.remove("quicklaunch-toast--visible");
+      toast.addEventListener(
+        "transitionend",
+        () => {
+          toast.remove();
+        },
+        { once: true }
+      );
+    }, sketchpadToastDuration);
+  };
+
+  const formatSketchpadTimestamp = (date) => {
+    const pad = (value) => String(value).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(
+      date.getHours()
+    )}${pad(date.getMinutes())}`;
+  };
 
   const updateSketchpadHistoryButtons = () => {
     if (!sketchpadToolbarActions) {
@@ -1099,6 +1139,50 @@ window.addEventListener("DOMContentLoaded", async () => {
     sketchpadHistory = [...sketchpadHistory, snapshot];
     sketchpadRedoStack = [];
     updateSketchpadHistoryButtons();
+  };
+
+  const copySketchpadToClipboard = () => {
+    if (!sketchpadCanvas) {
+      return;
+    }
+    if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+      showSketchpadToast("Copy unavailable");
+      return;
+    }
+    sketchpadCanvas.toBlob((blob) => {
+      if (!blob) {
+        return;
+      }
+      const item = new ClipboardItem({ "image/png": blob });
+      navigator.clipboard
+        .write([item])
+        .then(() => {
+          showSketchpadToast("Copied!");
+        })
+        .catch((error) => {
+          console.warn("Unable to copy sketchpad image.", error);
+          showSketchpadToast("Copy failed");
+        });
+    });
+  };
+
+  const saveSketchpadImage = () => {
+    if (!sketchpadCanvas) {
+      return;
+    }
+    sketchpadCanvas.toBlob((blob) => {
+      if (!blob) {
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `sketchpad-${formatSketchpadTimestamp(new Date())}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    });
   };
 
   const resetSketchpadHistory = () => {
@@ -1270,6 +1354,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     restartButton.type = "button";
     restartButton.textContent = "Restart";
 
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.textContent = "Copy";
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "button";
+    saveButton.textContent = "Save";
+
     sketchpadToolbar.append(
       modeLabel,
       paletteSelect,
@@ -1278,7 +1370,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       eraserLabel,
       undoButton,
       redoButton,
-      restartButton
+      restartButton,
+      copyButton,
+      saveButton
     );
     sketchpadToolbar.dataset.ready = "true";
 
@@ -1291,7 +1385,13 @@ window.addEventListener("DOMContentLoaded", async () => {
       eraserToggle,
     };
 
-    sketchpadToolbarActions = { undoButton, redoButton, restartButton };
+    sketchpadToolbarActions = {
+      undoButton,
+      redoButton,
+      restartButton,
+      copyButton,
+      saveButton,
+    };
 
     modeSelect.addEventListener("change", () => {
       sketchpadToolbarState.colorMode = modeSelect.value;
@@ -1326,6 +1426,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     restartButton.addEventListener("click", () => {
       resetSketchpadHistory();
+    });
+
+    copyButton.addEventListener("click", () => {
+      copySketchpadToClipboard();
+    });
+
+    saveButton.addEventListener("click", () => {
+      saveSketchpadImage();
     });
 
     updateSketchpadToolbarUI(toolbarElements);
