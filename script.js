@@ -895,6 +895,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadClose = sketchpadOverlay?.querySelector(".sketchpad-overlay__close");
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
   const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
+  const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -989,6 +990,202 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sketchpadIsDrawing = false;
   let sketchpadHasMoved = false;
   let sketchpadLastPoint = null;
+  let sketchpadStrokeDistance = 0;
+
+  const SKETCHPAD_PALETTES = {
+    rainbow: [
+      { label: "Red", value: "#ff4b5c" },
+      { label: "Orange", value: "#ff8a3d" },
+      { label: "Yellow", value: "#ffd166" },
+      { label: "Green", value: "#4cd964" },
+      { label: "Blue", value: "#3b82f6" },
+      { label: "Purple", value: "#7c3aed" },
+      { label: "Brown", value: "#8b5e3c" },
+      { label: "Gray", value: "#8a8a8a" },
+      { label: "Black", value: "#111111" },
+      { label: "White", value: "#ffffff" },
+    ],
+    pastel: [
+      { label: "Pastel Red", value: "#ff9aa2" },
+      { label: "Pastel Orange", value: "#ffb68a" },
+      { label: "Pastel Yellow", value: "#ffe29a" },
+      { label: "Pastel Green", value: "#b7f5c1" },
+      { label: "Pastel Blue", value: "#a8d5ff" },
+      { label: "Pastel Purple", value: "#cbb3ff" },
+      { label: "Pastel Brown", value: "#d8b4a0" },
+      { label: "Pastel Gray", value: "#d0d0d0" },
+      { label: "Soft Black", value: "#3b3b3b" },
+      { label: "Soft White", value: "#ffffff" },
+    ],
+  };
+
+  const sketchpadToolbarState = {
+    colorMode: "rainbow-palette",
+    penSize: 4,
+    isEraser: false,
+    pickerColor: "#ff7dbf",
+    paletteColor: SKETCHPAD_PALETTES.rainbow[0].value,
+  };
+  const sketchpadBackgroundColor = "#ffffff";
+
+  const getSketchpadHue = () =>
+    (sketchpadStrokeDistance * 0.15 + window.performance.now() * 0.01) % 360;
+
+  const getSketchpadStrokeStyle = () => {
+    if (sketchpadToolbarState.isEraser) {
+      return sketchpadBackgroundColor;
+    }
+    if (sketchpadToolbarState.colorMode === "picker") {
+      return sketchpadToolbarState.pickerColor;
+    }
+    if (sketchpadToolbarState.colorMode === "rainbow-palette") {
+      return sketchpadToolbarState.paletteColor;
+    }
+    if (sketchpadToolbarState.colorMode === "pastel-palette") {
+      return sketchpadToolbarState.paletteColor;
+    }
+    if (sketchpadToolbarState.colorMode === "rainbow-shuffle") {
+      const hue = getSketchpadHue();
+      return `hsl(${hue}, 80%, 55%)`;
+    }
+    return sketchpadToolbarState.paletteColor;
+  };
+
+  const applySketchpadStrokeStyle = () => {
+    if (!sketchpadContext) {
+      return;
+    }
+    sketchpadContext.lineWidth = sketchpadToolbarState.penSize;
+    sketchpadContext.strokeStyle = getSketchpadStrokeStyle();
+  };
+
+  const updateSketchpadPaletteOptions = (elements) => {
+    if (!elements) {
+      return;
+    }
+    const { paletteSelect } = elements;
+    if (!paletteSelect) {
+      return;
+    }
+    const paletteKey =
+      sketchpadToolbarState.colorMode === "pastel-palette" ? "pastel" : "rainbow";
+    const options = SKETCHPAD_PALETTES[paletteKey];
+    paletteSelect.innerHTML = "";
+    options.forEach((entry) => {
+      const opt = document.createElement("option");
+      opt.value = entry.value;
+      opt.textContent = entry.label;
+      paletteSelect.appendChild(opt);
+    });
+    if (!options.some((entry) => entry.value === sketchpadToolbarState.paletteColor)) {
+      sketchpadToolbarState.paletteColor = options[0].value;
+    }
+    paletteSelect.value = sketchpadToolbarState.paletteColor;
+  };
+
+  const updateSketchpadToolbarUI = (elements) => {
+    if (!elements) {
+      return;
+    }
+    const { modeSelect, pickerInput, paletteSelect, sizeInput, sizeValue, eraserToggle } =
+      elements;
+    modeSelect.value = sketchpadToolbarState.colorMode;
+    sizeInput.value = String(sketchpadToolbarState.penSize);
+    sizeValue.textContent = `${sketchpadToolbarState.penSize}px`;
+    eraserToggle.checked = sketchpadToolbarState.isEraser;
+    pickerInput.value = sketchpadToolbarState.pickerColor;
+    const usesPicker = sketchpadToolbarState.colorMode === "picker";
+    const usesPalette =
+      sketchpadToolbarState.colorMode === "rainbow-palette" ||
+      sketchpadToolbarState.colorMode === "pastel-palette";
+    pickerInput.hidden = !usesPicker;
+    paletteSelect.hidden = !usesPalette;
+    if (usesPalette) {
+      updateSketchpadPaletteOptions(elements);
+    }
+  };
+
+  const initializeSketchpadToolbar = () => {
+    if (!sketchpadToolbar || sketchpadToolbar.dataset.ready === "true") {
+      return null;
+    }
+
+    const modeLabel = document.createElement("label");
+    modeLabel.textContent = "Color";
+    const modeSelect = document.createElement("select");
+    [
+      { value: "rainbow-palette", label: "Rainbow palette" },
+      { value: "pastel-palette", label: "Pastel palette" },
+      { value: "rainbow-shuffle", label: "Rainbow shuffle" },
+      { value: "picker", label: "Picker" },
+    ].forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      modeSelect.appendChild(opt);
+    });
+    modeLabel.appendChild(modeSelect);
+
+    const pickerInput = document.createElement("input");
+    pickerInput.type = "color";
+    pickerInput.value = sketchpadToolbarState.pickerColor;
+
+    const paletteSelect = document.createElement("select");
+
+    const sizeLabel = document.createElement("label");
+    sizeLabel.textContent = "Pen";
+    const sizeInput = document.createElement("input");
+    sizeInput.type = "range";
+    sizeInput.min = "1";
+    sizeInput.max = "24";
+    sizeInput.value = String(sketchpadToolbarState.penSize);
+    const sizeValue = document.createElement("span");
+    sizeValue.textContent = `${sketchpadToolbarState.penSize}px`;
+    sizeLabel.append(sizeInput, sizeValue);
+
+    const eraserLabel = document.createElement("label");
+    const eraserToggle = document.createElement("input");
+    eraserToggle.type = "checkbox";
+    eraserLabel.append(eraserToggle, document.createTextNode("Eraser"));
+
+    sketchpadToolbar.append(modeLabel, paletteSelect, pickerInput, sizeLabel, eraserLabel);
+    sketchpadToolbar.dataset.ready = "true";
+
+    const toolbarElements = {
+      modeSelect,
+      pickerInput,
+      paletteSelect,
+      sizeInput,
+      sizeValue,
+      eraserToggle,
+    };
+
+    modeSelect.addEventListener("change", () => {
+      sketchpadToolbarState.colorMode = modeSelect.value;
+      updateSketchpadToolbarUI(toolbarElements);
+    });
+
+    pickerInput.addEventListener("input", () => {
+      sketchpadToolbarState.pickerColor = pickerInput.value;
+    });
+
+    paletteSelect.addEventListener("change", () => {
+      sketchpadToolbarState.paletteColor = paletteSelect.value;
+    });
+
+    sizeInput.addEventListener("input", () => {
+      const nextSize = Number.parseInt(sizeInput.value, 10);
+      sketchpadToolbarState.penSize = Number.isFinite(nextSize) ? nextSize : 4;
+      updateSketchpadToolbarUI(toolbarElements);
+    });
+
+    eraserToggle.addEventListener("change", () => {
+      sketchpadToolbarState.isEraser = eraserToggle.checked;
+    });
+
+    updateSketchpadToolbarUI(toolbarElements);
+    return toolbarElements;
+  };
 
   const getSketchpadPoint = (event) => {
     if (!sketchpadCanvas) {
@@ -1027,11 +1224,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.lineWidth = 4;
+    context.lineWidth = sketchpadToolbarState.penSize;
     sketchpadContext = context;
   };
 
   if (sketchpadCanvas) {
+    initializeSketchpadToolbar();
     sketchpadCanvas.style.touchAction = "none";
     resizeSketchpadCanvas();
     window.addEventListener("resize", resizeSketchpadCanvas);
@@ -1046,11 +1244,13 @@ window.addEventListener("DOMContentLoaded", async () => {
       sketchpadPointerId = event.pointerId;
       sketchpadIsDrawing = true;
       sketchpadHasMoved = false;
+      sketchpadStrokeDistance = 0;
       sketchpadLastPoint = getSketchpadPoint(event);
       if (!sketchpadLastPoint) {
         return;
       }
       sketchpadCanvas.setPointerCapture(event.pointerId);
+      applySketchpadStrokeStyle();
       sketchpadContext.beginPath();
       sketchpadContext.moveTo(sketchpadLastPoint.x, sketchpadLastPoint.y);
     });
@@ -1066,6 +1266,11 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (!point) {
         return;
       }
+      const deltaX = point.x - sketchpadLastPoint.x;
+      const deltaY = point.y - sketchpadLastPoint.y;
+      const distance = Math.hypot(deltaX, deltaY);
+      sketchpadStrokeDistance += distance;
+      applySketchpadStrokeStyle();
       sketchpadHasMoved = true;
       sketchpadContext.lineTo(point.x, point.y);
       sketchpadContext.stroke();
