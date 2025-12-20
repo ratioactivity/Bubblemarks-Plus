@@ -952,6 +952,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         sketchpadRestoreTargets.map((target) => [target, target.hidden])
       );
       sketchpadOverlay.removeAttribute("hidden");
+      document.body.classList.add("sketchpad-open");
 
       sketchpadRestoreTargets.forEach((target) => {
         target.hidden = true;
@@ -966,6 +967,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     sketchpadOverlay.setAttribute("hidden", "");
+    document.body.classList.remove("sketchpad-open");
 
     sketchpadRestoreTargets.forEach((target) => {
       const originalState = sketchpadPreviousVisibility.get(target);
