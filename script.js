@@ -894,6 +894,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadOverlay = document.getElementById("sketchpad-overlay");
   const sketchpadClose = sketchpadOverlay?.querySelector(".sketchpad-overlay__close");
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
+  const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -951,12 +952,14 @@ window.addEventListener("DOMContentLoaded", async () => {
         sketchpadRestoreTargets.map((target) => [target, target.hidden])
       );
       sketchpadOverlay.removeAttribute("hidden");
+      document.body.classList.add("sketchpad-open");
 
       sketchpadRestoreTargets.forEach((target) => {
         target.hidden = true;
       });
 
       window.requestAnimationFrame(() => {
+        resizeSketchpadCanvas();
         sketchpadClose?.focus({ preventScroll: true });
       });
 
@@ -964,6 +967,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     sketchpadOverlay.setAttribute("hidden", "");
+    document.body.classList.remove("sketchpad-open");
 
     sketchpadRestoreTargets.forEach((target) => {
       const originalState = sketchpadPreviousVisibility.get(target);
@@ -978,6 +982,112 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (sketchpadOverlay) {
     sketchpadClose?.addEventListener("click", () => toggleSketchpadView(false));
     sketchpadBackdrop?.addEventListener("click", () => toggleSketchpadView(false));
+  }
+
+  let sketchpadContext = null;
+  let sketchpadPointerId = null;
+  let sketchpadIsDrawing = false;
+  let sketchpadHasMoved = false;
+  let sketchpadLastPoint = null;
+
+  const getSketchpadPoint = (event) => {
+    if (!sketchpadCanvas) {
+      return null;
+    }
+    const rect = sketchpadCanvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+  };
+
+  const resizeSketchpadCanvas = () => {
+    if (!sketchpadCanvas) {
+      return;
+    }
+    const rect = sketchpadCanvas.getBoundingClientRect();
+    const width = Math.max(0, rect.width);
+    const height = Math.max(0, rect.height);
+
+    if (!width || !height) {
+      return;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    sketchpadCanvas.style.width = `${width}px`;
+    sketchpadCanvas.style.height = `${height}px`;
+    sketchpadCanvas.width = Math.round(width * dpr);
+    sketchpadCanvas.height = Math.round(height * dpr);
+
+    const context = sketchpadCanvas.getContext("2d");
+    if (!context) {
+      return;
+    }
+
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.lineWidth = 4;
+    sketchpadContext = context;
+  };
+
+  if (sketchpadCanvas) {
+    sketchpadCanvas.style.touchAction = "none";
+    resizeSketchpadCanvas();
+    window.addEventListener("resize", resizeSketchpadCanvas);
+
+    sketchpadCanvas.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+      if (!sketchpadContext) {
+        return;
+      }
+      sketchpadPointerId = event.pointerId;
+      sketchpadIsDrawing = true;
+      sketchpadHasMoved = false;
+      sketchpadLastPoint = getSketchpadPoint(event);
+      if (!sketchpadLastPoint) {
+        return;
+      }
+      sketchpadCanvas.setPointerCapture(event.pointerId);
+      sketchpadContext.beginPath();
+      sketchpadContext.moveTo(sketchpadLastPoint.x, sketchpadLastPoint.y);
+    });
+
+    sketchpadCanvas.addEventListener("pointermove", (event) => {
+      if (!sketchpadIsDrawing || event.pointerId !== sketchpadPointerId) {
+        return;
+      }
+      if (!sketchpadContext || !sketchpadLastPoint) {
+        return;
+      }
+      const point = getSketchpadPoint(event);
+      if (!point) {
+        return;
+      }
+      sketchpadHasMoved = true;
+      sketchpadContext.lineTo(point.x, point.y);
+      sketchpadContext.stroke();
+      sketchpadLastPoint = point;
+    });
+
+    const stopSketchpadStroke = (event) => {
+      if (event.pointerId !== sketchpadPointerId) {
+        return;
+      }
+      sketchpadIsDrawing = false;
+      sketchpadPointerId = null;
+      sketchpadLastPoint = null;
+      sketchpadHasMoved = false;
+      if (sketchpadCanvas.hasPointerCapture(event.pointerId)) {
+        sketchpadCanvas.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    sketchpadCanvas.addEventListener("pointerup", stopSketchpadStroke);
+    sketchpadCanvas.addEventListener("pointercancel", stopSketchpadStroke);
+    sketchpadCanvas.addEventListener("pointerleave", stopSketchpadStroke);
   }
 
   const openMenuModal = () => {

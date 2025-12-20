@@ -1249,14 +1249,42 @@ body.bubblewarp-open {
   display: flex;
   flex-direction: column;
   background: #ffffff;
+  overflow: hidden;
+  padding: clamp(0.75rem, 1.6vw, 1.25rem);
+}
+
+.sketchpad-overlay__close {
+  position: absolute;
+  top: clamp(0.75rem, 1.6vw, 1.25rem);
+  right: clamp(0.75rem, 1.6vw, 1.25rem);
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #e26aa5;
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 24px rgba(226, 106, 165, 0.2);
+  cursor: pointer;
+}
+
+.sketchpad-overlay__close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(226, 106, 165, 0.28);
 }
 
 .sketchpad-overlay__toolbar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  margin: clamp(0.75rem, 1.6vw, 1rem);
-  padding: 0.45rem 0.9rem;
+  align-self: flex-start;
+  margin: 0;
+  margin-bottom: clamp(0.75rem, 1.6vw, 1rem);
+  padding: 0.35rem 0.75rem;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.85);
   background: linear-gradient(135deg, #c5f1ff, #c7dfff 55%, #d7ccff);
@@ -1269,6 +1297,10 @@ body.bubblewarp-open {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+body.sketchpad-open {
+  overflow: hidden;
 }
 
 .bubblewarp-toggle-wrap {
