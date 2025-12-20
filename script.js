@@ -895,6 +895,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadClose = sketchpadOverlay?.querySelector(".sketchpad-overlay__close");
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
   const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
+  const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -989,6 +990,120 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sketchpadIsDrawing = false;
   let sketchpadHasMoved = false;
   let sketchpadLastPoint = null;
+  let sketchpadStrokeDistance = 0;
+
+  const sketchpadToolbarState = {
+    colorMode: "rainbow",
+    penSize: 4,
+    isEraser: false,
+    pickerColor: "#ff7dbf",
+  };
+  const sketchpadBackgroundColor = "#ffffff";
+
+  const getSketchpadHue = () =>
+    (sketchpadStrokeDistance * 0.8 + window.performance.now() * 0.05) % 360;
+
+  const getSketchpadStrokeStyle = () => {
+    if (sketchpadToolbarState.isEraser) {
+      return sketchpadBackgroundColor;
+    }
+    if (sketchpadToolbarState.colorMode === "picker") {
+      return sketchpadToolbarState.pickerColor;
+    }
+    const hue = getSketchpadHue();
+    const saturation = sketchpadToolbarState.colorMode === "pastel" ? 45 : 80;
+    const lightness = sketchpadToolbarState.colorMode === "pastel" ? 75 : 50;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
+
+  const applySketchpadStrokeStyle = () => {
+    if (!sketchpadContext) {
+      return;
+    }
+    sketchpadContext.lineWidth = sketchpadToolbarState.penSize;
+    sketchpadContext.strokeStyle = getSketchpadStrokeStyle();
+  };
+
+  const updateSketchpadToolbarUI = (elements) => {
+    if (!elements) {
+      return;
+    }
+    const { modeSelect, pickerInput, sizeInput, sizeValue, eraserToggle } = elements;
+    modeSelect.value = sketchpadToolbarState.colorMode;
+    sizeInput.value = String(sketchpadToolbarState.penSize);
+    sizeValue.textContent = `${sketchpadToolbarState.penSize}px`;
+    eraserToggle.checked = sketchpadToolbarState.isEraser;
+    pickerInput.value = sketchpadToolbarState.pickerColor;
+    pickerInput.hidden = sketchpadToolbarState.colorMode !== "picker";
+  };
+
+  const initializeSketchpadToolbar = () => {
+    if (!sketchpadToolbar || sketchpadToolbar.dataset.ready === "true") {
+      return null;
+    }
+
+    const modeLabel = document.createElement("label");
+    modeLabel.textContent = "Color";
+    const modeSelect = document.createElement("select");
+    [
+      { value: "rainbow", label: "Rainbow" },
+      { value: "pastel", label: "Pastel" },
+      { value: "picker", label: "Picker" },
+    ].forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      modeSelect.appendChild(opt);
+    });
+    modeLabel.appendChild(modeSelect);
+
+    const pickerInput = document.createElement("input");
+    pickerInput.type = "color";
+    pickerInput.value = sketchpadToolbarState.pickerColor;
+
+    const sizeLabel = document.createElement("label");
+    sizeLabel.textContent = "Pen";
+    const sizeInput = document.createElement("input");
+    sizeInput.type = "range";
+    sizeInput.min = "1";
+    sizeInput.max = "24";
+    sizeInput.value = String(sketchpadToolbarState.penSize);
+    const sizeValue = document.createElement("span");
+    sizeValue.textContent = `${sketchpadToolbarState.penSize}px`;
+    sizeLabel.append(sizeInput, sizeValue);
+
+    const eraserLabel = document.createElement("label");
+    const eraserToggle = document.createElement("input");
+    eraserToggle.type = "checkbox";
+    eraserLabel.append(eraserToggle, document.createTextNode("Eraser"));
+
+    sketchpadToolbar.append(modeLabel, pickerInput, sizeLabel, eraserLabel);
+    sketchpadToolbar.dataset.ready = "true";
+
+    const toolbarElements = { modeSelect, pickerInput, sizeInput, sizeValue, eraserToggle };
+
+    modeSelect.addEventListener("change", () => {
+      sketchpadToolbarState.colorMode = modeSelect.value;
+      updateSketchpadToolbarUI(toolbarElements);
+    });
+
+    pickerInput.addEventListener("input", () => {
+      sketchpadToolbarState.pickerColor = pickerInput.value;
+    });
+
+    sizeInput.addEventListener("input", () => {
+      const nextSize = Number.parseInt(sizeInput.value, 10);
+      sketchpadToolbarState.penSize = Number.isFinite(nextSize) ? nextSize : 4;
+      updateSketchpadToolbarUI(toolbarElements);
+    });
+
+    eraserToggle.addEventListener("change", () => {
+      sketchpadToolbarState.isEraser = eraserToggle.checked;
+    });
+
+    updateSketchpadToolbarUI(toolbarElements);
+    return toolbarElements;
+  };
 
   const getSketchpadPoint = (event) => {
     if (!sketchpadCanvas) {
@@ -1027,11 +1142,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.lineWidth = 4;
+    context.lineWidth = sketchpadToolbarState.penSize;
     sketchpadContext = context;
   };
 
   if (sketchpadCanvas) {
+    initializeSketchpadToolbar();
     sketchpadCanvas.style.touchAction = "none";
     resizeSketchpadCanvas();
     window.addEventListener("resize", resizeSketchpadCanvas);
@@ -1046,6 +1162,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       sketchpadPointerId = event.pointerId;
       sketchpadIsDrawing = true;
       sketchpadHasMoved = false;
+      sketchpadStrokeDistance = 0;
       sketchpadLastPoint = getSketchpadPoint(event);
       if (!sketchpadLastPoint) {
         return;
@@ -1066,6 +1183,11 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (!point) {
         return;
       }
+      const deltaX = point.x - sketchpadLastPoint.x;
+      const deltaY = point.y - sketchpadLastPoint.y;
+      const distance = Math.hypot(deltaX, deltaY);
+      sketchpadStrokeDistance += distance;
+      applySketchpadStrokeStyle();
       sketchpadHasMoved = true;
       sketchpadContext.lineTo(point.x, point.y);
       sketchpadContext.stroke();
