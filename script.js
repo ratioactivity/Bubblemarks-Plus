@@ -5452,6 +5452,221 @@ function setupDataTools() {
     }
   }
 
+  window.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ script validated");
+
+    const IMAGE_FRIDGE_DB_NAME = "bubblemarks-image-fridge";
+    const IMAGE_FRIDGE_DB_VERSION = 1;
+    const IMAGE_FRIDGE_STORE = "imageFridge";
+
+    const showFridgeToast = (message) => {
+      let stack = document.querySelector(".quicklaunch-toast-stack");
+      if (!stack) {
+        stack = document.createElement("div");
+        stack.className = "quicklaunch-toast-stack";
+        stack.setAttribute("role", "status");
+        stack.setAttribute("aria-live", "polite");
+        stack.setAttribute("aria-atomic", "true");
+        document.body.appendChild(stack);
+      }
+
+      const toast = document.createElement("div");
+      toast.className = "quicklaunch-toast";
+      toast.textContent = message;
+      stack.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.add("quicklaunch-toast--visible");
+      });
+
+      window.setTimeout(() => {
+        toast.classList.remove("quicklaunch-toast--visible");
+        toast.addEventListener(
+          "transitionend",
+          () => {
+            toast.remove();
+          },
+          { once: true }
+        );
+      }, 3400);
+    };
+
+    const openImageFridgeDB = () =>
+      new Promise((resolve) => {
+        if (!("indexedDB" in window)) {
+          showFridgeToast("Fridge storage failed");
+          resolve(null);
+          return;
+        }
+
+        let request;
+        try {
+          request = window.indexedDB.open(IMAGE_FRIDGE_DB_NAME, IMAGE_FRIDGE_DB_VERSION);
+        } catch (error) {
+          console.error("[Bubblemarks] Failed to open Image Fridge DB:", error);
+          showFridgeToast("Fridge storage failed");
+          resolve(null);
+          return;
+        }
+
+        request.onupgradeneeded = (event) => {
+          try {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(IMAGE_FRIDGE_STORE)) {
+              db.createObjectStore(IMAGE_FRIDGE_STORE, { keyPath: "id" });
+            }
+          } catch (error) {
+            console.error("[Bubblemarks] Image Fridge upgrade failed:", error);
+            showFridgeToast("Fridge storage failed");
+          }
+        };
+
+        request.onerror = () => {
+          console.error("[Bubblemarks] Image Fridge open failed:", request.error);
+          showFridgeToast("Fridge storage failed");
+          resolve(null);
+        };
+
+        request.onsuccess = () => {
+          const db = request.result;
+          db.onerror = () => {
+            console.error("[Bubblemarks] Image Fridge database error:", db.error);
+            showFridgeToast("Fridge storage failed");
+          };
+          resolve(db);
+        };
+      });
+
+    const saveImage = async (record) => {
+      if (!record || !record.id) {
+        console.warn("[Bubblemarks] Image Fridge save skipped: missing id.");
+        return null;
+      }
+
+      const db = await openImageFridgeDB();
+      if (!db) {
+        return null;
+      }
+
+      const entry = {
+        createdAt: new Date().toISOString(),
+        ...record,
+      };
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readwrite");
+        const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+        const request = store.put(entry);
+
+        const handleFailure = () => {
+          showFridgeToast("Fridge storage failed");
+          resolve(null);
+        };
+
+        request.onerror = handleFailure;
+        transaction.onerror = handleFailure;
+        transaction.onabort = handleFailure;
+        transaction.oncomplete = () => {
+          db.close();
+          resolve(entry.id);
+        };
+      });
+    };
+
+    const loadImages = async () => {
+      const db = await openImageFridgeDB();
+      if (!db) {
+        return [];
+      }
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readonly");
+        const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+        const request = store.getAll();
+
+        const handleFailure = () => {
+          showFridgeToast("Fridge storage failed");
+          resolve([]);
+        };
+
+        request.onerror = handleFailure;
+        transaction.onerror = handleFailure;
+        transaction.onabort = handleFailure;
+        request.onsuccess = () => {
+          const results = Array.isArray(request.result) ? request.result : [];
+          resolve(results);
+        };
+        transaction.oncomplete = () => {
+          db.close();
+        };
+      });
+    };
+
+    const deleteImage = async (id) => {
+      if (!id) {
+        return false;
+      }
+
+      const db = await openImageFridgeDB();
+      if (!db) {
+        return false;
+      }
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readwrite");
+        const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+        const request = store.delete(id);
+
+        const handleFailure = () => {
+          showFridgeToast("Fridge storage failed");
+          resolve(false);
+        };
+
+        request.onerror = handleFailure;
+        transaction.onerror = handleFailure;
+        transaction.onabort = handleFailure;
+        transaction.oncomplete = () => {
+          db.close();
+          resolve(true);
+        };
+      });
+    };
+
+    const clearImages = async () => {
+      const db = await openImageFridgeDB();
+      if (!db) {
+        return false;
+      }
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readwrite");
+        const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+        const request = store.clear();
+
+        const handleFailure = () => {
+          showFridgeToast("Fridge storage failed");
+          resolve(false);
+        };
+
+        request.onerror = handleFailure;
+        transaction.onerror = handleFailure;
+        transaction.onabort = handleFailure;
+        transaction.oncomplete = () => {
+          db.close();
+          resolve(true);
+        };
+      });
+    };
+
+    window.BubblemarksImageFridge = {
+      openImageFridgeDB,
+      saveImage,
+      loadImages,
+      deleteImage,
+      clearImages,
+    };
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     try {
       initializeBubblemarks();
