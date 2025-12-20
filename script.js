@@ -2040,26 +2040,31 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-async function hydrateData() {
+async function hydrateData(options = {}) {
+  const { forceDefaults = false } = options;
   setLoading(true);
   let hasRendered = false;
 
   try {
-    const stored = loadStoredBookmarks();
+    const stored = forceDefaults ? [] : loadStoredBookmarks();
     if (stored.length) {
       setBookmarks(stored, { persist: false });
       hasRendered = true;
     }
 
-    const response = await fetch(DEFAULT_SOURCE, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error("Unable to load bookmarks.json");
-    }
+    if (!stored.length || forceDefaults) {
+      const response = await fetch(DEFAULT_SOURCE, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Unable to load bookmarks.json");
+      }
 
-    const remote = sanitizeBookmarks(await response.json());
-    if (remote.length) {
-      setBookmarks(remote, { persist: true });
-      hasRendered = true;
+      const remote = sanitizeBookmarks(await response.json());
+      if (remote.length) {
+        setBookmarks(remote, { persist: true });
+        hasRendered = true;
+      } else if (!hasRendered) {
+        renderBookmarks([]);
+      }
     } else if (!hasRendered) {
       renderBookmarks([]);
     }
@@ -5753,7 +5758,7 @@ function setupDataTools() {
       return;
     }
 
-    await hydrateData();
+    await hydrateData({ forceDefaults: true });
     resetCategorySettingsToDefaults();
   });
 }
