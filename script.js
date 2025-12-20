@@ -980,11 +980,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   };
 
-  if (sketchpadOverlay) {
-    sketchpadClose?.addEventListener("click", () => toggleSketchpadView(false));
-    sketchpadBackdrop?.addEventListener("click", () => toggleSketchpadView(false));
-  }
-
   let sketchpadContext = null;
   let sketchpadPointerId = null;
   let sketchpadIsDrawing = false;
@@ -995,6 +990,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sketchpadRedoStack = [];
   let sketchpadRestoreToken = 0;
   let sketchpadToolbarActions = null;
+  let sketchpadIsDirty = false;
 
   const SKETCHPAD_PALETTES = {
     rainbow: [
@@ -1141,6 +1137,23 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateSketchpadHistoryButtons();
   };
 
+  const requestSketchpadClose = () => {
+    if (sketchpadIsDirty) {
+      const shouldDiscard = window.confirm(
+        "You have unsaved sketchpad changes. Discard them?"
+      );
+      if (!shouldDiscard) {
+        return;
+      }
+    }
+    toggleSketchpadView(false);
+  };
+
+  if (sketchpadOverlay) {
+    sketchpadClose?.addEventListener("click", () => requestSketchpadClose());
+    sketchpadBackdrop?.addEventListener("click", () => requestSketchpadClose());
+  }
+
   const copySketchpadToClipboard = () => {
     if (!sketchpadCanvas) {
       return;
@@ -1158,6 +1171,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         .write([item])
         .then(() => {
           showSketchpadToast("Copied!");
+          sketchpadIsDirty = false;
         })
         .catch((error) => {
           console.warn("Unable to copy sketchpad image.", error);
@@ -1182,6 +1196,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       link.click();
       document.body.removeChild(link);
       window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      sketchpadIsDirty = false;
     });
   };
 
@@ -1194,6 +1209,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       sketchpadHistory.push(snapshot);
     }
     updateSketchpadHistoryButtons();
+    sketchpadIsDirty = false;
   };
 
   const undoSketchpad = () => {
@@ -1552,6 +1568,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (didDraw) {
         const snapshot = captureSketchpadSnapshot();
         pushSketchpadHistory(snapshot);
+        sketchpadIsDirty = true;
       }
     };
 
@@ -1627,7 +1644,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         return;
       }
       if (event.key === "Escape") {
-        toggleSketchpadView(false);
+        requestSketchpadClose();
         return;
       }
       if (!(event.ctrlKey || event.metaKey) || event.altKey) {
