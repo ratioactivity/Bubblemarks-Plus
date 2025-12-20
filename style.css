@@ -1458,8 +1458,8 @@ body.sketchpad-open {
 }
 
 .bubblewarp-menu-modal__button--sketchpad .bubblewarp-toggle__logo img {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
@@ -1467,8 +1467,12 @@ body.sketchpad-open {
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo img {
-  width: 46px;
-  height: 46px;
+  width: 64px;
+  height: 64px;
+}
+
+.bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__logo {
+  margin-left: 8px;
 }
 
 .bubblewarp-menu-modal__button:focus-visible,
