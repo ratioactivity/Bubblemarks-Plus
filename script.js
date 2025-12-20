@@ -991,6 +991,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sketchpadHasMoved = false;
   let sketchpadLastPoint = null;
   let sketchpadStrokeDistance = 0;
+  let sketchpadHistory = [];
+  let sketchpadRedoStack = [];
+  let sketchpadRestoreToken = 0;
+  let sketchpadToolbarActions = null;
 
   const SKETCHPAD_PALETTES = {
     rainbow: [
@@ -1027,6 +1031,112 @@ window.addEventListener("DOMContentLoaded", async () => {
     paletteColor: SKETCHPAD_PALETTES.rainbow[0].value,
   };
   const sketchpadBackgroundColor = "#ffffff";
+
+  const updateSketchpadHistoryButtons = () => {
+    if (!sketchpadToolbarActions) {
+      return;
+    }
+    const { undoButton, redoButton } = sketchpadToolbarActions;
+    if (undoButton) {
+      undoButton.disabled = sketchpadHistory.length <= 1;
+    }
+    if (redoButton) {
+      redoButton.disabled = sketchpadRedoStack.length === 0;
+    }
+  };
+
+  const captureSketchpadSnapshot = () => {
+    if (!sketchpadCanvas) {
+      return null;
+    }
+    try {
+      return sketchpadCanvas.toDataURL("image/png");
+    } catch (error) {
+      console.warn("Unable to capture sketchpad snapshot.", error);
+      return null;
+    }
+  };
+
+  const clearSketchpadCanvas = () => {
+    if (!sketchpadContext || !sketchpadCanvas) {
+      return;
+    }
+    sketchpadContext.save();
+    sketchpadContext.setTransform(1, 0, 0, 1, 0, 0);
+    sketchpadContext.clearRect(0, 0, sketchpadCanvas.width, sketchpadCanvas.height);
+    sketchpadContext.fillStyle = sketchpadBackgroundColor;
+    sketchpadContext.fillRect(0, 0, sketchpadCanvas.width, sketchpadCanvas.height);
+    sketchpadContext.restore();
+  };
+
+  const restoreSketchpadSnapshot = (snapshot) => {
+    if (!snapshot || !sketchpadCanvas || !sketchpadContext) {
+      return;
+    }
+    const token = (sketchpadRestoreToken += 1);
+    const image = new Image();
+    image.onload = () => {
+      if (token !== sketchpadRestoreToken) {
+        return;
+      }
+      clearSketchpadCanvas();
+      const dpr = window.devicePixelRatio || 1;
+      const width = sketchpadCanvas.width / dpr;
+      const height = sketchpadCanvas.height / dpr;
+      sketchpadContext.drawImage(image, 0, 0, width, height);
+    };
+    image.src = snapshot;
+  };
+
+  const pushSketchpadHistory = (snapshot) => {
+    if (!snapshot) {
+      return;
+    }
+    const lastSnapshot = sketchpadHistory[sketchpadHistory.length - 1];
+    if (snapshot === lastSnapshot) {
+      return;
+    }
+    sketchpadHistory = [...sketchpadHistory, snapshot];
+    sketchpadRedoStack = [];
+    updateSketchpadHistoryButtons();
+  };
+
+  const resetSketchpadHistory = () => {
+    sketchpadHistory = [];
+    sketchpadRedoStack = [];
+    clearSketchpadCanvas();
+    const snapshot = captureSketchpadSnapshot();
+    if (snapshot) {
+      sketchpadHistory.push(snapshot);
+    }
+    updateSketchpadHistoryButtons();
+  };
+
+  const undoSketchpad = () => {
+    if (sketchpadHistory.length <= 1) {
+      return;
+    }
+    const currentSnapshot = sketchpadHistory.pop();
+    if (currentSnapshot) {
+      sketchpadRedoStack.push(currentSnapshot);
+    }
+    const previousSnapshot = sketchpadHistory[sketchpadHistory.length - 1];
+    restoreSketchpadSnapshot(previousSnapshot);
+    updateSketchpadHistoryButtons();
+  };
+
+  const redoSketchpad = () => {
+    if (sketchpadRedoStack.length === 0) {
+      return;
+    }
+    const nextSnapshot = sketchpadRedoStack.pop();
+    if (!nextSnapshot) {
+      return;
+    }
+    sketchpadHistory.push(nextSnapshot);
+    restoreSketchpadSnapshot(nextSnapshot);
+    updateSketchpadHistoryButtons();
+  };
 
   const getSketchpadHue = () =>
     (sketchpadStrokeDistance * 0.15 + window.performance.now() * 0.01) % 360;
@@ -1148,7 +1258,28 @@ window.addEventListener("DOMContentLoaded", async () => {
     eraserToggle.type = "checkbox";
     eraserLabel.append(eraserToggle, document.createTextNode("Eraser"));
 
-    sketchpadToolbar.append(modeLabel, paletteSelect, pickerInput, sizeLabel, eraserLabel);
+    const undoButton = document.createElement("button");
+    undoButton.type = "button";
+    undoButton.textContent = "Undo";
+
+    const redoButton = document.createElement("button");
+    redoButton.type = "button";
+    redoButton.textContent = "Redo";
+
+    const restartButton = document.createElement("button");
+    restartButton.type = "button";
+    restartButton.textContent = "Restart";
+
+    sketchpadToolbar.append(
+      modeLabel,
+      paletteSelect,
+      pickerInput,
+      sizeLabel,
+      eraserLabel,
+      undoButton,
+      redoButton,
+      restartButton
+    );
     sketchpadToolbar.dataset.ready = "true";
 
     const toolbarElements = {
@@ -1159,6 +1290,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       sizeValue,
       eraserToggle,
     };
+
+    sketchpadToolbarActions = { undoButton, redoButton, restartButton };
 
     modeSelect.addEventListener("change", () => {
       sketchpadToolbarState.colorMode = modeSelect.value;
@@ -1183,7 +1316,20 @@ window.addEventListener("DOMContentLoaded", async () => {
       sketchpadToolbarState.isEraser = eraserToggle.checked;
     });
 
+    undoButton.addEventListener("click", () => {
+      undoSketchpad();
+    });
+
+    redoButton.addEventListener("click", () => {
+      redoSketchpad();
+    });
+
+    restartButton.addEventListener("click", () => {
+      resetSketchpadHistory();
+    });
+
     updateSketchpadToolbarUI(toolbarElements);
+    updateSketchpadHistoryButtons();
     return toolbarElements;
   };
 
@@ -1226,12 +1372,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     context.lineJoin = "round";
     context.lineWidth = sketchpadToolbarState.penSize;
     sketchpadContext = context;
+    if (sketchpadHistory.length > 0) {
+      restoreSketchpadSnapshot(sketchpadHistory[sketchpadHistory.length - 1]);
+    } else {
+      clearSketchpadCanvas();
+    }
   };
 
   if (sketchpadCanvas) {
     initializeSketchpadToolbar();
     sketchpadCanvas.style.touchAction = "none";
     resizeSketchpadCanvas();
+    resetSketchpadHistory();
     window.addEventListener("resize", resizeSketchpadCanvas);
 
     sketchpadCanvas.addEventListener("pointerdown", (event) => {
@@ -1281,12 +1433,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (event.pointerId !== sketchpadPointerId) {
         return;
       }
+      const didDraw = sketchpadHasMoved;
       sketchpadIsDrawing = false;
       sketchpadPointerId = null;
       sketchpadLastPoint = null;
       sketchpadHasMoved = false;
       if (sketchpadCanvas.hasPointerCapture(event.pointerId)) {
         sketchpadCanvas.releasePointerCapture(event.pointerId);
+      }
+      if (didDraw) {
+        const snapshot = captureSketchpadSnapshot();
+        pushSketchpadHistory(snapshot);
       }
     };
 
@@ -1358,8 +1515,25 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (sketchpadOverlay) {
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !sketchpadOverlay.hasAttribute("hidden")) {
+      if (sketchpadOverlay.hasAttribute("hidden")) {
+        return;
+      }
+      if (event.key === "Escape") {
         toggleSketchpadView(false);
+        return;
+      }
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) {
+        return;
+      }
+      const key = event.key.toLowerCase();
+      if (key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        undoSketchpad();
+        return;
+      }
+      if (key === "y" || (key === "z" && event.shiftKey)) {
+        event.preventDefault();
+        redoSketchpad();
       }
     });
   }
