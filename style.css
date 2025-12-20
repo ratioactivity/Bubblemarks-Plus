@@ -1341,6 +1341,7 @@ body.sketchpad-open {
 
 .image-fridge__grid {
   flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: clamp(0.75rem, 1.8vw, 1.25rem);
@@ -1369,7 +1370,26 @@ body.sketchpad-open {
   gap: 0.5rem;
 }
 
+.image-fridge__actions button {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  padding: 0.35rem 0.9rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(204, 228, 255, 0.92));
+  color: #4b4275;
+  font-weight: 600;
+  box-shadow: 0 10px 18px rgba(138, 168, 210, 0.2);
+  cursor: pointer;
+}
+
+.image-fridge__actions button:hover,
+.image-fridge__actions button:focus-visible {
+  outline: none;
+  filter: brightness(1.03);
+  box-shadow: 0 14px 22px rgba(130, 166, 214, 0.24);
+}
+
 .image-fridge__empty {
+  flex: 1 1 auto;
   display: grid;
   place-items: center;
   text-align: center;
