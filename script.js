@@ -1107,6 +1107,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
   const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
   const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
+  const imageFridgeOverlay = document.getElementById("image-fridge-overlay");
+  const imageFridgeClose = imageFridgeOverlay?.querySelector(".image-fridge-overlay__close");
+  const imageFridgeGrid = imageFridgeOverlay?.querySelector(".image-fridge-overlay__grid");
+  const imageFridgeEmpty = imageFridgeOverlay?.querySelector(".image-fridge-overlay__empty");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -1114,6 +1118,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   let bubblewarpPreviousVisibility = new Map();
   const sketchpadRestoreTargets = [appShell, petWidget].filter(Boolean);
   let sketchpadPreviousVisibility = new Map();
+  const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let imageFridgePreviousVisibility = new Map();
 
   const toggleBubblewarpView = (shouldShow) => {
     if (!bubblewarpOverlay) {
@@ -1183,6 +1189,96 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     sketchpadRestoreTargets.forEach((target) => {
       const originalState = sketchpadPreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    window.requestAnimationFrame(() => {
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
+    });
+  };
+
+  const renderImageFridgeGrid = (images = []) => {
+    if (!imageFridgeGrid || !imageFridgeEmpty) {
+      return;
+    }
+
+    imageFridgeGrid.innerHTML = "";
+    const entries = Array.isArray(images) ? images : [];
+    const visibleEntries = entries.filter((entry) => entry);
+
+    if (!visibleEntries.length) {
+      imageFridgeEmpty.hidden = false;
+      imageFridgeGrid.hidden = true;
+      return;
+    }
+
+    imageFridgeEmpty.hidden = true;
+    imageFridgeGrid.hidden = false;
+
+    visibleEntries
+      .slice()
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .forEach((entry) => {
+        const imageSrc = entry.dataUrl || entry.src || entry.image || entry.url;
+        if (!imageSrc) {
+          return;
+        }
+        const card = document.createElement("div");
+        card.className = "image-fridge__card";
+        card.setAttribute("role", "listitem");
+
+        const img = document.createElement("img");
+        img.src = imageSrc;
+        img.alt = entry.alt || entry.title || "Saved image";
+        img.loading = "lazy";
+
+        card.appendChild(img);
+        imageFridgeGrid.appendChild(card);
+      });
+  };
+
+  const refreshImageFridgeGrid = async () => {
+    if (!imageFridgeGrid || !imageFridgeEmpty) {
+      return;
+    }
+
+    try {
+      const images = await loadImages();
+      renderImageFridgeGrid(images);
+    } catch (error) {
+      console.error("[Bubblemarks] Unable to load Image Fridge entries:", error);
+      renderImageFridgeGrid([]);
+    }
+  };
+
+  const toggleImageFridgeView = (shouldShow) => {
+    if (!imageFridgeOverlay) {
+      return;
+    }
+
+    if (shouldShow) {
+      imageFridgePreviousVisibility = new Map(
+        imageFridgeRestoreTargets.map((target) => [target, target.hidden])
+      );
+      imageFridgeOverlay.removeAttribute("hidden");
+
+      imageFridgeRestoreTargets.forEach((target) => {
+        target.hidden = true;
+      });
+
+      refreshImageFridgeGrid();
+
+      window.requestAnimationFrame(() => {
+        imageFridgeClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    imageFridgeOverlay.setAttribute("hidden", "");
+
+    imageFridgeRestoreTargets.forEach((target) => {
+      const originalState = imageFridgePreviousVisibility.get(target);
       target.hidden = Boolean(originalState);
     });
 
@@ -1363,6 +1459,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (sketchpadOverlay) {
     sketchpadClose?.addEventListener("click", () => requestSketchpadClose());
     sketchpadBackdrop?.addEventListener("click", () => requestSketchpadClose());
+  }
+
+  if (imageFridgeOverlay) {
+    imageFridgeClose?.addEventListener("click", () => toggleImageFridgeView(false));
   }
 
   const copySketchpadToClipboard = () => {
@@ -1825,6 +1925,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const sketchpadMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"sketchpad\"]"
     );
+    const imageFridgeMenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"image-fridge\"]"
+    );
 
     bubblewarpMenuPrimary?.addEventListener("click", () => {
       closeMenuModal();
@@ -1837,9 +1940,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     bubblewarpMenuButtons.forEach((button) => {
-      if (button !== bubblewarpMenuPrimary && button !== sketchpadMenuButton) {
+      if (
+        button !== bubblewarpMenuPrimary &&
+        button !== sketchpadMenuButton &&
+        button !== imageFridgeMenuButton
+      ) {
         button.addEventListener("click", closeMenuModal);
       }
+    });
+
+    imageFridgeMenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      toggleImageFridgeView(true);
     });
 
     document.addEventListener("keydown", (event) => {
@@ -1870,6 +1982,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (key === "y" || (key === "z" && event.shiftKey)) {
         event.preventDefault();
         redoSketchpad();
+      }
+    });
+  }
+
+  if (imageFridgeOverlay) {
+    document.addEventListener("keydown", (event) => {
+      if (imageFridgeOverlay.hasAttribute("hidden")) {
+        return;
+      }
+      if (event.key === "Escape") {
+        toggleImageFridgeView(false);
       }
     });
   }
@@ -5878,7 +6001,7 @@ function setupDataTools() {
     };
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", () => {
     try {
       initializeBubblemarks();
     } catch (err) {
