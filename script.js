@@ -1242,8 +1242,15 @@ window.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const fridgeApi = window.BubblemarksImageFridge;
+    if (!fridgeApi || typeof fridgeApi.loadImages !== "function") {
+      console.warn("[Bubblemarks] Image Fridge API unavailable");
+      renderImageFridgeGrid([]);
+      return;
+    }
+
     try {
-      const images = await loadImages();
+      const images = await fridgeApi.loadImages();
       renderImageFridgeGrid(images);
     } catch (error) {
       console.error("[Bubblemarks] Unable to load Image Fridge entries:", error);
@@ -2036,30 +2043,41 @@ window.addEventListener("DOMContentLoaded", async () => {
     axolotlLayer.hidden = true;
   }
 
-  await hydrateData();
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ script validated");
+  hydrateData().catch((error) => {
+    console.error("Error loading bookmarks:", error);
+  });
 });
 
 
-async function hydrateData() {
+async function hydrateData(options = {}) {
+  const { forceDefaults = false } = options;
   setLoading(true);
   let hasRendered = false;
 
   try {
-    const stored = loadStoredBookmarks();
+    const stored = forceDefaults ? [] : loadStoredBookmarks();
     if (stored.length) {
       setBookmarks(stored, { persist: false });
       hasRendered = true;
     }
 
-    const response = await fetch(DEFAULT_SOURCE, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error("Unable to load bookmarks.json");
-    }
+    if (!stored.length || forceDefaults) {
+      const response = await fetch(DEFAULT_SOURCE, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Unable to load bookmarks.json");
+      }
 
-    const remote = sanitizeBookmarks(await response.json());
-    if (remote.length) {
-      setBookmarks(remote, { persist: true });
-      hasRendered = true;
+      const remote = sanitizeBookmarks(await response.json());
+      if (remote.length) {
+        setBookmarks(remote, { persist: true });
+        hasRendered = true;
+      } else if (!hasRendered) {
+        renderBookmarks([]);
+      }
     } else if (!hasRendered) {
       renderBookmarks([]);
     }
@@ -5753,7 +5771,7 @@ function setupDataTools() {
       return;
     }
 
-    await hydrateData();
+    await hydrateData({ forceDefaults: true });
     resetCategorySettingsToDefaults();
   });
 }
@@ -5777,6 +5795,9 @@ function setupDataTools() {
   });
 })();
 
+  window.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ script validated");
+
     if (!desktopLoadHandlerRegistered) {
       window.addEventListener("load", () => {
         console.log("[Bubblemarks] Desktop app load complete");
@@ -5784,6 +5805,7 @@ function setupDataTools() {
       });
       desktopLoadHandlerRegistered = true;
     }
+  });
   }
 
   window.addEventListener("DOMContentLoaded", () => {
