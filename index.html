@@ -470,6 +470,32 @@
     <canvas class="sketchpad-overlay__canvas"></canvas>
   </div>
   <div
+    id="image-fridge-overlay"
+    class="image-fridge-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="image-fridge-title"
+    hidden
+  >
+    <button
+      type="button"
+      class="image-fridge-overlay__close"
+      aria-label="Close Image Fridge"
+    >
+      ✕
+    </button>
+    <header class="image-fridge-overlay__header">
+      <h2 id="image-fridge-title">Image Fridge</h2>
+      <p class="image-fridge-overlay__subtitle">
+        Store snapshots here to revisit later.
+      </p>
+    </header>
+    <div class="image-fridge-overlay__empty" role="status">
+      Nothing chilling yet. Add an image to get started.
+    </div>
+    <div class="image-fridge-overlay__grid" role="list"></div>
+  </div>
+  <div
     id="sketchpad-toast-stack"
     class="quicklaunch-toast-stack"
     role="status"
@@ -589,6 +615,17 @@
             <img src="assets/sketchpad-icon.png" alt="" />
           </span>
           <span class="bubblewarp-toggle__label">Sketchpad</span>
+          <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
+        </button>
+        <button
+          type="button"
+          class="bubblewarp-menu-modal__button bubblewarp-toggle bubblewarp-menu-modal__button--image-fridge"
+          data-bubblewarp-menu-action="image-fridge"
+        >
+          <span class="bubblewarp-toggle__logo" aria-hidden="true">
+            <img src="assets/imagefridge-icon.png" alt="" />
+          </span>
+          <span class="bubblewarp-toggle__label">Image Fridge</span>
           <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
         </button>
         <button
