@@ -1217,6 +1217,219 @@ window.addEventListener("DOMContentLoaded", async () => {
     imageFridgeClose?.addEventListener("click", () => requestImageFridgeClose());
   }
 
+  const IMAGE_FRIDGE_DB_NAME = "bubblemarks-image-fridge";
+  const IMAGE_FRIDGE_DB_VERSION = 1;
+  const IMAGE_FRIDGE_STORE = "images";
+  const imageFridgeToastDuration = 2200;
+  let imageFridgeDbPromise = null;
+
+  const showImageFridgeToast = (message) => {
+    let stack = document.getElementById("image-fridge-toast-stack");
+    if (!stack) {
+      stack = document.createElement("div");
+      stack.id = "image-fridge-toast-stack";
+      stack.className = "quicklaunch-toast-stack";
+      stack.setAttribute("role", "status");
+      stack.setAttribute("aria-live", "polite");
+      stack.setAttribute("aria-atomic", "true");
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement("div");
+    toast.className = "quicklaunch-toast";
+    toast.textContent = message;
+    stack.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.add("quicklaunch-toast--visible");
+    });
+
+    window.setTimeout(() => {
+      toast.classList.remove("quicklaunch-toast--visible");
+      toast.addEventListener(
+        "transitionend",
+        () => {
+          toast.remove();
+        },
+        { once: true }
+      );
+    }, imageFridgeToastDuration);
+  };
+
+  const openImageFridgeDatabase = () => {
+    if (!("indexedDB" in window)) {
+      console.warn("IndexedDB is unavailable; Image Fridge storage disabled.");
+      return Promise.resolve(null);
+    }
+    if (imageFridgeDbPromise) {
+      return imageFridgeDbPromise;
+    }
+    imageFridgeDbPromise = new Promise((resolve) => {
+      const request = indexedDB.open(IMAGE_FRIDGE_DB_NAME, IMAGE_FRIDGE_DB_VERSION);
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(IMAGE_FRIDGE_STORE)) {
+          db.createObjectStore(IMAGE_FRIDGE_STORE, { keyPath: "id" });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => {
+        console.warn("Unable to open Image Fridge database.", request.error);
+        resolve(null);
+      };
+    });
+    return imageFridgeDbPromise;
+  };
+
+  const fetchImageFridgeItems = async () => {
+    const db = await openImageFridgeDatabase();
+    if (!db) {
+      return [];
+    }
+    return new Promise((resolve) => {
+      const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readonly");
+      const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => {
+        console.warn("Unable to read Image Fridge items.", request.error);
+        resolve([]);
+      };
+    });
+  };
+
+  const saveImageFridgeItem = async (item) => {
+    const db = await openImageFridgeDatabase();
+    if (!db) {
+      return false;
+    }
+    return new Promise((resolve) => {
+      const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readwrite");
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = () => {
+        console.warn("Unable to save Image Fridge item.", transaction.error);
+        resolve(false);
+      };
+      const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+      store.put(item);
+    });
+  };
+
+  const generateImageFridgeId = () => {
+    if (window.crypto?.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    return `image-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
+
+  const readImageFile = (file) =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => {
+        console.warn("Unable to read image file.", reader.error);
+        resolve(null);
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const updateImageFridgeEmptyState = () => {
+    if (!imageFridgeGrid || !imageFridgeEmpty) {
+      return;
+    }
+    const hasTiles = imageFridgeGrid.childElementCount > 0;
+    imageFridgeEmpty.hidden = hasTiles;
+  };
+
+  const createImageFridgeTile = (item) => {
+    if (!imageFridgeGrid) {
+      return;
+    }
+    const tile = document.createElement("div");
+    tile.className = "image-fridge-overlay__tile";
+    tile.setAttribute("role", "listitem");
+    tile.dataset.imageFridgeId = item.id;
+
+    const image = document.createElement("img");
+    image.className = "image-fridge-overlay__thumb";
+    image.src = item.dataUrl;
+    image.alt = item.name || "Saved image";
+    image.loading = "lazy";
+
+    const caption = document.createElement("span");
+    caption.className = "image-fridge-overlay__caption";
+    caption.textContent = item.name || "Untitled image";
+
+    tile.append(image, caption);
+    imageFridgeGrid.appendChild(tile);
+    updateImageFridgeEmptyState();
+  };
+
+  const hydrateImageFridge = async () => {
+    if (!imageFridgeGrid) {
+      return;
+    }
+    const items = await fetchImageFridgeItems();
+    items
+      .slice()
+      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+      .forEach((item) => {
+        if (item?.id && item?.dataUrl) {
+          createImageFridgeTile(item);
+        }
+      });
+    updateImageFridgeEmptyState();
+  };
+
+  const handleImageFridgeFiles = async (files) => {
+    if (!Array.isArray(files) || files.length === 0) {
+      return;
+    }
+    let hadUnsupported = false;
+    for (const file of files) {
+      if (!file || !file.type || !file.type.startsWith("image/")) {
+        hadUnsupported = true;
+        continue;
+      }
+      const dataUrl = await readImageFile(file);
+      if (!dataUrl) {
+        continue;
+      }
+      const item = {
+        id: generateImageFridgeId(),
+        name: file.name,
+        type: file.type,
+        dataUrl,
+        createdAt: Date.now(),
+      };
+      const saved = await saveImageFridgeItem(item);
+      if (!saved) {
+        showImageFridgeToast("Unable to save image");
+      }
+      createImageFridgeTile(item);
+    }
+    if (hadUnsupported) {
+      showImageFridgeToast("Unsupported file");
+    }
+  };
+
+  if (imageFridgeDropzone) {
+    imageFridgeDropzone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "copy";
+      }
+    });
+    imageFridgeDropzone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const files = Array.from(event.dataTransfer?.files || []);
+      handleImageFridgeFiles(files);
+    });
+  }
+
+  if (imageFridgeOverlay) {
+    hydrateImageFridge();
+  }
+
   const copySketchpadToClipboard = () => {
     if (!sketchpadCanvas) {
       return;

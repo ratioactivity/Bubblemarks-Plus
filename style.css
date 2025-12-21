@@ -1389,6 +1389,33 @@ body.image-fridge-open {
   overflow: auto;
 }
 
+.image-fridge-overlay__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 20px rgba(74, 142, 198, 0.15);
+  color: #2d577c;
+}
+
+.image-fridge-overlay__thumb {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(200, 230, 255, 0.6);
+}
+
+.image-fridge-overlay__caption {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .image-fridge-overlay__empty {
   margin: 0;
   text-align: center;
