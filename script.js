@@ -1323,6 +1323,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const readImageFile = (file) =>
     new Promise((resolve) => {
+      if (!file) {
+        resolve(null);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.onerror = () => {
@@ -1331,6 +1335,35 @@ window.addEventListener("DOMContentLoaded", async () => {
       };
       reader.readAsDataURL(file);
     });
+
+  const createDataUrlFromArrayBuffer = (buffer, type = "application/octet-stream") => {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    const base64 = window.btoa(binary);
+    return `data:${type};base64,${base64}`;
+  };
+
+  const readImageBlob = async (blob) => {
+    if (!blob) {
+      return null;
+    }
+    if (typeof FileReader !== "undefined") {
+      return readImageFile(blob);
+    }
+    if (typeof blob.arrayBuffer === "function") {
+      try {
+        const buffer = await blob.arrayBuffer();
+        return createDataUrlFromArrayBuffer(buffer, blob.type || "image/png");
+      } catch (error) {
+        console.warn("Unable to read image blob.", error);
+        return null;
+      }
+    }
+    return null;
+  };
 
   const updateImageFridgeEmptyState = () => {
     if (!imageFridgeGrid || !imageFridgeEmpty) {
@@ -1390,7 +1423,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         hadUnsupported = true;
         continue;
       }
-      const dataUrl = await readImageFile(file);
+      const dataUrl = await readImageBlob(file);
       if (!dataUrl) {
         continue;
       }
@@ -1429,6 +1462,55 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (imageFridgeOverlay) {
     hydrateImageFridge();
   }
+
+  const isImageFridgeVisible = () =>
+    Boolean(imageFridgeOverlay) && !imageFridgeOverlay.hasAttribute("hidden");
+
+  const normalizeClipboardImageFile = (file, index) => {
+    if (!file) {
+      return null;
+    }
+    if (file.name) {
+      return file;
+    }
+    const extension = file.type?.split("/")[1] || "png";
+    const timestamp = Date.now();
+    return new File([file], `pasted-image-${timestamp}-${index}.${extension}`, {
+      type: file.type || "image/png",
+    });
+  };
+
+  const handleImageFridgePaste = async (event) => {
+    if (!isImageFridgeVisible()) {
+      return;
+    }
+    const clipboardItems = Array.from(event.clipboardData?.items || []);
+    const clipboardFiles = Array.from(event.clipboardData?.files || []);
+    const images = [...clipboardFiles];
+
+    clipboardItems.forEach((item) => {
+      if (!item?.type || !item.type.startsWith("image/")) {
+        return;
+      }
+      const file = item.getAsFile?.();
+      if (file) {
+        images.push(file);
+      }
+    });
+
+    if (images.length === 0) {
+      return;
+    }
+    event.preventDefault();
+    const normalizedImages = images
+      .map((file, index) => normalizeClipboardImageFile(file, index))
+      .filter(Boolean);
+    await handleImageFridgeFiles(normalizedImages);
+  };
+
+  document.addEventListener("paste", (event) => {
+    void handleImageFridgePaste(event);
+  });
 
   const copySketchpadToClipboard = () => {
     if (!sketchpadCanvas) {
