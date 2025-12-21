@@ -491,6 +491,31 @@
             <p class="playground-overlay__controls-hint">
               Build your next Bubblemarks experiment here.
             </p>
+            <div class="playground-overlay__controls-stack" role="group" aria-label="Playground controls">
+              <button
+                type="button"
+                class="playground-overlay__control-button"
+                data-playground-action="clear-all"
+              >
+                Clear All
+              </button>
+              <label class="playground-overlay__toggle">
+                <span class="playground-overlay__toggle-label">Mute</span>
+                <input
+                  type="checkbox"
+                  class="playground-overlay__toggle-input"
+                  data-playground-toggle="mute"
+                />
+                <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+              </label>
+              <button
+                type="button"
+                class="playground-overlay__control-button playground-overlay__control-button--danger"
+                data-playground-action="stop-all"
+              >
+                Stop All
+              </button>
+            </div>
           </div>
         </section>
         <section class="playground-overlay__play-area" aria-label="Play Area"></section>

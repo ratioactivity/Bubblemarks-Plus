@@ -899,6 +899,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundOverlay = document.getElementById("playground-overlay");
   const playgroundPanel = playgroundOverlay?.querySelector(".playground-overlay__panel");
   const playgroundClose = playgroundOverlay?.querySelector(".playground-overlay__close");
+  const playgroundClearAllButton = playgroundOverlay?.querySelector(
+    "[data-playground-action=\"clear-all\"]"
+  );
+  const playgroundStopAllButton = playgroundOverlay?.querySelector(
+    "[data-playground-action=\"stop-all\"]"
+  );
+  const playgroundMuteToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"mute\"]"
+  );
   const imageFridgeOverlay = document.getElementById("image-fridge-overlay");
   const imageFridgeClose = imageFridgeOverlay?.querySelector(
     ".image-fridge-overlay__close"
@@ -1428,6 +1437,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     togglePlaygroundView(false);
   };
 
+  const clearAll = () => {
+    console.log("[Playground] clearAll requested");
+  };
+
+  const setMuted = (isMuted) => {
+    console.log(`[Playground] setMuted(${isMuted}) requested`);
+  };
+
+  const stopAll = () => {
+    console.log("[Playground] stopAll requested");
+  };
+
   if (sketchpadOverlay) {
     sketchpadClose?.addEventListener("click", () => requestSketchpadClose());
     sketchpadBackdrop?.addEventListener("click", () => requestSketchpadClose());
@@ -1435,6 +1456,15 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (playgroundOverlay) {
     playgroundClose?.addEventListener("click", () => requestPlaygroundClose());
+    playgroundClearAllButton?.addEventListener("click", () => clearAll());
+    playgroundStopAllButton?.addEventListener("click", () => stopAll());
+    playgroundMuteToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      setMuted(target.checked);
+    });
   }
 
   const requestImageFridgeClose = () => {
