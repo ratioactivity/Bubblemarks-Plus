@@ -961,7 +961,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
 
-  const toggleImageFridgeView = (shouldShow) => {
+  const toggleImageFridgeView = async (shouldShow) => {
     if (!imageFridgeOverlay) {
       return;
     }
@@ -977,6 +977,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       imageFridgeRestoreTargets.forEach((target) => {
         target.hidden = true;
       });
+
+      await hydrateImageFridge();
 
       window.requestAnimationFrame(() => {
         imageFridgeClose?.focus({ preventScroll: true });
@@ -1401,6 +1403,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (!imageFridgeGrid) {
       return;
     }
+    imageFridgeGrid.replaceChildren();
+    updateImageFridgeEmptyState();
     const items = await fetchImageFridgeItems();
     items
       .slice()
@@ -1460,7 +1464,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (imageFridgeOverlay) {
-    hydrateImageFridge();
+    updateImageFridgeEmptyState();
   }
 
   const isImageFridgeVisible = () =>
