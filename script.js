@@ -974,6 +974,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       );
       imageFridgeOverlay.removeAttribute("hidden");
       document.body.classList.add("image-fridge-open");
+      document.documentElement.classList.add("image-fridge-open");
 
       imageFridgeRestoreTargets.forEach((target) => {
         target.hidden = true;
@@ -990,6 +991,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     imageFridgeOverlay.setAttribute("hidden", "");
     document.body.classList.remove("image-fridge-open");
+    document.documentElement.classList.remove("image-fridge-open");
 
     imageFridgeRestoreTargets.forEach((target) => {
       const originalState = imageFridgePreviousVisibility.get(target);
