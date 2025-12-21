@@ -497,6 +497,13 @@
           <button
             type="button"
             class="image-fridge-overlay__action image-fridge__action-btn"
+            data-image-fridge-action="expand"
+          >
+            Expand
+          </button>
+          <button
+            type="button"
+            class="image-fridge-overlay__action image-fridge__action-btn"
             data-image-fridge-action="delete"
           >
             Delete
@@ -518,6 +525,51 @@
         </div>
       </div>
     </template>
+  </div>
+  <div
+    id="image-fridge-preview"
+    class="image-fridge-preview"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Expanded image"
+    hidden
+  >
+    <div class="image-fridge-preview__backdrop" data-image-fridge-preview-dismiss></div>
+    <div class="image-fridge-preview__panel" role="document">
+      <button
+        type="button"
+        class="image-fridge-preview__close"
+        aria-label="Close expanded image"
+      >
+        ✕
+      </button>
+      <div class="image-fridge-preview__toolbar" role="toolbar" aria-label="Zoom controls">
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="out"
+        >
+          Zoom out
+        </button>
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="reset"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="in"
+        >
+          Zoom in
+        </button>
+      </div>
+      <div class="image-fridge-preview__viewer">
+        <img class="image-fridge-preview__image" alt="" />
+      </div>
+    </div>
   </div>
   <div
     id="sketchpad-toast-stack"
@@ -636,9 +688,6 @@
           class="bubblewarp-menu-modal__button bubblewarp-toggle bubblewarp-menu-modal__button--sketchpad"
           data-bubblewarp-menu-action="sketchpad"
         >
-          <span class="bubblewarp-toggle__logo" aria-hidden="true">
-            <img src="assets/sketchpad-icon.png" alt="" />
-          </span>
           <span class="bubblewarp-toggle__label">Sketchpad</span>
           <span class="bubblewarp-toggle__chevron" aria-hidden="true">›</span>
         </button>
