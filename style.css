@@ -1743,6 +1743,7 @@ body.image-fridge-open {
   height: 100%;
   background: linear-gradient(135deg, #ff80d0, #7a5ac8);
   box-shadow: 0 16px 28px rgba(163, 137, 255, 0.26), 0 10px 20px rgba(214, 198, 255, 0.2);
+  justify-content: center;
 }
 
 .bubblewarp-menu-modal__button--sketchpad.bubblewarp-toggle:hover {
@@ -1756,6 +1757,18 @@ body.image-fridge-open {
 .bubblewarp-menu-modal__button--sketchpad .bubblewarp-toggle__label,
 .bubblewarp-menu-modal__button--image-fridge .bubblewarp-toggle__label {
   font-size: 1.5rem;
+}
+
+.bubblewarp-menu-modal__button--sketchpad .bubblewarp-toggle__label {
+  width: 100%;
+  text-align: center;
+}
+
+.bubblewarp-menu-modal__button--image-fridge:hover {
+  background-image: url("assets/snow.gif"),
+    linear-gradient(135deg, #b8c9ff 0%, #b7dcff 50%, #c8f4ff 100%);
+  background-repeat: repeat, no-repeat;
+  background-size: auto, cover;
 }
 
 .bubblewarp-menu-modal__button--bubblewarp .bubblewarp-toggle__label {
