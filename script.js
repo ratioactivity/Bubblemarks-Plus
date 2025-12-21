@@ -900,6 +900,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   const imageFridgeClose = imageFridgeOverlay?.querySelector(
     ".image-fridge-overlay__close"
   );
+  const imageFridgeHeader = imageFridgeOverlay?.querySelector(
+    ".image-fridge-overlay__header"
+  );
+  const imageFridgeDropzone = imageFridgeOverlay?.querySelector(
+    ".image-fridge-overlay__dropzone"
+  );
+  const imageFridgeGrid = imageFridgeOverlay?.querySelector(
+    ".image-fridge-overlay__grid"
+  );
+  const imageFridgeEmpty = imageFridgeOverlay?.querySelector(
+    ".image-fridge-overlay__empty"
+  );
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -955,6 +967,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (shouldShow) {
+      closeMenuModal();
       imageFridgePreviousVisibility = new Map(
         imageFridgeRestoreTargets.map((target) => [target, target.hidden])
       );
@@ -1630,7 +1643,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let bubblewarpMenuNoticeTimeout;
   let bubblewarpMenuCloseTimeout;
 
-  const openMenuModal = () => {
+  function openMenuModal() {
     if (!bubblewarpMenuModal) {
       return;
     }
@@ -1641,9 +1654,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.requestAnimationFrame(() => {
       bubblewarpMenuClose?.focus({ preventScroll: true });
     });
-  };
+  }
 
-  const closeMenuModal = () => {
+  function closeMenuModal() {
     if (!bubblewarpMenuModal) {
       return;
     }
@@ -1660,7 +1673,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.requestAnimationFrame(() => {
       bubblewarpMenuTrigger?.focus({ preventScroll: true });
     });
-  };
+  }
 
   if (bubblewarpMenuTrigger && bubblewarpMenuModal) {
     bubblewarpMenuTrigger.addEventListener("click", openMenuModal);
