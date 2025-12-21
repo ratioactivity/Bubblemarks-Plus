@@ -1303,6 +1303,71 @@ body.sketchpad-open {
   overflow: hidden;
 }
 
+body.playground-open {
+  overflow: hidden;
+}
+
+.playground-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+  background: #f4f3ff;
+  overflow: hidden;
+}
+
+.playground-overlay__panel {
+  position: relative;
+  width: min(3840px, 100vw);
+  height: min(1100px, 100vh);
+  padding: clamp(1.5rem, 3vw, 3.5rem);
+  border-radius: 0;
+  background: linear-gradient(140deg, #ffffff 0%, #f0efff 100%);
+  box-shadow: none;
+  text-align: left;
+  outline: none;
+}
+
+.playground-overlay__close {
+  position: absolute;
+  top: clamp(0.75rem, 1.6vw, 1.1rem);
+  right: clamp(0.75rem, 1.6vw, 1.1rem);
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #6b4cd3;
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 24px rgba(107, 76, 211, 0.2);
+  cursor: pointer;
+}
+
+.playground-overlay__close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(107, 76, 211, 0.28);
+}
+
+.playground-overlay__title {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+  font-family: var(--font-heading);
+  color: #3d2c6f;
+}
+
+.playground-overlay__subtitle {
+  margin: 0;
+  color: #5d4a82;
+  font-size: 1.05rem;
+}
+
 html.image-fridge-open,
 body.image-fridge-open {
   overflow: hidden;
