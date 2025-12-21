@@ -912,6 +912,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const imageFridgeEmpty = imageFridgeOverlay?.querySelector(
     ".image-fridge-overlay__empty"
   );
+  const imageFridgeTileTemplate = document.getElementById("image-fridge-tile-template");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -1300,6 +1301,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const saveImageFridgeItem = async (item) => {
+    console.log("✅ script validated");
     const db = await openImageFridgeDatabase();
     if (!db) {
       return false;
@@ -1367,6 +1369,98 @@ window.addEventListener("DOMContentLoaded", async () => {
     return null;
   };
 
+  const formatImageFridgeTimestamp = (date) => {
+    const pad = (value) => String(value).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(
+      date.getHours()
+    )}${pad(date.getMinutes())}`;
+  };
+
+  const sanitizeImageFridgeFilename = (value) =>
+    value
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^\w-]+/g, "-")
+      .replace(/-{2,}/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .trim();
+
+  const getImageFridgeFilename = (item, blobType) => {
+    const baseName = sanitizeImageFridgeFilename(item?.name || "");
+    const extension =
+      blobType?.split("/")[1] || item?.type?.split("/")[1] || "png";
+    const timestamp = formatImageFridgeTimestamp(new Date());
+    return `${baseName || "image-fridge"}-${timestamp}.${extension}`;
+  };
+
+  const fetchImageFridgeBlob = async (item) => {
+    if (!item?.dataUrl) {
+      return null;
+    }
+    try {
+      const response = await fetch(item.dataUrl);
+      return await response.blob();
+    } catch (error) {
+      console.warn("Unable to read Image Fridge blob.", error);
+      return null;
+    }
+  };
+
+  const deleteImageFridgeItem = async (id) => {
+    const db = await openImageFridgeDatabase();
+    if (!db) {
+      return false;
+    }
+    return new Promise((resolve) => {
+      const transaction = db.transaction(IMAGE_FRIDGE_STORE, "readwrite");
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = () => {
+        console.warn("Unable to delete Image Fridge item.", transaction.error);
+        resolve(false);
+      };
+      const store = transaction.objectStore(IMAGE_FRIDGE_STORE);
+      store.delete(id);
+    });
+  };
+
+  const downloadImageFridgeItem = async (item) => {
+    console.log("✅ script validated");
+    const blob = await fetchImageFridgeBlob(item);
+    if (!blob) {
+      showImageFridgeToast("Unable to save image");
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = getImageFridgeFilename(item, blob.type);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  const copyImageFridgeItem = async (item) => {
+    if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+      showImageFridgeToast("Copy unavailable");
+      return;
+    }
+    const blob = await fetchImageFridgeBlob(item);
+    if (!blob) {
+      showImageFridgeToast("Copy failed");
+      return;
+    }
+    const clipboardItem = new ClipboardItem({
+      [blob.type || "image/png"]: blob,
+    });
+    try {
+      await navigator.clipboard.write([clipboardItem]);
+      showImageFridgeToast("Copied!");
+    } catch (error) {
+      console.warn("Unable to copy Image Fridge image.", error);
+      showImageFridgeToast("Copy failed");
+    }
+  };
+
   const updateImageFridgeEmptyState = () => {
     if (!imageFridgeGrid || !imageFridgeEmpty) {
       return;
@@ -1379,22 +1473,80 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (!imageFridgeGrid) {
       return;
     }
-    const tile = document.createElement("div");
+    const tile = imageFridgeTileTemplate?.content?.firstElementChild
+      ? imageFridgeTileTemplate.content.firstElementChild.cloneNode(true)
+      : document.createElement("div");
     tile.className = "image-fridge-overlay__tile";
     tile.setAttribute("role", "listitem");
     tile.dataset.imageFridgeId = item.id;
 
-    const image = document.createElement("img");
+    const image =
+      tile.querySelector(".image-fridge-overlay__thumb") || document.createElement("img");
     image.className = "image-fridge-overlay__thumb";
     image.src = item.dataUrl;
     image.alt = item.name || "Saved image";
     image.loading = "lazy";
 
-    const caption = document.createElement("span");
+    const caption =
+      tile.querySelector(".image-fridge-overlay__caption") ||
+      document.createElement("span");
     caption.className = "image-fridge-overlay__caption";
     caption.textContent = item.name || "Untitled image";
 
-    tile.append(image, caption);
+    const actions =
+      tile.querySelector(".image-fridge-overlay__actions") || document.createElement("div");
+    actions.className = "image-fridge-overlay__actions";
+
+    if (!tile.contains(image) || !tile.contains(caption)) {
+      tile.append(image, caption);
+    }
+    if (!tile.contains(actions)) {
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.textContent = "Delete";
+      deleteButton.className = "image-fridge-overlay__action";
+      deleteButton.dataset.imageFridgeAction = "delete";
+
+      const saveButton = document.createElement("button");
+      saveButton.type = "button";
+      saveButton.textContent = "Save";
+      saveButton.className = "image-fridge-overlay__action";
+      saveButton.dataset.imageFridgeAction = "save";
+
+      const copyButton = document.createElement("button");
+      copyButton.type = "button";
+      copyButton.textContent = "Copy";
+      copyButton.className = "image-fridge-overlay__action";
+      copyButton.dataset.imageFridgeAction = "copy";
+
+      actions.append(deleteButton, saveButton, copyButton);
+      tile.append(actions);
+    }
+
+    const actionButtons = tile.querySelectorAll("[data-image-fridge-action]");
+    actionButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const action = button.dataset.imageFridgeAction;
+        if (action === "delete") {
+          const deleted = await deleteImageFridgeItem(item.id);
+          if (deleted) {
+            tile.remove();
+            updateImageFridgeEmptyState();
+          } else {
+            showImageFridgeToast("Unable to delete image");
+          }
+          return;
+        }
+        if (action === "save") {
+          await downloadImageFridgeItem(item);
+          return;
+        }
+        if (action === "copy") {
+          await copyImageFridgeItem(item);
+        }
+      });
+    });
+
     imageFridgeGrid.appendChild(tile);
     updateImageFridgeEmptyState();
   };

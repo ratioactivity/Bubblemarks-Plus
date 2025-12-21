@@ -489,6 +489,35 @@
     </div>
     <div class="image-fridge-overlay__grid" role="list"></div>
     <p class="image-fridge-overlay__empty">No images yet.</p>
+    <template id="image-fridge-tile-template">
+      <div class="image-fridge-overlay__tile" role="listitem">
+        <img class="image-fridge-overlay__thumb" alt="" loading="lazy" />
+        <span class="image-fridge-overlay__caption"></span>
+        <div class="image-fridge-overlay__actions" role="group" aria-label="Image actions">
+          <button
+            type="button"
+            class="image-fridge-overlay__action"
+            data-image-fridge-action="delete"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            class="image-fridge-overlay__action"
+            data-image-fridge-action="save"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            class="image-fridge-overlay__action"
+            data-image-fridge-action="copy"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+    </template>
   </div>
   <div
     id="sketchpad-toast-stack"
