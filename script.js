@@ -1504,19 +1504,19 @@ window.addEventListener("DOMContentLoaded", async () => {
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.textContent = "Delete";
-      deleteButton.className = "image-fridge-overlay__action";
+      deleteButton.className = "image-fridge-overlay__action image-fridge__action-btn";
       deleteButton.dataset.imageFridgeAction = "delete";
 
       const saveButton = document.createElement("button");
       saveButton.type = "button";
       saveButton.textContent = "Save";
-      saveButton.className = "image-fridge-overlay__action";
+      saveButton.className = "image-fridge-overlay__action image-fridge__action-btn";
       saveButton.dataset.imageFridgeAction = "save";
 
       const copyButton = document.createElement("button");
       copyButton.type = "button";
       copyButton.textContent = "Copy";
-      copyButton.className = "image-fridge-overlay__action";
+      copyButton.className = "image-fridge-overlay__action image-fridge__action-btn";
       copyButton.dataset.imageFridgeAction = "copy";
 
       actions.append(deleteButton, saveButton, copyButton);
