@@ -1326,7 +1326,10 @@ body.image-fridge-open {
   justify-content: space-between;
   padding: 0.65rem 1rem;
   border-radius: 16px;
-  background: linear-gradient(135deg, #b8c9ff 0%, #b7dcff 50%, #c8f4ff 100%);
+  background-image: url("assets/snow.gif"),
+    linear-gradient(135deg, #b8c9ff 0%, #b7dcff 50%, #c8f4ff 100%);
+  background-repeat: repeat, no-repeat;
+  background-size: auto, cover;
   color: #204a6b;
   box-shadow: 0 14px 28px rgba(74, 142, 198, 0.22);
 }
