@@ -1303,6 +1303,10 @@ body.sketchpad-open {
   overflow: hidden;
 }
 
+body.image-fridge-open {
+  overflow: hidden;
+}
+
 .image-fridge-overlay {
   position: fixed;
   inset: 0;

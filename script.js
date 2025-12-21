@@ -896,6 +896,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
   const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
   const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
+  const imageFridgeOverlay = document.getElementById("image-fridge-overlay");
+  const imageFridgeClose = imageFridgeOverlay?.querySelector(
+    ".image-fridge-overlay__close"
+  );
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -903,6 +907,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   let bubblewarpPreviousVisibility = new Map();
   const sketchpadRestoreTargets = [appShell, petWidget].filter(Boolean);
   let sketchpadPreviousVisibility = new Map();
+  const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let imageFridgePreviousVisibility = new Map();
 
   const toggleBubblewarpView = (shouldShow) => {
     if (!bubblewarpOverlay) {
@@ -942,6 +948,42 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
+
+  const toggleImageFridgeView = (shouldShow) => {
+    if (!imageFridgeOverlay) {
+      return;
+    }
+
+    if (shouldShow) {
+      imageFridgePreviousVisibility = new Map(
+        imageFridgeRestoreTargets.map((target) => [target, target.hidden])
+      );
+      imageFridgeOverlay.removeAttribute("hidden");
+      document.body.classList.add("image-fridge-open");
+
+      imageFridgeRestoreTargets.forEach((target) => {
+        target.hidden = true;
+      });
+
+      window.requestAnimationFrame(() => {
+        imageFridgeClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    imageFridgeOverlay.setAttribute("hidden", "");
+    document.body.classList.remove("image-fridge-open");
+
+    imageFridgeRestoreTargets.forEach((target) => {
+      const originalState = imageFridgePreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    window.requestAnimationFrame(() => {
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
+    });
+  };
 
   const toggleSketchpadView = (shouldShow) => {
     if (!sketchpadOverlay) {
@@ -1152,6 +1194,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (sketchpadOverlay) {
     sketchpadClose?.addEventListener("click", () => requestSketchpadClose());
     sketchpadBackdrop?.addEventListener("click", () => requestSketchpadClose());
+  }
+
+  const requestImageFridgeClose = () => {
+    toggleImageFridgeView(false);
+  };
+
+  if (imageFridgeOverlay) {
+    imageFridgeClose?.addEventListener("click", () => requestImageFridgeClose());
   }
 
   const copySketchpadToClipboard = () => {
@@ -1623,6 +1673,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const sketchpadMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"sketchpad\"]"
     );
+    const imageFridgeMenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"image-fridge\"]"
+    );
     const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
       ".bubblewarp-menu-modal__dialog"
     );
@@ -1674,8 +1727,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       toggleSketchpadView(true);
     });
 
+    imageFridgeMenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      toggleImageFridgeView(true);
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
-      if (button === bubblewarpMenuPrimary || button === sketchpadMenuButton) {
+      if (
+        button === bubblewarpMenuPrimary ||
+        button === sketchpadMenuButton ||
+        button === imageFridgeMenuButton
+      ) {
         return;
       }
 
@@ -1721,6 +1783,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (key === "y" || (key === "z" && event.shiftKey)) {
         event.preventDefault();
         redoSketchpad();
+      }
+    });
+  }
+
+  if (imageFridgeOverlay) {
+    document.addEventListener("keydown", (event) => {
+      if (imageFridgeOverlay.hasAttribute("hidden")) {
+        return;
+      }
+      if (event.key === "Escape") {
+        requestImageFridgeClose();
       }
     });
   }
