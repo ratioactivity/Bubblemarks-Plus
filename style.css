@@ -1750,7 +1750,7 @@ body.image-fridge-open {
   background-image: url("assets/scribble.gif"),
     linear-gradient(135deg, #ff80d0, #7a5ac8);
   background-repeat: repeat, no-repeat;
-  background-size: 140px 140px, cover;
+  background-size: cover, cover;
   background-position: center, center;
   background-blend-mode: screen;
   filter: brightness(1.04);
