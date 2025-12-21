@@ -1413,7 +1413,7 @@ body.image-fridge-open {
   box-shadow: 0 12px 20px rgba(74, 142, 198, 0.15);
   color: #2d577c;
   width: 100%;
-  max-width: 380px;
+  max-width: 520px;
 }
 
 .image-fridge-overlay__thumb {
@@ -1422,7 +1422,7 @@ body.image-fridge-open {
   border-radius: 12px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  max-height: 260px;
+  max-height: 360px;
   background: rgba(200, 230, 255, 0.6);
 }
 
@@ -1444,9 +1444,9 @@ body.image-fridge-open {
   min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
-  padding: 0.4rem 0.75rem;
-  min-height: 2.1rem;
-  font-size: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  min-height: 2.5rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #4b4275;
   background: linear-gradient(145deg, rgba(255, 241, 252, 0.92), rgba(217, 237, 255, 0.9));
