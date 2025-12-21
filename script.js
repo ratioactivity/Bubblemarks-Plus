@@ -896,6 +896,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadBackdrop = sketchpadOverlay?.querySelector("[data-sketchpad-dismiss]");
   const sketchpadCanvas = sketchpadOverlay?.querySelector(".sketchpad-overlay__canvas");
   const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
+  const playgroundOverlay = document.getElementById("playground-overlay");
+  const playgroundPanel = playgroundOverlay?.querySelector(".playground-overlay__panel");
+  const playgroundClose = playgroundOverlay?.querySelector(".playground-overlay__close");
   const imageFridgeOverlay = document.getElementById("image-fridge-overlay");
   const imageFridgeClose = imageFridgeOverlay?.querySelector(
     ".image-fridge-overlay__close"
@@ -936,6 +939,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   let bubblewarpPreviousVisibility = new Map();
   const sketchpadRestoreTargets = [appShell, petWidget].filter(Boolean);
   let sketchpadPreviousVisibility = new Map();
+  const playgroundRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let playgroundPreviousVisibility = new Map();
+  let playgroundLastFocus = null;
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
 
@@ -1207,6 +1213,48 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   };
 
+  const togglePlaygroundView = (shouldShow) => {
+    if (!playgroundOverlay) {
+      return;
+    }
+
+    if (shouldShow) {
+      playgroundPreviousVisibility = new Map(
+        playgroundRestoreTargets.map((target) => [target, target.hidden])
+      );
+      playgroundLastFocus =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      playgroundOverlay.removeAttribute("hidden");
+      document.body.classList.add("playground-open");
+
+      playgroundRestoreTargets.forEach((target) => {
+        target.hidden = true;
+      });
+
+      window.requestAnimationFrame(() => {
+        playgroundPanel?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    playgroundOverlay.setAttribute("hidden", "");
+    document.body.classList.remove("playground-open");
+
+    playgroundRestoreTargets.forEach((target) => {
+      const originalState = playgroundPreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    window.requestAnimationFrame(() => {
+      if (playgroundLastFocus && document.contains(playgroundLastFocus)) {
+        playgroundLastFocus.focus({ preventScroll: true });
+        return;
+      }
+      bubblewarpMenuTrigger?.focus({ preventScroll: true });
+    });
+  };
+
   let sketchpadContext = null;
   let sketchpadPointerId = null;
   let sketchpadIsDrawing = false;
@@ -1376,9 +1424,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     toggleSketchpadView(false);
   };
 
+  const requestPlaygroundClose = () => {
+    togglePlaygroundView(false);
+  };
+
   if (sketchpadOverlay) {
     sketchpadClose?.addEventListener("click", () => requestSketchpadClose());
     sketchpadBackdrop?.addEventListener("click", () => requestSketchpadClose());
+  }
+
+  if (playgroundOverlay) {
+    playgroundClose?.addEventListener("click", () => requestPlaygroundClose());
   }
 
   const requestImageFridgeClose = () => {
@@ -2321,6 +2377,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const imageFridgeMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"image-fridge\"]"
     );
+    const playgroundMenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"playground\"]"
+    );
     const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
       ".bubblewarp-menu-modal__dialog"
     );
@@ -2377,11 +2436,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       toggleImageFridgeView(true);
     });
 
+    playgroundMenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      togglePlaygroundView(true);
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
       if (
         button === bubblewarpMenuPrimary ||
         button === sketchpadMenuButton ||
-        button === imageFridgeMenuButton
+        button === imageFridgeMenuButton ||
+        button === playgroundMenuButton
       ) {
         return;
       }
@@ -2439,6 +2504,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       if (event.key === "Escape") {
         requestImageFridgeClose();
+      }
+    });
+  }
+
+  if (playgroundOverlay) {
+    document.addEventListener("keydown", (event) => {
+      if (playgroundOverlay.hasAttribute("hidden")) {
+        return;
+      }
+      if (event.key === "Escape") {
+        requestPlaygroundClose();
       }
     });
   }
