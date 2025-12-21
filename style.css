@@ -1413,7 +1413,7 @@ body.image-fridge-open {
   box-shadow: 0 12px 20px rgba(74, 142, 198, 0.15);
   color: #2d577c;
   width: 100%;
-  max-width: 520px;
+  max-width: 380px;
 }
 
 .image-fridge-overlay__thumb {
@@ -1422,6 +1422,7 @@ body.image-fridge-open {
   border-radius: 12px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  max-height: 320px;
   background: rgba(200, 230, 255, 0.6);
 }
 
