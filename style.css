@@ -1312,21 +1312,22 @@ body.playground-open {
   inset: 0;
   z-index: 9999;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: clamp(1rem, 2vw, 2rem);
-  background: rgba(30, 24, 46, 0.55);
-  backdrop-filter: blur(6px);
+  padding: 0;
+  background: #f4f3ff;
+  overflow: hidden;
 }
 
 .playground-overlay__panel {
   position: relative;
-  width: min(720px, 100%);
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  border-radius: 28px;
-  background: linear-gradient(140deg, #ffffff 0%, #f4f3ff 100%);
-  box-shadow: 0 30px 60px rgba(53, 38, 92, 0.35);
-  text-align: center;
+  width: min(3840px, 100vw);
+  height: min(1100px, 100vh);
+  padding: clamp(1.5rem, 3vw, 3.5rem);
+  border-radius: 0;
+  background: linear-gradient(140deg, #ffffff 0%, #f0efff 100%);
+  box-shadow: none;
+  text-align: left;
   outline: none;
 }
 
