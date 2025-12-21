@@ -466,6 +466,31 @@
     <canvas class="sketchpad-overlay__canvas"></canvas>
   </div>
   <div
+    id="image-fridge-overlay"
+    class="image-fridge-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Image Fridge"
+    hidden
+  >
+    <div class="image-fridge-overlay__header">
+      <h2 class="image-fridge-overlay__title">Image Fridge</h2>
+      <button
+        type="button"
+        class="image-fridge-overlay__close"
+        aria-label="Close Image Fridge"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="image-fridge-overlay__dropzone" role="region" aria-label="Image drop zone">
+      <p class="image-fridge-overlay__dropzone-text">Drop images here</p>
+      <p class="image-fridge-overlay__dropzone-subtext">or press Ctrl+V to paste</p>
+    </div>
+    <div class="image-fridge-overlay__grid" role="list"></div>
+    <p class="image-fridge-overlay__empty">No images yet.</p>
+  </div>
+  <div
     id="sketchpad-toast-stack"
     class="quicklaunch-toast-stack"
     role="status"
