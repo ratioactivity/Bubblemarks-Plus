@@ -543,7 +543,32 @@
       >
         ✕
       </button>
-      <img class="image-fridge-preview__image" alt="" />
+      <div class="image-fridge-preview__toolbar" role="toolbar" aria-label="Zoom controls">
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="out"
+        >
+          Zoom out
+        </button>
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="reset"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          class="image-fridge-preview__control"
+          data-image-fridge-zoom="in"
+        >
+          Zoom in
+        </button>
+      </div>
+      <div class="image-fridge-preview__viewer">
+        <img class="image-fridge-preview__image" alt="" />
+      </div>
     </div>
   </div>
   <div
