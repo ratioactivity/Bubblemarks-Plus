@@ -466,6 +466,28 @@
     <canvas class="sketchpad-overlay__canvas"></canvas>
   </div>
   <div
+    id="playground-overlay"
+    class="playground-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Playground"
+    hidden
+  >
+    <div class="playground-overlay__panel" role="document" tabindex="-1">
+      <button
+        type="button"
+        class="playground-overlay__close"
+        aria-label="Close Playground"
+      >
+        ✕
+      </button>
+      <h2 class="playground-overlay__title">Playground</h2>
+      <p class="playground-overlay__subtitle">
+        Jump in and experiment with playful Bubblemarks ideas.
+      </p>
+    </div>
+  </div>
+  <div
     id="image-fridge-overlay"
     class="image-fridge-overlay"
     role="dialog"
@@ -701,7 +723,7 @@
         <button
           type="button"
           class="bubblewarp-menu-modal__button bubblewarp-menu-modal__button--playground"
-          data-bubblewarp-menu-action="placeholder"
+          data-bubblewarp-menu-action="playground"
         >
           <span class="bubblewarp-toggle__label">Playground</span>
         </button>
