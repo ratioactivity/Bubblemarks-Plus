@@ -1303,8 +1303,10 @@ body.sketchpad-open {
   overflow: hidden;
 }
 
+html.image-fridge-open,
 body.image-fridge-open {
   overflow: hidden;
+  height: 100%;
 }
 
 .image-fridge-overlay {
@@ -1389,35 +1391,38 @@ body.image-fridge-open {
 .image-fridge-overlay__grid {
   flex: 1 1 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-auto-rows: auto;
   gap: 0.85rem;
   padding: 0.5rem;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.75);
   overflow: hidden;
   min-height: 0;
-  align-content: stretch;
+  align-content: start;
+  justify-items: start;
 }
 
 .image-fridge-overlay__tile {
-  display: grid;
-  grid-template-rows: 1fr auto;
+  display: flex;
+  flex-direction: column;
   gap: 0.45rem;
   padding: 0.55rem;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 12px 20px rgba(74, 142, 198, 0.15);
   color: #2d577c;
-  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 380px;
 }
 
 .image-fridge-overlay__thumb {
   width: 100%;
-  height: 100%;
-  min-height: 0;
+  height: auto;
   border-radius: 12px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  max-height: 320px;
   background: rgba(200, 230, 255, 0.6);
 }
 
@@ -1431,13 +1436,16 @@ body.image-fridge-open {
 
 .image-fridge-overlay__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
   align-items: center;
-  justify-content: space-between;
+  justify-content: stretch;
+  width: 100%;
 }
 
 .image-fridge__action-btn {
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
   padding: 0.25rem 0.6rem;
@@ -1470,6 +1478,121 @@ body.image-fridge-open {
   text-align: center;
   color: rgba(45, 87, 124, 0.7);
   font-size: 0.95rem;
+}
+
+.image-fridge-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 2vw, 2.5rem);
+}
+
+.image-fridge-preview[hidden] {
+  display: none;
+}
+
+.image-fridge-preview__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 28, 45, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.image-fridge-preview__panel {
+  position: relative;
+  z-index: 1;
+  max-width: min(960px, 90vw);
+  max-height: min(90vh, 960px);
+  width: 100%;
+  border-radius: 20px;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 24px 50px rgba(32, 54, 88, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.image-fridge-preview__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.image-fridge-preview__control {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b4275;
+  background: linear-gradient(145deg, rgba(255, 241, 252, 0.92), rgba(217, 237, 255, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 6px 12px rgba(160, 190, 230, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.image-fridge-preview__control:hover,
+.image-fridge-preview__control:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(160, 190, 230, 0.45);
+  outline: none;
+}
+
+.image-fridge-preview__control:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 6px rgba(120, 150, 190, 0.35);
+}
+
+.image-fridge-preview__viewer {
+  position: relative;
+  flex: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(200, 230, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-fridge-preview__close {
+  align-self: flex-end;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2f5f8a;
+  font-size: 1.2rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(74, 142, 198, 0.22);
+}
+
+.image-fridge-preview__image {
+  width: 100%;
+  height: auto;
+  max-height: min(70vh, 680px);
+  object-fit: contain;
+  transform-origin: top left;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.1s ease-out;
+}
+
+.image-fridge-preview__image.is-dragging {
+  cursor: grabbing;
+  transition: none;
 }
 
 .bubblewarp-toggle-wrap {

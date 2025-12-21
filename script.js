@@ -913,6 +913,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".image-fridge-overlay__empty"
   );
   const imageFridgeTileTemplate = document.getElementById("image-fridge-tile-template");
+  const imageFridgePreview = document.getElementById("image-fridge-preview");
+  const imageFridgePreviewBackdrop = imageFridgePreview?.querySelector(
+    "[data-image-fridge-preview-dismiss]"
+  );
+  const imageFridgePreviewClose = imageFridgePreview?.querySelector(
+    ".image-fridge-preview__close"
+  );
+  const imageFridgePreviewControls = imageFridgePreview
+    ? Array.from(imageFridgePreview.querySelectorAll("[data-image-fridge-zoom]"))
+    : [];
+  const imageFridgePreviewViewer = imageFridgePreview?.querySelector(
+    ".image-fridge-preview__viewer"
+  );
+  const imageFridgePreviewImage = imageFridgePreview?.querySelector(
+    ".image-fridge-preview__image"
+  );
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -974,6 +990,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       );
       imageFridgeOverlay.removeAttribute("hidden");
       document.body.classList.add("image-fridge-open");
+      document.documentElement.classList.add("image-fridge-open");
 
       imageFridgeRestoreTargets.forEach((target) => {
         target.hidden = true;
@@ -988,8 +1005,10 @@ window.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    closeImageFridgePreview();
     imageFridgeOverlay.setAttribute("hidden", "");
     document.body.classList.remove("image-fridge-open");
+    document.documentElement.classList.remove("image-fridge-open");
 
     imageFridgeRestoreTargets.forEach((target) => {
       const originalState = imageFridgePreviousVisibility.get(target);
@@ -1000,6 +1019,156 @@ window.addEventListener("DOMContentLoaded", async () => {
       bubblewarpMenuTrigger?.focus({ preventScroll: true });
     });
   };
+
+  const closeImageFridgePreview = () => {
+    if (!imageFridgePreview) {
+      return;
+    }
+    imageFridgePreview.setAttribute("hidden", "");
+    if (imageFridgePreviewImage) {
+      imageFridgePreviewImage.src = "";
+      imageFridgePreviewImage.alt = "";
+    }
+    resetImageFridgePreviewZoom();
+  };
+
+  const openImageFridgePreview = (item) => {
+    if (!imageFridgePreview || !imageFridgePreviewImage) {
+      return;
+    }
+    imageFridgePreviewImage.src = item.dataUrl;
+    imageFridgePreviewImage.alt = item.name || "Expanded image";
+    imageFridgePreview.removeAttribute("hidden");
+    resetImageFridgePreviewZoom();
+    window.requestAnimationFrame(() => {
+      imageFridgePreviewClose?.focus({ preventScroll: true });
+    });
+  };
+
+  let imageFridgePreviewScale = 1;
+  let imageFridgePreviewTranslate = { x: 0, y: 0 };
+  let imageFridgePreviewDrag = {
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+  };
+
+  const applyImageFridgePreviewTransform = () => {
+    if (!imageFridgePreviewImage) {
+      return;
+    }
+    imageFridgePreviewImage.style.transform = `translate(${imageFridgePreviewTranslate.x}px, ${imageFridgePreviewTranslate.y}px) scale(${imageFridgePreviewScale})`;
+  };
+
+  const resetImageFridgePreviewZoom = () => {
+    imageFridgePreviewScale = 1;
+    imageFridgePreviewTranslate = { x: 0, y: 0 };
+    applyImageFridgePreviewTransform();
+  };
+
+  const zoomImageFridgePreview = (nextScale, originX, originY) => {
+    if (!imageFridgePreviewViewer) {
+      return;
+    }
+    const clampedScale = clamp(nextScale, 1, 4);
+    const previousScale = imageFridgePreviewScale;
+    if (clampedScale === previousScale) {
+      return;
+    }
+    imageFridgePreviewScale = clampedScale;
+    const scaleRatio = clampedScale / previousScale;
+    imageFridgePreviewTranslate = {
+      x: originX - (originX - imageFridgePreviewTranslate.x) * scaleRatio,
+      y: originY - (originY - imageFridgePreviewTranslate.y) * scaleRatio,
+    };
+    applyImageFridgePreviewTransform();
+  };
+
+  if (imageFridgePreview) {
+    imageFridgePreviewBackdrop?.addEventListener("click", closeImageFridgePreview);
+    imageFridgePreviewClose?.addEventListener("click", closeImageFridgePreview);
+    imageFridgePreviewControls.forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.imageFridgeZoom;
+        if (!imageFridgePreviewViewer) {
+          return;
+        }
+        const viewerRect = imageFridgePreviewViewer.getBoundingClientRect();
+        const originX = viewerRect.width / 2;
+        const originY = viewerRect.height / 2;
+        if (action === "in") {
+          zoomImageFridgePreview(imageFridgePreviewScale + 0.5, originX, originY);
+          return;
+        }
+        if (action === "out") {
+          zoomImageFridgePreview(imageFridgePreviewScale - 0.5, originX, originY);
+          return;
+        }
+        if (action === "reset") {
+          resetImageFridgePreviewZoom();
+        }
+      });
+    });
+    imageFridgePreviewViewer?.addEventListener(
+      "wheel",
+      (event) => {
+        if (!imageFridgePreviewViewer) {
+          return;
+        }
+        event.preventDefault();
+      const viewerRect = imageFridgePreviewViewer.getBoundingClientRect();
+      const originX = event.clientX - viewerRect.left;
+      const originY = event.clientY - viewerRect.top;
+      const delta = event.deltaY > 0 ? -0.2 : 0.2;
+        zoomImageFridgePreview(imageFridgePreviewScale + delta, originX, originY);
+      },
+      { passive: false }
+    );
+    imageFridgePreviewViewer?.addEventListener("pointerdown", (event) => {
+      if (!imageFridgePreviewImage) {
+        return;
+      }
+      imageFridgePreviewDrag = {
+        isDragging: true,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: imageFridgePreviewTranslate.x,
+        originY: imageFridgePreviewTranslate.y,
+      };
+      imageFridgePreviewImage.classList.add("is-dragging");
+      imageFridgePreviewViewer.setPointerCapture(event.pointerId);
+    });
+    imageFridgePreviewViewer?.addEventListener("pointermove", (event) => {
+      if (!imageFridgePreviewDrag.isDragging) {
+        return;
+      }
+      const dx = event.clientX - imageFridgePreviewDrag.startX;
+      const dy = event.clientY - imageFridgePreviewDrag.startY;
+      imageFridgePreviewTranslate = {
+        x: imageFridgePreviewDrag.originX + dx,
+        y: imageFridgePreviewDrag.originY + dy,
+      };
+      applyImageFridgePreviewTransform();
+    });
+    imageFridgePreviewViewer?.addEventListener("pointerup", (event) => {
+      if (!imageFridgePreviewDrag.isDragging) {
+        return;
+      }
+      imageFridgePreviewDrag.isDragging = false;
+      imageFridgePreviewImage?.classList.remove("is-dragging");
+      imageFridgePreviewViewer.releasePointerCapture(event.pointerId);
+    });
+    imageFridgePreviewViewer?.addEventListener("pointercancel", (event) => {
+      if (!imageFridgePreviewDrag.isDragging) {
+        return;
+      }
+      imageFridgePreviewDrag.isDragging = false;
+      imageFridgePreviewImage?.classList.remove("is-dragging");
+      imageFridgePreviewViewer.releasePointerCapture(event.pointerId);
+    });
+  }
 
   const toggleSketchpadView = (shouldShow) => {
     if (!sketchpadOverlay) {
@@ -1501,6 +1670,12 @@ window.addEventListener("DOMContentLoaded", async () => {
       tile.append(image, caption);
     }
     if (!tile.contains(actions)) {
+      const expandButton = document.createElement("button");
+      expandButton.type = "button";
+      expandButton.textContent = "Expand";
+      expandButton.className = "image-fridge-overlay__action image-fridge__action-btn";
+      expandButton.dataset.imageFridgeAction = "expand";
+
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.textContent = "Delete";
@@ -1519,7 +1694,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       copyButton.className = "image-fridge-overlay__action image-fridge__action-btn";
       copyButton.dataset.imageFridgeAction = "copy";
 
-      actions.append(deleteButton, saveButton, copyButton);
+      actions.append(expandButton, deleteButton, saveButton, copyButton);
       tile.append(actions);
     }
 
@@ -1538,11 +1713,17 @@ window.addEventListener("DOMContentLoaded", async () => {
           return;
         }
         if (action === "save") {
+          console.log("✅ script validated");
           await downloadImageFridgeItem(item);
           return;
         }
         if (action === "copy") {
           await copyImageFridgeItem(item);
+          return;
+        }
+        if (action === "expand") {
+          openImageFridgePreview(item);
+          return;
         }
       });
     });
