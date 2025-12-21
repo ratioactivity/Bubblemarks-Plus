@@ -913,6 +913,16 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".image-fridge-overlay__empty"
   );
   const imageFridgeTileTemplate = document.getElementById("image-fridge-tile-template");
+  const imageFridgePreview = document.getElementById("image-fridge-preview");
+  const imageFridgePreviewBackdrop = imageFridgePreview?.querySelector(
+    "[data-image-fridge-preview-dismiss]"
+  );
+  const imageFridgePreviewClose = imageFridgePreview?.querySelector(
+    ".image-fridge-preview__close"
+  );
+  const imageFridgePreviewImage = imageFridgePreview?.querySelector(
+    ".image-fridge-preview__image"
+  );
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -989,6 +999,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    closeImageFridgePreview();
     imageFridgeOverlay.setAttribute("hidden", "");
     document.body.classList.remove("image-fridge-open");
     document.documentElement.classList.remove("image-fridge-open");
@@ -1002,6 +1013,34 @@ window.addEventListener("DOMContentLoaded", async () => {
       bubblewarpMenuTrigger?.focus({ preventScroll: true });
     });
   };
+
+  const closeImageFridgePreview = () => {
+    if (!imageFridgePreview) {
+      return;
+    }
+    imageFridgePreview.setAttribute("hidden", "");
+    if (imageFridgePreviewImage) {
+      imageFridgePreviewImage.src = "";
+      imageFridgePreviewImage.alt = "";
+    }
+  };
+
+  const openImageFridgePreview = (item) => {
+    if (!imageFridgePreview || !imageFridgePreviewImage) {
+      return;
+    }
+    imageFridgePreviewImage.src = item.dataUrl;
+    imageFridgePreviewImage.alt = item.name || "Expanded image";
+    imageFridgePreview.removeAttribute("hidden");
+    window.requestAnimationFrame(() => {
+      imageFridgePreviewClose?.focus({ preventScroll: true });
+    });
+  };
+
+  if (imageFridgePreview) {
+    imageFridgePreviewBackdrop?.addEventListener("click", closeImageFridgePreview);
+    imageFridgePreviewClose?.addEventListener("click", closeImageFridgePreview);
+  }
 
   const toggleSketchpadView = (shouldShow) => {
     if (!sketchpadOverlay) {
@@ -1503,6 +1542,12 @@ window.addEventListener("DOMContentLoaded", async () => {
       tile.append(image, caption);
     }
     if (!tile.contains(actions)) {
+      const expandButton = document.createElement("button");
+      expandButton.type = "button";
+      expandButton.textContent = "Expand";
+      expandButton.className = "image-fridge-overlay__action image-fridge__action-btn";
+      expandButton.dataset.imageFridgeAction = "expand";
+
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.textContent = "Delete";
@@ -1521,7 +1566,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       copyButton.className = "image-fridge-overlay__action image-fridge__action-btn";
       copyButton.dataset.imageFridgeAction = "copy";
 
-      actions.append(deleteButton, saveButton, copyButton);
+      actions.append(expandButton, deleteButton, saveButton, copyButton);
       tile.append(actions);
     }
 
@@ -1540,11 +1585,17 @@ window.addEventListener("DOMContentLoaded", async () => {
           return;
         }
         if (action === "save") {
+          console.log("✅ script validated");
           await downloadImageFridgeItem(item);
           return;
         }
         if (action === "copy") {
           await copyImageFridgeItem(item);
+          return;
+        }
+        if (action === "expand") {
+          openImageFridgePreview(item);
+          return;
         }
       });
     });
