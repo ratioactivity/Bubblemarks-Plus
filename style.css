@@ -1342,8 +1342,10 @@ body.playground-open {
   justify-content: space-between;
 }
 
-.playground-overlay__controls,
-.playground-overlay__play-area {
+.playground-overlay__controls {
+  width: clamp(240px, 24vw, 320px);
+  flex: 0 0 auto;
+  gap: 0.65rem;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 18px 36px rgba(60, 46, 112, 0.12);
@@ -1351,12 +1353,6 @@ body.playground-open {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.playground-overlay__controls {
-  width: clamp(240px, 24vw, 320px);
-  flex: 0 0 auto;
-  gap: 0.65rem;
 }
 
 .playground-overlay__controls-body {
