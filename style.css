@@ -1422,7 +1422,7 @@ body.image-fridge-open {
   border-radius: 12px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  max-height: 360px;
+  max-height: 330px;
   background: rgba(200, 230, 255, 0.6);
 }
 
