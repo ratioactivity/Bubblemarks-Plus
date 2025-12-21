@@ -1323,11 +1323,6 @@ body.sketchpad-open {
   line-height: 1.1;
 }
 
-.bubblewarp-menu-trigger .bubblewarp-toggle__logo,
-.bubblewarp-menu-trigger .bubblewarp-toggle__chevron {
-  visibility: hidden;
-}
-
 .bubblewarp-menu-trigger::after {
   content: "";
   position: absolute;
