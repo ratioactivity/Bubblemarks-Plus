@@ -1577,6 +1577,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     sketchpadCanvas.addEventListener("pointerleave", stopSketchpadStroke);
   }
 
+  let bubblewarpMenuNoticeTimeout;
+  let bubblewarpMenuCloseTimeout;
+
   const openMenuModal = () => {
     if (!bubblewarpMenuModal) {
       return;
@@ -1595,6 +1598,12 @@ window.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const notice = bubblewarpMenuModal.querySelector(".bubblewarp-menu-modal__notice");
+    if (notice) {
+      notice.hidden = true;
+    }
+    window.clearTimeout(bubblewarpMenuNoticeTimeout);
+    window.clearTimeout(bubblewarpMenuCloseTimeout);
     bubblewarpMenuModal.setAttribute("hidden", "");
     bubblewarpMenuTrigger?.setAttribute("aria-expanded", "false");
     document.body.classList.remove("menu-modal-open");
@@ -1614,6 +1623,46 @@ window.addEventListener("DOMContentLoaded", async () => {
     const sketchpadMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"sketchpad\"]"
     );
+    const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
+      ".bubblewarp-menu-modal__dialog"
+    );
+    const bubblewarpMenuGrid = bubblewarpMenuModal.querySelector(
+      ".bubblewarp-menu-modal__grid"
+    );
+
+    const ensureBubblewarpMenuNotice = () => {
+      if (!bubblewarpMenuDialog || !bubblewarpMenuGrid) {
+        return null;
+      }
+
+      let notice = bubblewarpMenuDialog.querySelector(
+        ".bubblewarp-menu-modal__notice"
+      );
+      if (!notice) {
+        notice = document.createElement("p");
+        notice.className = "bubblewarp-menu-modal__notice";
+        notice.setAttribute("role", "status");
+        notice.setAttribute("aria-live", "polite");
+        notice.hidden = true;
+        bubblewarpMenuDialog.insertBefore(notice, bubblewarpMenuGrid);
+      }
+
+      return notice;
+    };
+
+    const showBubblewarpPlaceholderNotice = () => {
+      const notice = ensureBubblewarpMenuNotice();
+      if (!notice) {
+        return;
+      }
+
+      notice.textContent = "Not implemented yet";
+      notice.hidden = false;
+      window.clearTimeout(bubblewarpMenuNoticeTimeout);
+      bubblewarpMenuNoticeTimeout = window.setTimeout(() => {
+        notice.hidden = true;
+      }, 2000);
+    };
 
     bubblewarpMenuPrimary?.addEventListener("click", () => {
       closeMenuModal();
@@ -1626,9 +1675,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     bubblewarpMenuButtons.forEach((button) => {
-      if (button !== bubblewarpMenuPrimary && button !== sketchpadMenuButton) {
-        button.addEventListener("click", closeMenuModal);
+      if (button === bubblewarpMenuPrimary || button === sketchpadMenuButton) {
+        return;
       }
+
+      if (button.dataset.bubblewarpMenuAction === "placeholder") {
+        button.addEventListener("click", () => {
+          showBubblewarpPlaceholderNotice();
+          window.clearTimeout(bubblewarpMenuCloseTimeout);
+          bubblewarpMenuCloseTimeout = window.setTimeout(() => {
+            closeMenuModal();
+          }, 800);
+        });
+        return;
+      }
+
+      button.addEventListener("click", closeMenuModal);
     });
 
     document.addEventListener("keydown", (event) => {
