@@ -1310,6 +1310,7 @@ body.playground-open {
 .playground-overlay {
   position: fixed;
   inset: 0;
+  height: 100dvh;
   z-index: 9999;
   display: flex;
   align-items: stretch;
@@ -1323,6 +1324,7 @@ body.playground-open {
   position: relative;
   width: min(3840px, 100vw);
   height: min(1100px, 100vh);
+  max-height: 100%;
   padding: clamp(1.5rem, 3vw, 3.5rem);
   border-radius: 0;
   background: linear-gradient(140deg, #ffffff 0%, #f0efff 100%);
@@ -1340,6 +1342,7 @@ body.playground-open {
   height: 100%;
   align-items: stretch;
   justify-content: space-between;
+  min-height: 0;
 }
 
 .playground-overlay__controls {
@@ -1354,6 +1357,7 @@ body.playground-open {
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  max-height: 100%;
 }
 
 .playground-overlay__controls-body {
@@ -1476,18 +1480,67 @@ body.playground-open {
   transform: translateX(20px);
 }
 
+.playground-overlay__slider {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(107, 76, 211, 0.12);
+}
+
+.playground-overlay__slider-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #523a86;
+  font-size: 0.9rem;
+}
+
+.playground-overlay__slider-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b4cd3;
+}
+
+.playground-overlay__slider-input {
+  width: 100%;
+  accent-color: #7c5cd9;
+}
+
 .playground-overlay__play-area {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  min-height: 0;
+  align-self: stretch;
+}
+
+.playground-overlay__particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+.playground-overlay__play-area.is-sparkle-active .playground-overlay__particle-canvas {
+  opacity: 1;
 }
 
 .playground-overlay__bubble-grid {
   width: 100%;
   height: 100%;
-  border-radius: 28px;
   padding: clamp(1rem, 2vw, 2rem);
   background: radial-gradient(circle at top, #f8f7ff 0%, #ecebff 60%, #e3e1ff 100%);
   display: grid;
@@ -1500,12 +1553,23 @@ body.playground-open {
   opacity: 0;
   transform: scale(0.98);
   pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .playground-overlay__bubble-grid.is-active {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
+}
+
+.playground-overlay__play-area.is-sparkle-active .playground-overlay__bubble-grid {
+  background: radial-gradient(
+    circle at top,
+    rgba(248, 247, 255, 0.78) 0%,
+    rgba(236, 235, 255, 0.74) 60%,
+    rgba(227, 225, 255, 0.7) 100%
+  );
 }
 
 .playground-overlay__bubble {
