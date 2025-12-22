@@ -491,6 +491,51 @@
             <p class="playground-overlay__controls-hint">
               Build your next Bubblemarks experiment here.
             </p>
+            <div class="playground-overlay__controls-section">
+              <h3 class="playground-overlay__controls-section-title">Bubble Pop Grid</h3>
+              <p class="playground-overlay__controls-section-note">
+                Toggle a field of soft bubbles you can pop in the Play Area.
+              </p>
+              <div class="playground-overlay__controls-stack">
+                <label class="playground-overlay__toggle">
+                  <span class="playground-overlay__toggle-label">Enable grid</span>
+                  <input
+                    type="checkbox"
+                    class="playground-overlay__toggle-input"
+                    data-playground-toggle="bubble-grid"
+                  />
+                  <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+                </label>
+                <label class="playground-overlay__toggle">
+                  <span class="playground-overlay__toggle-label">Pop sound</span>
+                  <input
+                    type="checkbox"
+                    class="playground-overlay__toggle-input"
+                    data-playground-toggle="bubble-grid-sound"
+                    checked
+                  />
+                  <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+                </label>
+                <label class="playground-overlay__toggle">
+                  <span class="playground-overlay__toggle-label">Color mode</span>
+                  <input
+                    type="checkbox"
+                    class="playground-overlay__toggle-input"
+                    data-playground-toggle="bubble-grid-color"
+                  />
+                  <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+                </label>
+                <label class="playground-overlay__toggle">
+                  <span class="playground-overlay__toggle-label">Auto replenish</span>
+                  <input
+                    type="checkbox"
+                    class="playground-overlay__toggle-input"
+                    data-playground-toggle="bubble-grid-auto"
+                  />
+                  <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+                </label>
+              </div>
+            </div>
             <div class="playground-overlay__controls-stack" role="group" aria-label="Playground controls">
               <button
                 type="button"
@@ -518,7 +563,9 @@
             </div>
           </div>
         </section>
-        <section class="playground-overlay__play-area" aria-label="Play Area"></section>
+        <section class="playground-overlay__play-area" aria-label="Play Area">
+          <div class="playground-overlay__bubble-grid" aria-live="polite"></div>
+        </section>
       </div>
     </div>
   </div>
