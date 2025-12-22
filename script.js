@@ -1401,6 +1401,17 @@ window.addEventListener("DOMContentLoaded", async () => {
         sparkleAnimationId = null;
       }
       sparkleLastFrameTime = null;
+      sparkleParticles = [];
+      sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
+      if (playgroundParticleCanvas instanceof HTMLCanvasElement) {
+        playgroundParticleCanvas.removeAttribute("width");
+        playgroundParticleCanvas.removeAttribute("height");
+        playgroundParticleCanvas.style.width = "";
+        playgroundParticleCanvas.style.height = "";
+        playgroundParticleCanvas.style.transform = "";
+        playgroundParticleCanvas.style.margin = "";
+        playgroundParticleCanvas.style.padding = "";
+      }
       renderSparkleParticles();
       return;
     }
