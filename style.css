@@ -1340,6 +1340,7 @@ body.playground-open {
   height: 100%;
   align-items: stretch;
   justify-content: space-between;
+  min-height: 0;
 }
 
 .playground-overlay__controls {
@@ -1354,6 +1355,7 @@ body.playground-open {
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  max-height: 100%;
 }
 
 .playground-overlay__controls-body {
@@ -1514,6 +1516,7 @@ body.playground-open {
   position: relative;
   overflow: hidden;
   border-radius: 28px;
+  min-height: 0;
 }
 
 .playground-overlay__particle-canvas {

@@ -1234,13 +1234,19 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const createSparkleParticle = (origin = null) => {
     const { width, height } = sparkleCanvasSize;
-    const size = 1.5 + Math.random() * 3.5;
-    const baseSpeed = 6 + Math.random() * 12;
+    const size = 2 + Math.random() * 4.5;
+    const baseSpeed = 10 + Math.random() * 18;
     const angle = Math.random() * Math.PI * 2;
     const drift = {
       x: Math.cos(angle) * baseSpeed,
       y: Math.sin(angle) * baseSpeed,
     };
+    const palette = [
+      "rgba(255, 255, 255, 0.85)",
+      "rgba(196, 184, 255, 0.75)",
+      "rgba(255, 221, 249, 0.8)",
+      "rgba(182, 224, 255, 0.75)",
+    ];
     const point = origin || {
       x: Math.random() * width,
       y: Math.random() * height,
@@ -1251,6 +1257,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       radius: size,
       opacity: 0.35 + Math.random() * 0.45,
       drift,
+      color: palette[Math.floor(Math.random() * palette.length)],
       shimmer: Math.random() * Math.PI * 2,
     };
   };
@@ -1302,11 +1309,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     sparkleCanvasContext.clearRect(0, 0, width, height);
     sparkleParticles.forEach((particle) => {
       const shimmerBoost = 0.2 + 0.8 * Math.sin(particle.shimmer);
+      sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.45)";
+      sparkleCanvasContext.shadowBlur = 12;
       sparkleCanvasContext.beginPath();
-      sparkleCanvasContext.fillStyle = `rgba(255, 255, 255, ${particle.opacity * shimmerBoost})`;
+      sparkleCanvasContext.fillStyle = particle.color.replace(
+        /rgba\\(([^,]+),([^,]+),([^,]+),[^)]+\\)/,
+        `rgba($1,$2,$3,${particle.opacity * shimmerBoost})`
+      );
       sparkleCanvasContext.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
       sparkleCanvasContext.fill();
     });
+    sparkleCanvasContext.shadowBlur = 0;
   };
 
   const animateSparkles = (timestamp) => {
@@ -1346,11 +1359,14 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderSparkleParticles();
       return;
     }
-    resizeSparkleCanvas();
-    syncSparkleParticles(sparkleFieldState.particleCount);
-    if (!sparkleAnimationId) {
-      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
-    }
+    window.requestAnimationFrame(() => {
+      resizeSparkleCanvas();
+      syncSparkleParticles(sparkleFieldState.particleCount);
+      renderSparkleParticles();
+      if (!sparkleAnimationId) {
+        sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+      }
+    });
   };
 
   const updateSparkleParticleCount = (count) => {
@@ -1385,6 +1401,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const pausePlaygroundAnimations = (shouldPause) => {
     playgroundAnimationsPaused = Boolean(shouldPause);
+    if (!playgroundAnimationsPaused && sparkleFieldState.enabled && !sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
   };
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
@@ -1677,6 +1696,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
       window.requestAnimationFrame(() => {
         playgroundPanel?.focus({ preventScroll: true });
+        resizeSparkleCanvas();
+        if (sparkleFieldState.enabled) {
+          syncSparkleParticles(sparkleFieldState.particleCount);
+          renderSparkleParticles();
+          if (!sparkleAnimationId) {
+            sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+          }
+        }
       });
 
       return;
