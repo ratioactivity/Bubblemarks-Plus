@@ -920,6 +920,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundBubbleGridAutoToggle = playgroundOverlay?.querySelector(
     "[data-playground-toggle=\"bubble-grid-auto\"]"
   );
+  const playgroundSparkleFieldToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"sparkle-field\"]"
+  );
+  const playgroundSparkleCountSlider = playgroundOverlay?.querySelector(
+    "[data-playground-slider=\"sparkle-count\"]"
+  );
+  const playgroundSparkleSpeedSlider = playgroundOverlay?.querySelector(
+    "[data-playground-slider=\"sparkle-speed\"]"
+  );
+  const playgroundSparkleCountOutput = playgroundOverlay?.querySelector(
+    "[data-playground-output=\"sparkle-count\"]"
+  );
+  const playgroundSparkleSpeedOutput = playgroundOverlay?.querySelector(
+    "[data-playground-output=\"sparkle-speed\"]"
+  );
+  const playgroundPlayArea = playgroundOverlay?.querySelector(
+    ".playground-overlay__play-area"
+  );
+  const playgroundParticleCanvas = playgroundOverlay?.querySelector(
+    ".playground-overlay__particle-canvas"
+  );
   const playgroundBubbleGrid = playgroundOverlay?.querySelector(
     ".playground-overlay__bubble-grid"
   );
@@ -973,7 +994,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     colorMode: false,
     autoReplenish: false,
   };
+  const sparkleFieldState = {
+    enabled: false,
+    particleCount: 40,
+    speedMultiplier: 1,
+  };
+  let playgroundAnimationsPaused = false;
   let bubbleGridAutoTimer = null;
+  let sparkleAnimationId = null;
+  let sparkleParticles = [];
+  let sparkleLastFrameTime = null;
+  let sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
+  let sparkleCanvasContext = null;
 
   const createPlaygroundAudioManager = () => {
     if (window.BubblemarksAudio?.createManager) {
@@ -1162,11 +1194,197 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (!bubbleGridState.enabled || !playgroundBubbleGrid) {
         return;
       }
+      if (playgroundAnimationsPaused) {
+        return;
+      }
       const currentCount = playgroundBubbleGrid.children.length;
       if (currentCount < bubbleGridCount) {
         playgroundBubbleGrid.appendChild(createBubbleElement());
       }
     }, 2000);
+  };
+
+  const updateSparkleCountLabel = () => {
+    if (!playgroundSparkleCountOutput) {
+      return;
+    }
+    playgroundSparkleCountOutput.textContent = String(sparkleFieldState.particleCount);
+  };
+
+  const updateSparkleSpeedLabel = () => {
+    if (!playgroundSparkleSpeedOutput) {
+      return;
+    }
+    playgroundSparkleSpeedOutput.textContent = `${sparkleFieldState.speedMultiplier.toFixed(1)}x`;
+  };
+
+  const resizeSparkleCanvas = () => {
+    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement)) {
+      return;
+    }
+    const rect = playgroundParticleCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.floor(rect.width * dpr));
+    const height = Math.max(1, Math.floor(rect.height * dpr));
+    sparkleCanvasSize = { width, height, dpr };
+    playgroundParticleCanvas.width = width;
+    playgroundParticleCanvas.height = height;
+    sparkleCanvasContext = playgroundParticleCanvas.getContext("2d");
+  };
+
+  const createSparkleParticle = (origin = null) => {
+    const { width, height } = sparkleCanvasSize;
+    const size = 1.5 + Math.random() * 3.5;
+    const baseSpeed = 6 + Math.random() * 12;
+    const angle = Math.random() * Math.PI * 2;
+    const drift = {
+      x: Math.cos(angle) * baseSpeed,
+      y: Math.sin(angle) * baseSpeed,
+    };
+    const point = origin || {
+      x: Math.random() * width,
+      y: Math.random() * height,
+    };
+    return {
+      x: point.x,
+      y: point.y,
+      radius: size,
+      opacity: 0.35 + Math.random() * 0.45,
+      drift,
+      shimmer: Math.random() * Math.PI * 2,
+    };
+  };
+
+  const syncSparkleParticles = (targetCount) => {
+    if (targetCount <= 0) {
+      sparkleParticles = [];
+      return;
+    }
+    if (sparkleParticles.length > targetCount) {
+      sparkleParticles = sparkleParticles.slice(0, targetCount);
+      return;
+    }
+    while (sparkleParticles.length < targetCount) {
+      sparkleParticles.push(createSparkleParticle());
+    }
+  };
+
+  const updateSparkleParticles = (deltaSeconds) => {
+    const { width, height } = sparkleCanvasSize;
+    if (!width || !height) {
+      return;
+    }
+    const speedScale = sparkleFieldState.speedMultiplier;
+    sparkleParticles.forEach((particle) => {
+      particle.x += particle.drift.x * deltaSeconds * speedScale;
+      particle.y += particle.drift.y * deltaSeconds * speedScale;
+      particle.shimmer += deltaSeconds * 2.5;
+
+      if (particle.x > width + 20) {
+        particle.x = -20;
+      } else if (particle.x < -20) {
+        particle.x = width + 20;
+      }
+
+      if (particle.y > height + 20) {
+        particle.y = -20;
+      } else if (particle.y < -20) {
+        particle.y = height + 20;
+      }
+    });
+  };
+
+  const renderSparkleParticles = () => {
+    if (!sparkleCanvasContext) {
+      return;
+    }
+    const { width, height } = sparkleCanvasSize;
+    sparkleCanvasContext.clearRect(0, 0, width, height);
+    sparkleParticles.forEach((particle) => {
+      const shimmerBoost = 0.2 + 0.8 * Math.sin(particle.shimmer);
+      sparkleCanvasContext.beginPath();
+      sparkleCanvasContext.fillStyle = `rgba(255, 255, 255, ${particle.opacity * shimmerBoost})`;
+      sparkleCanvasContext.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      sparkleCanvasContext.fill();
+    });
+  };
+
+  const animateSparkles = (timestamp) => {
+    if (!sparkleFieldState.enabled) {
+      sparkleAnimationId = null;
+      sparkleLastFrameTime = null;
+      return;
+    }
+    if (playgroundAnimationsPaused) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+      return;
+    }
+    if (!sparkleLastFrameTime) {
+      sparkleLastFrameTime = timestamp;
+    }
+    const deltaSeconds = Math.min(0.05, (timestamp - sparkleLastFrameTime) / 1000);
+    sparkleLastFrameTime = timestamp;
+    updateSparkleParticles(deltaSeconds);
+    renderSparkleParticles();
+    sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+  };
+
+  const setSparkleFieldEnabled = (isEnabled) => {
+    sparkleFieldState.enabled = Boolean(isEnabled);
+    if (playgroundPlayArea) {
+      playgroundPlayArea.classList.toggle(
+        "is-sparkle-active",
+        sparkleFieldState.enabled
+      );
+    }
+    if (!sparkleFieldState.enabled) {
+      if (sparkleAnimationId) {
+        window.cancelAnimationFrame(sparkleAnimationId);
+        sparkleAnimationId = null;
+      }
+      sparkleLastFrameTime = null;
+      renderSparkleParticles();
+      return;
+    }
+    resizeSparkleCanvas();
+    syncSparkleParticles(sparkleFieldState.particleCount);
+    if (!sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
+  };
+
+  const updateSparkleParticleCount = (count) => {
+    sparkleFieldState.particleCount = count;
+    updateSparkleCountLabel();
+    syncSparkleParticles(sparkleFieldState.particleCount);
+  };
+
+  const updateSparkleSpeed = (speed) => {
+    sparkleFieldState.speedMultiplier = speed;
+    updateSparkleSpeedLabel();
+  };
+
+  const spawnSparkleBurst = (event) => {
+    if (!sparkleFieldState.enabled || !(playgroundParticleCanvas instanceof HTMLCanvasElement)) {
+      return;
+    }
+    if (!sparkleCanvasSize.width || !sparkleCanvasSize.height) {
+      resizeSparkleCanvas();
+    }
+    const rect = playgroundParticleCanvas.getBoundingClientRect();
+    const dpr = sparkleCanvasSize.dpr || 1;
+    const origin = {
+      x: (event.clientX - rect.left) * dpr,
+      y: (event.clientY - rect.top) * dpr,
+    };
+    const burstCount = 8 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < burstCount; i += 1) {
+      sparkleParticles.push(createSparkleParticle(origin));
+    }
+  };
+
+  const pausePlaygroundAnimations = (shouldPause) => {
+    playgroundAnimationsPaused = Boolean(shouldPause);
   };
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
@@ -1662,11 +1880,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   const setMuted = (isMuted) => {
     console.log(`[Playground] setMuted(${isMuted}) requested`);
     playgroundMuted = Boolean(isMuted);
+    pausePlaygroundAnimations(playgroundMuted);
   };
 
   const stopAll = () => {
     console.log("[Playground] stopAll requested");
+    setMuted(true);
     playgroundAudioManager.stopAll();
+    if (playgroundMuteToggle instanceof HTMLInputElement) {
+      playgroundMuteToggle.checked = true;
+    }
   };
 
   if (sketchpadOverlay) {
@@ -1715,10 +1938,64 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       setBubbleGridAutoReplenish(target.checked);
     });
+    playgroundSparkleFieldToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      setSparkleFieldEnabled(target.checked);
+    });
+    playgroundSparkleCountSlider?.addEventListener("input", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      const nextValue = Number.parseInt(target.value, 10);
+      if (Number.isNaN(nextValue)) {
+        return;
+      }
+      updateSparkleParticleCount(nextValue);
+    });
+    playgroundSparkleSpeedSlider?.addEventListener("input", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      const nextValue = Number.parseFloat(target.value);
+      if (Number.isNaN(nextValue)) {
+        return;
+      }
+      updateSparkleSpeed(nextValue);
+    });
+    playgroundPlayArea?.addEventListener("click", (event) => {
+      if (!(event instanceof MouseEvent)) {
+        return;
+      }
+      spawnSparkleBurst(event);
+    });
+    window.addEventListener("resize", () => {
+      resizeSparkleCanvas();
+    });
     bubbleGridState.enabled = Boolean(playgroundBubbleGridToggle?.checked);
     bubbleGridState.soundEnabled = Boolean(playgroundBubbleGridSoundToggle?.checked);
     bubbleGridState.colorMode = Boolean(playgroundBubbleGridColorToggle?.checked);
     setBubbleGridAutoReplenish(Boolean(playgroundBubbleGridAutoToggle?.checked));
+    sparkleFieldState.enabled = Boolean(playgroundSparkleFieldToggle?.checked);
+    if (playgroundSparkleCountSlider instanceof HTMLInputElement) {
+      const initialCount = Number.parseInt(playgroundSparkleCountSlider.value, 10);
+      sparkleFieldState.particleCount = Number.isNaN(initialCount)
+        ? sparkleFieldState.particleCount
+        : initialCount;
+    }
+    if (playgroundSparkleSpeedSlider instanceof HTMLInputElement) {
+      const initialSpeed = Number.parseFloat(playgroundSparkleSpeedSlider.value);
+      sparkleFieldState.speedMultiplier = Number.isNaN(initialSpeed)
+        ? sparkleFieldState.speedMultiplier
+        : initialSpeed;
+    }
+    updateSparkleCountLabel();
+    updateSparkleSpeedLabel();
+    setSparkleFieldEnabled(sparkleFieldState.enabled);
     buildBubbleGrid();
   }
 
