@@ -1051,17 +1051,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const playgroundAudioManager = createPlaygroundAudioManager();
-  const bubblePopSoundName = "bubble-pop";
-  playgroundAudioManager.preload([
-    {
-      name: bubblePopSoundName,
-      src: "sounds/allothers.mp3",
-      volume: 0.35,
-      allowMultiple: true,
-    },
-  ]);
+  const bubblePopSoundNames = [
+    ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "allothers",
+  ].map((entry) => `bubble-pop-${entry}`);
+  const bubblePopSoundDefinitions = [
+    ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "allothers",
+  ].map((entry) => ({
+    name: `bubble-pop-${entry}`,
+    src: `sounds/${entry}.mp3`,
+    volume: 0.35,
+    allowMultiple: true,
+  }));
+  playgroundAudioManager.preload(bubblePopSoundDefinitions);
 
-  const bubbleGridCount = 24;
+  const bubbleGridCount = 60;
+
+  const getRandomBubblePopSound = () => {
+    const index = Math.floor(Math.random() * bubblePopSoundNames.length);
+    return bubblePopSoundNames[index];
+  };
 
   const applyBubbleColorMode = (bubble) => {
     if (!bubble) {
@@ -1084,7 +1094,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubble.classList.add("is-popping");
     bubble.disabled = true;
     if (bubbleGridState.soundEnabled && !playgroundMuted) {
-      playgroundAudioManager.play(bubblePopSoundName, { allowOverlap: true });
+      const soundName = getRandomBubblePopSound();
+      playgroundAudioManager.play(soundName, { allowOverlap: true });
     }
     window.setTimeout(() => {
       bubble.remove();
