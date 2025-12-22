@@ -1219,17 +1219,28 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const resizeSparkleCanvas = () => {
-    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement)) {
-      return;
+    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement) || !playgroundPlayArea) {
+      return false;
     }
-    const rect = playgroundParticleCanvas.getBoundingClientRect();
+    const rect = playgroundPlayArea.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      return false;
+    }
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(1, Math.floor(rect.width * dpr));
     const height = Math.max(1, Math.floor(rect.height * dpr));
+    if (
+      sparkleCanvasSize.width === width &&
+      sparkleCanvasSize.height === height &&
+      sparkleCanvasSize.dpr === dpr
+    ) {
+      return true;
+    }
     sparkleCanvasSize = { width, height, dpr };
     playgroundParticleCanvas.width = width;
     playgroundParticleCanvas.height = height;
     sparkleCanvasContext = playgroundParticleCanvas.getContext("2d");
+    return true;
   };
 
   const createSparkleParticle = (origin = null) => {
@@ -1342,6 +1353,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
   };
 
+  const ensureSparkleCanvasReady = () => {
+    if (!sparkleFieldState.enabled) {
+      return;
+    }
+    const didResize = resizeSparkleCanvas();
+    if (!didResize) {
+      window.requestAnimationFrame(ensureSparkleCanvasReady);
+      return;
+    }
+    syncSparkleParticles(sparkleFieldState.particleCount);
+    renderSparkleParticles();
+    if (!sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
+  };
+
   const setSparkleFieldEnabled = (isEnabled) => {
     sparkleFieldState.enabled = Boolean(isEnabled);
     if (playgroundPlayArea) {
@@ -1359,14 +1386,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderSparkleParticles();
       return;
     }
-    window.requestAnimationFrame(() => {
-      resizeSparkleCanvas();
-      syncSparkleParticles(sparkleFieldState.particleCount);
-      renderSparkleParticles();
-      if (!sparkleAnimationId) {
-        sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
-      }
-    });
+    window.requestAnimationFrame(ensureSparkleCanvasReady);
   };
 
   const updateSparkleParticleCount = (count) => {

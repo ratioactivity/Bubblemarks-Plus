@@ -1522,6 +1522,8 @@ body.playground-open {
   border-radius: 28px;
   min-height: 0;
   align-self: stretch;
+  isolation: isolate;
+  contain: layout paint;
 }
 
 .playground-overlay__particle-canvas {
