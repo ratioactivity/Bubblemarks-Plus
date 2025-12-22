@@ -1006,6 +1006,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sparkleLastFrameTime = null;
   let sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
   let sparkleCanvasContext = null;
+  let sparkleResizeObserver = null;
 
   const createPlaygroundAudioManager = () => {
     if (window.BubblemarksAudio?.createManager) {
@@ -1219,17 +1220,28 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const resizeSparkleCanvas = () => {
-    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement)) {
-      return;
+    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement) || !playgroundPlayArea) {
+      return false;
     }
-    const rect = playgroundParticleCanvas.getBoundingClientRect();
+    const rect = playgroundPlayArea.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      return false;
+    }
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(1, Math.floor(rect.width * dpr));
     const height = Math.max(1, Math.floor(rect.height * dpr));
+    if (
+      sparkleCanvasSize.width === width &&
+      sparkleCanvasSize.height === height &&
+      sparkleCanvasSize.dpr === dpr
+    ) {
+      return true;
+    }
     sparkleCanvasSize = { width, height, dpr };
     playgroundParticleCanvas.width = width;
     playgroundParticleCanvas.height = height;
     sparkleCanvasContext = playgroundParticleCanvas.getContext("2d");
+    return true;
   };
 
   const createSparkleParticle = (origin = null) => {
@@ -1307,6 +1319,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     const { width, height } = sparkleCanvasSize;
     sparkleCanvasContext.clearRect(0, 0, width, height);
+    sparkleCanvasContext.globalCompositeOperation = "lighter";
     sparkleParticles.forEach((particle) => {
       const shimmerBoost = 0.2 + 0.8 * Math.sin(particle.shimmer);
       sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.45)";
@@ -1320,6 +1333,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       sparkleCanvasContext.fill();
     });
     sparkleCanvasContext.shadowBlur = 0;
+    sparkleCanvasContext.globalCompositeOperation = "source-over";
   };
 
   const animateSparkles = (timestamp) => {
@@ -1342,6 +1356,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
   };
 
+  const ensureSparkleCanvasReady = () => {
+    if (!sparkleFieldState.enabled) {
+      return;
+    }
+    const didResize = resizeSparkleCanvas();
+    if (!didResize) {
+      window.requestAnimationFrame(ensureSparkleCanvasReady);
+      return;
+    }
+    syncSparkleParticles(sparkleFieldState.particleCount);
+    renderSparkleParticles();
+    if (!sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
+  };
+
   const setSparkleFieldEnabled = (isEnabled) => {
     sparkleFieldState.enabled = Boolean(isEnabled);
     if (playgroundPlayArea) {
@@ -1359,14 +1389,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderSparkleParticles();
       return;
     }
-    window.requestAnimationFrame(() => {
-      resizeSparkleCanvas();
-      syncSparkleParticles(sparkleFieldState.particleCount);
-      renderSparkleParticles();
-      if (!sparkleAnimationId) {
-        sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
-      }
-    });
+    window.requestAnimationFrame(ensureSparkleCanvasReady);
   };
 
   const updateSparkleParticleCount = (count) => {
@@ -2023,6 +2046,16 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateSparkleCountLabel();
     updateSparkleSpeedLabel();
     setSparkleFieldEnabled(sparkleFieldState.enabled);
+    if ("ResizeObserver" in window && playgroundPlayArea) {
+      sparkleResizeObserver = new ResizeObserver(() => {
+        if (!sparkleFieldState.enabled) {
+          resizeSparkleCanvas();
+          return;
+        }
+        ensureSparkleCanvasReady();
+      });
+      sparkleResizeObserver.observe(playgroundPlayArea);
+    }
     buildBubbleGrid();
   }
 
