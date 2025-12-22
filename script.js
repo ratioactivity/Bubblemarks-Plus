@@ -1006,6 +1006,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sparkleLastFrameTime = null;
   let sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
   let sparkleCanvasContext = null;
+  let sparkleResizeObserver = null;
 
   const createPlaygroundAudioManager = () => {
     if (window.BubblemarksAudio?.createManager) {
@@ -1219,23 +1220,34 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const resizeSparkleCanvas = () => {
-    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement)) {
-      return;
+    if (!(playgroundParticleCanvas instanceof HTMLCanvasElement) || !playgroundPlayArea) {
+      return false;
     }
-    const rect = playgroundParticleCanvas.getBoundingClientRect();
+    const rect = playgroundPlayArea.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      return false;
+    }
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(1, Math.floor(rect.width * dpr));
     const height = Math.max(1, Math.floor(rect.height * dpr));
+    if (
+      sparkleCanvasSize.width === width &&
+      sparkleCanvasSize.height === height &&
+      sparkleCanvasSize.dpr === dpr
+    ) {
+      return true;
+    }
     sparkleCanvasSize = { width, height, dpr };
     playgroundParticleCanvas.width = width;
     playgroundParticleCanvas.height = height;
     sparkleCanvasContext = playgroundParticleCanvas.getContext("2d");
+    return true;
   };
 
   const createSparkleParticle = (origin = null) => {
     const { width, height } = sparkleCanvasSize;
-    const size = 2 + Math.random() * 4.5;
-    const baseSpeed = 10 + Math.random() * 18;
+    const size = 3 + Math.random() * 5.5;
+    const baseSpeed = 12 + Math.random() * 20;
     const angle = Math.random() * Math.PI * 2;
     const drift = {
       x: Math.cos(angle) * baseSpeed,
@@ -1255,7 +1267,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       x: point.x,
       y: point.y,
       radius: size,
-      opacity: 0.35 + Math.random() * 0.45,
+      opacity: 0.55 + Math.random() * 0.35,
       drift,
       color: palette[Math.floor(Math.random() * palette.length)],
       shimmer: Math.random() * Math.PI * 2,
@@ -1307,19 +1319,36 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     const { width, height } = sparkleCanvasSize;
     sparkleCanvasContext.clearRect(0, 0, width, height);
+    sparkleCanvasContext.globalCompositeOperation = "screen";
     sparkleParticles.forEach((particle) => {
       const shimmerBoost = 0.2 + 0.8 * Math.sin(particle.shimmer);
-      sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.45)";
-      sparkleCanvasContext.shadowBlur = 12;
-      sparkleCanvasContext.beginPath();
-      sparkleCanvasContext.fillStyle = particle.color.replace(
-        /rgba\\(([^,]+),([^,]+),([^,]+),[^)]+\\)/,
-        `rgba($1,$2,$3,${particle.opacity * shimmerBoost})`
+      const glowRadius = particle.radius * 2.2;
+      const match = particle.color.match(/rgba\\(([^,]+),([^,]+),([^,]+),[^)]+\\)/);
+      const colorCore = match
+        ? `rgba(${match[1]},${match[2]},${match[3]},${particle.opacity * shimmerBoost})`
+        : particle.color;
+      const colorEdge = match
+        ? `rgba(${match[1]},${match[2]},${match[3]},0)`
+        : "rgba(255,255,255,0)";
+      const gradient = sparkleCanvasContext.createRadialGradient(
+        particle.x,
+        particle.y,
+        0,
+        particle.x,
+        particle.y,
+        glowRadius
       );
-      sparkleCanvasContext.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      gradient.addColorStop(0, colorCore);
+      gradient.addColorStop(1, colorEdge);
+      sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.55)";
+      sparkleCanvasContext.shadowBlur = 14;
+      sparkleCanvasContext.fillStyle = gradient;
+      sparkleCanvasContext.beginPath();
+      sparkleCanvasContext.arc(particle.x, particle.y, glowRadius, 0, Math.PI * 2);
       sparkleCanvasContext.fill();
     });
     sparkleCanvasContext.shadowBlur = 0;
+    sparkleCanvasContext.globalCompositeOperation = "source-over";
   };
 
   const animateSparkles = (timestamp) => {
@@ -1342,6 +1371,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
   };
 
+  const ensureSparkleCanvasReady = () => {
+    if (!sparkleFieldState.enabled) {
+      return;
+    }
+    const didResize = resizeSparkleCanvas();
+    if (!didResize) {
+      window.requestAnimationFrame(ensureSparkleCanvasReady);
+      return;
+    }
+    syncSparkleParticles(sparkleFieldState.particleCount);
+    renderSparkleParticles();
+    if (!sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
+  };
+
   const setSparkleFieldEnabled = (isEnabled) => {
     sparkleFieldState.enabled = Boolean(isEnabled);
     if (playgroundPlayArea) {
@@ -1359,14 +1404,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderSparkleParticles();
       return;
     }
-    window.requestAnimationFrame(() => {
-      resizeSparkleCanvas();
-      syncSparkleParticles(sparkleFieldState.particleCount);
-      renderSparkleParticles();
-      if (!sparkleAnimationId) {
-        sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
-      }
-    });
+    window.requestAnimationFrame(ensureSparkleCanvasReady);
   };
 
   const updateSparkleParticleCount = (count) => {
@@ -2023,6 +2061,16 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateSparkleCountLabel();
     updateSparkleSpeedLabel();
     setSparkleFieldEnabled(sparkleFieldState.enabled);
+    if ("ResizeObserver" in window && playgroundPlayArea) {
+      sparkleResizeObserver = new ResizeObserver(() => {
+        if (!sparkleFieldState.enabled) {
+          resizeSparkleCanvas();
+          return;
+        }
+        ensureSparkleCanvasReady();
+      });
+      sparkleResizeObserver.observe(playgroundPlayArea);
+    }
     buildBubbleGrid();
   }
 
