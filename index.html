@@ -536,6 +536,59 @@
                 </label>
               </div>
             </div>
+            <div class="playground-overlay__controls-section">
+              <h3 class="playground-overlay__controls-section-title">Particle Sparkle Field</h3>
+              <p class="playground-overlay__controls-section-note">
+                Drift a twinkling particle field through the Play Area.
+              </p>
+              <div class="playground-overlay__controls-stack">
+                <label class="playground-overlay__toggle">
+                  <span class="playground-overlay__toggle-label">Enable sparkles</span>
+                  <input
+                    type="checkbox"
+                    class="playground-overlay__toggle-input"
+                    data-playground-toggle="sparkle-field"
+                  />
+                  <span class="playground-overlay__toggle-track" aria-hidden="true"></span>
+                </label>
+                <div class="playground-overlay__slider">
+                  <label class="playground-overlay__slider-label" for="sparkle-count">
+                    Particle count
+                    <span class="playground-overlay__slider-value" data-playground-output="sparkle-count">
+                      40
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    id="sparkle-count"
+                    class="playground-overlay__slider-input"
+                    min="10"
+                    max="120"
+                    step="5"
+                    value="40"
+                    data-playground-slider="sparkle-count"
+                  />
+                </div>
+                <div class="playground-overlay__slider">
+                  <label class="playground-overlay__slider-label" for="sparkle-speed">
+                    Particle speed
+                    <span class="playground-overlay__slider-value" data-playground-output="sparkle-speed">
+                      1.0x
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    id="sparkle-speed"
+                    class="playground-overlay__slider-input"
+                    min="0.4"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                    data-playground-slider="sparkle-speed"
+                  />
+                </div>
+              </div>
+            </div>
             <div class="playground-overlay__controls-stack" role="group" aria-label="Playground controls">
               <button
                 type="button"
@@ -564,6 +617,7 @@
           </div>
         </section>
         <section class="playground-overlay__play-area" aria-label="Play Area">
+          <canvas class="playground-overlay__particle-canvas" aria-hidden="true"></canvas>
           <div class="playground-overlay__bubble-grid" aria-live="polite"></div>
         </section>
       </div>
