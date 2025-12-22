@@ -908,6 +908,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundMuteToggle = playgroundOverlay?.querySelector(
     "[data-playground-toggle=\"mute\"]"
   );
+  const playgroundBubbleGridToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"bubble-grid\"]"
+  );
+  const playgroundBubbleGridSoundToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"bubble-grid-sound\"]"
+  );
+  const playgroundBubbleGridColorToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"bubble-grid-color\"]"
+  );
+  const playgroundBubbleGrid = playgroundOverlay?.querySelector(
+    ".playground-overlay__bubble-grid"
+  );
   const imageFridgeOverlay = document.getElementById("image-fridge-overlay");
   const imageFridgeClose = imageFridgeOverlay?.querySelector(
     ".image-fridge-overlay__close"
@@ -951,6 +963,177 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundRestoreTargets = [appShell, petWidget].filter(Boolean);
   let playgroundPreviousVisibility = new Map();
   let playgroundLastFocus = null;
+  let playgroundMuted = false;
+  const bubbleGridState = {
+    enabled: false,
+    soundEnabled: true,
+    colorMode: false,
+  };
+
+  const createPlaygroundAudioManager = () => {
+    if (window.BubblemarksAudio?.createManager) {
+      return window.BubblemarksAudio.createManager({ defaultVolume: 0.35 });
+    }
+    const cache = new Map();
+    return {
+      preload(definitions = []) {
+        definitions.forEach((definition) => {
+          if (!definition || typeof definition !== "object") {
+            return;
+          }
+          const { name, src, volume = 1 } = definition;
+          if (!name || !src) {
+            return;
+          }
+          const audio = new Audio(src);
+          audio.preload = "auto";
+          audio.volume = volume;
+          cache.set(name, { audio, volume });
+        });
+      },
+      play(name, options = {}) {
+        const entry = cache.get(name);
+        if (!entry) {
+          return false;
+        }
+        const { audio, volume } = entry;
+        const allowOverlap = options.allowOverlap === true;
+        const targetAudio = allowOverlap ? audio.cloneNode(true) : audio;
+        const desiredVolume =
+          typeof options.volume === "number" && options.volume >= 0
+            ? options.volume
+            : volume;
+        targetAudio.volume = desiredVolume;
+        if (options.playbackRate) {
+          targetAudio.playbackRate = options.playbackRate;
+        }
+        try {
+          targetAudio.currentTime = 0;
+        } catch (error) {
+          console.warn(`[Playground] Unable to reset sound "${name}":`, error);
+        }
+        const playPromise = targetAudio.play();
+        if (allowOverlap) {
+          const cleanup = () => {
+            targetAudio.removeEventListener("ended", cleanup);
+            targetAudio.removeEventListener("error", cleanup);
+            if (typeof targetAudio.remove === "function") {
+              targetAudio.remove();
+            }
+          };
+          targetAudio.addEventListener("ended", cleanup);
+          targetAudio.addEventListener("error", cleanup);
+        }
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+        return true;
+      },
+      stop(name) {
+        const entry = cache.get(name);
+        if (!entry) {
+          return false;
+        }
+        entry.audio.pause();
+        try {
+          entry.audio.currentTime = 0;
+        } catch (error) {
+          console.warn(`[Playground] Unable to reset sound "${name}":`, error);
+        }
+        return true;
+      },
+      stopAll() {
+        cache.forEach((_, name) => {
+          this.stop(name);
+        });
+      },
+    };
+  };
+
+  const playgroundAudioManager = createPlaygroundAudioManager();
+  const bubblePopSoundNames = [
+    ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "allothers",
+  ].map((entry) => `bubble-pop-${entry}`);
+  const bubblePopSoundDefinitions = [
+    ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "allothers",
+  ].map((entry) => ({
+    name: `bubble-pop-${entry}`,
+    src: `sounds/${entry}.mp3`,
+    volume: 0.35,
+    allowMultiple: true,
+  }));
+  playgroundAudioManager.preload(bubblePopSoundDefinitions);
+
+  const bubbleGridCount = 60;
+
+  const getRandomBubblePopSound = () => {
+    const index = Math.floor(Math.random() * bubblePopSoundNames.length);
+    return bubblePopSoundNames[index];
+  };
+
+  const applyBubbleColorMode = (bubble) => {
+    if (!bubble) {
+      return;
+    }
+    if (bubbleGridState.colorMode) {
+      const hue = Math.floor(200 + Math.random() * 140);
+      bubble.style.setProperty("--bubble-hue", String(hue));
+      bubble.classList.add("playground-overlay__bubble--colorful");
+    } else {
+      bubble.style.removeProperty("--bubble-hue");
+      bubble.classList.remove("playground-overlay__bubble--colorful");
+    }
+  };
+
+  const handleBubblePop = (bubble) => {
+    if (!bubble || bubble.classList.contains("is-popping")) {
+      return;
+    }
+    bubble.classList.add("is-popping");
+    bubble.disabled = true;
+    if (bubbleGridState.soundEnabled && !playgroundMuted) {
+      const soundName = getRandomBubblePopSound();
+      playgroundAudioManager.play(soundName, { allowOverlap: true });
+    }
+    window.setTimeout(() => {
+      bubble.remove();
+    }, 260);
+  };
+
+  const buildBubbleGrid = () => {
+    if (!playgroundBubbleGrid) {
+      return;
+    }
+    playgroundBubbleGrid.innerHTML = "";
+    if (!bubbleGridState.enabled) {
+      playgroundBubbleGrid.classList.remove("is-active");
+      return;
+    }
+    playgroundBubbleGrid.classList.add("is-active");
+    for (let i = 0; i < bubbleGridCount; i += 1) {
+      const bubble = document.createElement("button");
+      bubble.type = "button";
+      bubble.className = "playground-overlay__bubble";
+      bubble.setAttribute("aria-label", "Pop bubble");
+      applyBubbleColorMode(bubble);
+      bubble.addEventListener("click", () => handleBubblePop(bubble));
+      playgroundBubbleGrid.appendChild(bubble);
+    }
+  };
+
+  const updateBubbleGridColorMode = () => {
+    if (!playgroundBubbleGrid) {
+      return;
+    }
+    Array.from(playgroundBubbleGrid.children).forEach((bubble) => {
+      if (!(bubble instanceof HTMLElement)) {
+        return;
+      }
+      applyBubbleColorMode(bubble);
+    });
+  };
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
 
@@ -1439,14 +1622,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const clearAll = () => {
     console.log("[Playground] clearAll requested");
+    buildBubbleGrid();
   };
 
   const setMuted = (isMuted) => {
     console.log(`[Playground] setMuted(${isMuted}) requested`);
+    playgroundMuted = Boolean(isMuted);
   };
 
   const stopAll = () => {
     console.log("[Playground] stopAll requested");
+    playgroundAudioManager.stopAll();
   };
 
   if (sketchpadOverlay) {
@@ -1465,6 +1651,33 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       setMuted(target.checked);
     });
+    playgroundBubbleGridToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      bubbleGridState.enabled = target.checked;
+      buildBubbleGrid();
+    });
+    playgroundBubbleGridSoundToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      bubbleGridState.soundEnabled = target.checked;
+    });
+    playgroundBubbleGridColorToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      bubbleGridState.colorMode = target.checked;
+      updateBubbleGridColorMode();
+    });
+    bubbleGridState.enabled = Boolean(playgroundBubbleGridToggle?.checked);
+    bubbleGridState.soundEnabled = Boolean(playgroundBubbleGridSoundToggle?.checked);
+    bubbleGridState.colorMode = Boolean(playgroundBubbleGridColorToggle?.checked);
+    buildBubbleGrid();
   }
 
   const requestImageFridgeClose = () => {
