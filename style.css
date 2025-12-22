@@ -1541,6 +1541,7 @@ body.playground-open {
   display: block;
   pointer-events: none;
   opacity: 0;
+  visibility: hidden;
   transition: opacity 0.3s ease;
   z-index: 2;
   filter: drop-shadow(0 0 12px rgba(160, 132, 255, 0.45));
@@ -1548,6 +1549,7 @@ body.playground-open {
 
 .playground-overlay__play-area.is-sparkle-active .playground-overlay__particle-canvas {
   opacity: 1;
+  visibility: visible;
 }
 
 .playground-overlay__bubble-grid {
