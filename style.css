@@ -1324,7 +1324,7 @@ body.playground-open {
 .playground-overlay__panel {
   position: relative;
   width: min(3840px, 100vw);
-  height: 100%;
+  height: 100dvh;
   max-height: 100dvh;
   padding: clamp(1.5rem, 3vw, 3.5rem);
   border-radius: 0;
@@ -1360,11 +1360,13 @@ body.playground-open {
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  height: 100%;
   max-height: 100%;
 }
 
 .playground-overlay__controls-body {
-  flex: 1;
+  flex: 1 1 auto;
+  height: 100%;
   border-radius: 20px;
   background: linear-gradient(150deg, #f6f4ff 0%, #efeefe 100%);
   padding: clamp(0.8rem, 1.6vw, 1.4rem);
@@ -1514,7 +1516,8 @@ body.playground-open {
 }
 
 .playground-overlay__play-area {
-  flex: 1;
+  flex: 1 1 auto;
+  height: 100%;
   min-width: 0;
   display: flex;
   align-items: stretch;
