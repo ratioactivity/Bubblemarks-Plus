@@ -1334,6 +1334,7 @@ body.playground-open {
   outline: none;
   display: flex;
   overflow: hidden;
+  overflow-anchor: none;
 }
 
 .playground-overlay__layout {
@@ -1375,6 +1376,7 @@ body.playground-open {
   text-align: left;
   overflow-y: auto;
   min-height: 0;
+  overflow-anchor: none;
 }
 
 .playground-overlay__controls-section {

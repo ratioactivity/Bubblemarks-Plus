@@ -1246,8 +1246,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const createSparkleParticle = (origin = null) => {
     const { width, height } = sparkleCanvasSize;
-    const size = 2 + Math.random() * 4.5;
-    const baseSpeed = 10 + Math.random() * 18;
+    const size = 3 + Math.random() * 5.5;
+    const baseSpeed = 12 + Math.random() * 20;
     const angle = Math.random() * Math.PI * 2;
     const drift = {
       x: Math.cos(angle) * baseSpeed,
@@ -1267,7 +1267,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       x: point.x,
       y: point.y,
       radius: size,
-      opacity: 0.35 + Math.random() * 0.45,
+      opacity: 0.55 + Math.random() * 0.35,
       drift,
       color: palette[Math.floor(Math.random() * palette.length)],
       shimmer: Math.random() * Math.PI * 2,
@@ -1319,17 +1319,32 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     const { width, height } = sparkleCanvasSize;
     sparkleCanvasContext.clearRect(0, 0, width, height);
-    sparkleCanvasContext.globalCompositeOperation = "lighter";
+    sparkleCanvasContext.globalCompositeOperation = "screen";
     sparkleParticles.forEach((particle) => {
       const shimmerBoost = 0.2 + 0.8 * Math.sin(particle.shimmer);
-      sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.45)";
-      sparkleCanvasContext.shadowBlur = 12;
-      sparkleCanvasContext.beginPath();
-      sparkleCanvasContext.fillStyle = particle.color.replace(
-        /rgba\\(([^,]+),([^,]+),([^,]+),[^)]+\\)/,
-        `rgba($1,$2,$3,${particle.opacity * shimmerBoost})`
+      const glowRadius = particle.radius * 2.2;
+      const match = particle.color.match(/rgba\\(([^,]+),([^,]+),([^,]+),[^)]+\\)/);
+      const colorCore = match
+        ? `rgba(${match[1]},${match[2]},${match[3]},${particle.opacity * shimmerBoost})`
+        : particle.color;
+      const colorEdge = match
+        ? `rgba(${match[1]},${match[2]},${match[3]},0)`
+        : "rgba(255,255,255,0)";
+      const gradient = sparkleCanvasContext.createRadialGradient(
+        particle.x,
+        particle.y,
+        0,
+        particle.x,
+        particle.y,
+        glowRadius
       );
-      sparkleCanvasContext.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      gradient.addColorStop(0, colorCore);
+      gradient.addColorStop(1, colorEdge);
+      sparkleCanvasContext.shadowColor = "rgba(160, 132, 255, 0.55)";
+      sparkleCanvasContext.shadowBlur = 14;
+      sparkleCanvasContext.fillStyle = gradient;
+      sparkleCanvasContext.beginPath();
+      sparkleCanvasContext.arc(particle.x, particle.y, glowRadius, 0, Math.PI * 2);
       sparkleCanvasContext.fill();
     });
     sparkleCanvasContext.shadowBlur = 0;
