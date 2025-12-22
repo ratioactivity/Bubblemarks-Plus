@@ -898,6 +898,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const sketchpadToolbar = sketchpadOverlay?.querySelector(".sketchpad-overlay__toolbar");
   const playgroundOverlay = document.getElementById("playground-overlay");
   const playgroundPanel = playgroundOverlay?.querySelector(".playground-overlay__panel");
+  const playgroundLayout = playgroundOverlay?.querySelector(".playground-overlay__layout");
+  const playgroundControls = playgroundOverlay?.querySelector(".playground-overlay__controls");
   const playgroundClose = playgroundOverlay?.querySelector(".playground-overlay__close");
   const playgroundClearAllButton = playgroundOverlay?.querySelector(
     "[data-playground-action=\"clear-all\"]"
@@ -1743,6 +1745,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         target.hidden = true;
       });
 
+      if (playgroundLayout && playgroundControls && playgroundPlayArea) {
+        const controlsRect = playgroundControls.getBoundingClientRect();
+        const playAreaRect = playgroundPlayArea.getBoundingClientRect();
+        playgroundLayout.style.setProperty(
+          "--playground-controls-height",
+          `${controlsRect.height}px`
+        );
+        playgroundLayout.style.setProperty(
+          "--playground-play-area-height",
+          `${playAreaRect.height}px`
+        );
+      }
+
       window.requestAnimationFrame(() => {
         playgroundPanel?.focus({ preventScroll: true });
         resizeSparkleCanvas();
@@ -1760,6 +1775,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     playgroundOverlay.setAttribute("hidden", "");
     document.body.classList.remove("playground-open");
+
+    if (playgroundLayout) {
+      playgroundLayout.style.removeProperty("--playground-controls-height");
+      playgroundLayout.style.removeProperty("--playground-play-area-height");
+    }
 
     playgroundRestoreTargets.forEach((target) => {
       const originalState = playgroundPreviousVisibility.get(target);
