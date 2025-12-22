@@ -1536,7 +1536,7 @@ body.playground-open {
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2;
-  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 12px rgba(160, 132, 255, 0.45));
 }
 
 .playground-overlay__play-area.is-sparkle-active .playground-overlay__particle-canvas {
