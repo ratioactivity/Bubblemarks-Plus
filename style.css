@@ -1392,27 +1392,6 @@ body.playground-open {
   color: #5a4a7a;
 }
 
-.playground-overlay__controls-section {
-  display: grid;
-  gap: 0.75rem;
-  padding: 0.85rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: inset 0 0 0 1px rgba(107, 76, 211, 0.12);
-}
-
-.playground-overlay__controls-section-title {
-  margin: 0;
-  font-size: 1.05rem;
-  color: #3d2c6f;
-}
-
-.playground-overlay__controls-section-note {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #5a4a7a;
-}
-
 .playground-overlay__controls-hint {
   margin: 0;
   color: #5a4a7a;

@@ -917,6 +917,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundBubbleGridColorToggle = playgroundOverlay?.querySelector(
     "[data-playground-toggle=\"bubble-grid-color\"]"
   );
+  const playgroundBubbleGridAutoToggle = playgroundOverlay?.querySelector(
+    "[data-playground-toggle=\"bubble-grid-auto\"]"
+  );
   const playgroundBubbleGrid = playgroundOverlay?.querySelector(
     ".playground-overlay__bubble-grid"
   );
@@ -968,7 +971,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     enabled: false,
     soundEnabled: true,
     colorMode: false,
+    autoReplenish: false,
   };
+  let bubbleGridAutoTimer = null;
 
   const createPlaygroundAudioManager = () => {
     if (window.BubblemarksAudio?.createManager) {
@@ -1099,7 +1104,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     window.setTimeout(() => {
       bubble.remove();
+      if (playgroundBubbleGrid && bubbleGridState.enabled) {
+        if (playgroundBubbleGrid.children.length === 0) {
+          buildBubbleGrid();
+        }
+      }
     }, 260);
+  };
+
+  const createBubbleElement = () => {
+    const bubble = document.createElement("button");
+    bubble.type = "button";
+    bubble.className = "playground-overlay__bubble";
+    bubble.setAttribute("aria-label", "Pop bubble");
+    applyBubbleColorMode(bubble);
+    bubble.addEventListener("click", () => handleBubblePop(bubble));
+    return bubble;
   };
 
   const buildBubbleGrid = () => {
@@ -1113,13 +1133,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     playgroundBubbleGrid.classList.add("is-active");
     for (let i = 0; i < bubbleGridCount; i += 1) {
-      const bubble = document.createElement("button");
-      bubble.type = "button";
-      bubble.className = "playground-overlay__bubble";
-      bubble.setAttribute("aria-label", "Pop bubble");
-      applyBubbleColorMode(bubble);
-      bubble.addEventListener("click", () => handleBubblePop(bubble));
-      playgroundBubbleGrid.appendChild(bubble);
+      playgroundBubbleGrid.appendChild(createBubbleElement());
     }
   };
 
@@ -1133,6 +1147,26 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       applyBubbleColorMode(bubble);
     });
+  };
+
+  const setBubbleGridAutoReplenish = (shouldAuto) => {
+    bubbleGridState.autoReplenish = shouldAuto;
+    if (bubbleGridAutoTimer) {
+      window.clearInterval(bubbleGridAutoTimer);
+      bubbleGridAutoTimer = null;
+    }
+    if (!shouldAuto) {
+      return;
+    }
+    bubbleGridAutoTimer = window.setInterval(() => {
+      if (!bubbleGridState.enabled || !playgroundBubbleGrid) {
+        return;
+      }
+      const currentCount = playgroundBubbleGrid.children.length;
+      if (currentCount < bubbleGridCount) {
+        playgroundBubbleGrid.appendChild(createBubbleElement());
+      }
+    }, 2000);
   };
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
@@ -1674,9 +1708,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       bubbleGridState.colorMode = target.checked;
       updateBubbleGridColorMode();
     });
+    playgroundBubbleGridAutoToggle?.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      setBubbleGridAutoReplenish(target.checked);
+    });
     bubbleGridState.enabled = Boolean(playgroundBubbleGridToggle?.checked);
     bubbleGridState.soundEnabled = Boolean(playgroundBubbleGridSoundToggle?.checked);
     bubbleGridState.colorMode = Boolean(playgroundBubbleGridColorToggle?.checked);
+    setBubbleGridAutoReplenish(Boolean(playgroundBubbleGridAutoToggle?.checked));
     buildBubbleGrid();
   }
 
