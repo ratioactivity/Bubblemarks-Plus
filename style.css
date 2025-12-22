@@ -1310,6 +1310,7 @@ body.playground-open {
 .playground-overlay {
   position: fixed;
   inset: 0;
+  height: 100dvh;
   z-index: 9999;
   display: flex;
   align-items: stretch;
@@ -1323,6 +1324,7 @@ body.playground-open {
   position: relative;
   width: min(3840px, 100vw);
   height: min(1100px, 100vh);
+  max-height: 100%;
   padding: clamp(1.5rem, 3vw, 3.5rem);
   border-radius: 0;
   background: linear-gradient(140deg, #ffffff 0%, #f0efff 100%);
@@ -1517,6 +1519,7 @@ body.playground-open {
   overflow: hidden;
   border-radius: 28px;
   min-height: 0;
+  align-self: stretch;
 }
 
 .playground-overlay__particle-canvas {
@@ -1527,6 +1530,8 @@ body.playground-open {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 2;
+  mix-blend-mode: screen;
 }
 
 .playground-overlay__play-area.is-sparkle-active .playground-overlay__particle-canvas {
@@ -1548,12 +1553,23 @@ body.playground-open {
   opacity: 0;
   transform: scale(0.98);
   pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .playground-overlay__bubble-grid.is-active {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
+}
+
+.playground-overlay__play-area.is-sparkle-active .playground-overlay__bubble-grid {
+  background: radial-gradient(
+    circle at top,
+    rgba(248, 247, 255, 0.78) 0%,
+    rgba(236, 235, 255, 0.74) 60%,
+    rgba(227, 225, 255, 0.7) 100%
+  );
 }
 
 .playground-overlay__bubble {
