@@ -1405,11 +1405,15 @@ window.addEventListener("DOMContentLoaded", async () => {
       sparkleLastFrameTime = null;
       sparkleParticles = [];
       sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
+      sparkleCanvasContext = null;
       if (playgroundParticleCanvas instanceof HTMLCanvasElement) {
         playgroundParticleCanvas.removeAttribute("width");
         playgroundParticleCanvas.removeAttribute("height");
         playgroundParticleCanvas.style.width = "";
         playgroundParticleCanvas.style.height = "";
+        playgroundParticleCanvas.style.opacity = "";
+        playgroundParticleCanvas.style.visibility = "";
+        playgroundParticleCanvas.style.pointerEvents = "";
         playgroundParticleCanvas.style.transform = "";
         playgroundParticleCanvas.style.margin = "";
         playgroundParticleCanvas.style.padding = "";
