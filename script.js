@@ -1749,19 +1749,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         target.hidden = true;
       });
 
-      if (playgroundLayout && playgroundControls && playgroundPlayArea) {
-        const controlsRect = playgroundControls.getBoundingClientRect();
-        const playAreaRect = playgroundPlayArea.getBoundingClientRect();
-        playgroundLayout.style.setProperty(
-          "--playground-controls-height",
-          `${controlsRect.height}px`
-        );
-        playgroundLayout.style.setProperty(
-          "--playground-play-area-height",
-          `${playAreaRect.height}px`
-        );
-      }
-
       window.requestAnimationFrame(() => {
         playgroundPanel?.focus({ preventScroll: true });
         resizeSparkleCanvas();
@@ -1779,11 +1766,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     playgroundOverlay.setAttribute("hidden", "");
     document.body.classList.remove("playground-open");
-
-    if (playgroundLayout) {
-      playgroundLayout.style.removeProperty("--playground-controls-height");
-      playgroundLayout.style.removeProperty("--playground-play-area-height");
-    }
 
     playgroundRestoreTargets.forEach((target) => {
       const originalState = playgroundPreviousVisibility.get(target);
