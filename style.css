@@ -1786,6 +1786,50 @@ body.image-fridge-open {
   margin-left: 14px;
 }
 
+.bubblewarp-menu-modal__button--playground {
+  position: relative;
+  overflow: visible;
+}
+
+.bubblewarp-menu-modal__button--playground::before,
+.bubblewarp-menu-modal__button--playground::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 72px;
+  height: 72px;
+  background-image: url("assets/confetti.gif");
+  background-repeat: no-repeat;
+  background-size: cover;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 1;
+}
+
+.bubblewarp-menu-modal__button--playground::before {
+  left: -26px;
+}
+
+.bubblewarp-menu-modal__button--playground::after {
+  right: -26px;
+  transform: translateY(-50%) scale(0.9) scaleX(-1);
+}
+
+.bubblewarp-menu-modal__button--playground:hover::before,
+.bubblewarp-menu-modal__button--playground:hover::after,
+.bubblewarp-menu-modal__button--playground:focus-visible::before,
+.bubblewarp-menu-modal__button--playground:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.bubblewarp-menu-modal__button--playground:focus-visible::after,
+.bubblewarp-menu-modal__button--playground:hover::after {
+  transform: translateY(-50%) scale(1) scaleX(-1);
+}
+
 .bubblewarp-menu-modal__button:focus-visible,
 .bubblewarp-menu-modal__button:hover {
   outline: none;
