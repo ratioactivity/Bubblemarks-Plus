@@ -1789,6 +1789,14 @@ body.image-fridge-open {
 .bubblewarp-menu-modal__button--playground {
   position: relative;
   overflow: visible;
+  background: linear-gradient(
+    135deg,
+    #ffd6e7 0%,
+    #ffe7c2 25%,
+    #fff7b0 50%,
+    #d5f5e2 75%,
+    #cfe4ff 100%
+  );
 }
 
 .bubblewarp-menu-modal__button--playground::before,
@@ -1796,8 +1804,8 @@ body.image-fridge-open {
   content: "";
   position: absolute;
   top: 50%;
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 120px;
   background-image: url("assets/confetti.gif");
   background-repeat: no-repeat;
   background-size: cover;
@@ -1809,11 +1817,11 @@ body.image-fridge-open {
 }
 
 .bubblewarp-menu-modal__button--playground::before {
-  left: -26px;
+  left: -44px;
 }
 
 .bubblewarp-menu-modal__button--playground::after {
-  right: -26px;
+  right: -44px;
   transform: translateY(-50%) scale(0.9) scaleX(-1);
 }
 
