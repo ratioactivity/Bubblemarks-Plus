@@ -1008,7 +1008,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sparkleLastFrameTime = null;
   let sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
   let sparkleCanvasContext = null;
-  let sparkleResizeObserver = null;
 
   const createPlaygroundAudioManager = () => {
     if (window.BubblemarksAudio?.createManager) {
@@ -1373,22 +1372,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
   };
 
-  const ensureSparkleCanvasReady = () => {
-    if (!sparkleFieldState.enabled) {
-      return;
-    }
-    const didResize = resizeSparkleCanvas();
-    if (!didResize) {
-      window.requestAnimationFrame(ensureSparkleCanvasReady);
-      return;
-    }
-    syncSparkleParticles(sparkleFieldState.particleCount);
-    renderSparkleParticles();
-    if (!sparkleAnimationId) {
-      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
-    }
-  };
-
   const setSparkleFieldEnabled = (isEnabled) => {
     sparkleFieldState.enabled = Boolean(isEnabled);
     if (playgroundPlayArea) {
@@ -1403,25 +1386,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         sparkleAnimationId = null;
       }
       sparkleLastFrameTime = null;
-      sparkleParticles = [];
-      sparkleCanvasSize = { width: 0, height: 0, dpr: 1 };
-      sparkleCanvasContext = null;
-      if (playgroundParticleCanvas instanceof HTMLCanvasElement) {
-        playgroundParticleCanvas.removeAttribute("width");
-        playgroundParticleCanvas.removeAttribute("height");
-        playgroundParticleCanvas.style.width = "";
-        playgroundParticleCanvas.style.height = "";
-        playgroundParticleCanvas.style.opacity = "";
-        playgroundParticleCanvas.style.visibility = "";
-        playgroundParticleCanvas.style.pointerEvents = "";
-        playgroundParticleCanvas.style.transform = "";
-        playgroundParticleCanvas.style.margin = "";
-        playgroundParticleCanvas.style.padding = "";
-      }
-      renderSparkleParticles();
       return;
     }
-    window.requestAnimationFrame(ensureSparkleCanvasReady);
+    if (!sparkleCanvasSize.width || !sparkleCanvasSize.height || !sparkleCanvasContext) {
+      resizeSparkleCanvas();
+    }
+    syncSparkleParticles(sparkleFieldState.particleCount);
+    renderSparkleParticles();
+    if (!sparkleAnimationId) {
+      sparkleAnimationId = window.requestAnimationFrame(animateSparkles);
+    }
   };
 
   const updateSparkleParticleCount = (count) => {
@@ -2078,16 +2052,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateSparkleCountLabel();
     updateSparkleSpeedLabel();
     setSparkleFieldEnabled(sparkleFieldState.enabled);
-    if ("ResizeObserver" in window && playgroundPlayArea) {
-      sparkleResizeObserver = new ResizeObserver(() => {
-        if (!sparkleFieldState.enabled) {
-          resizeSparkleCanvas();
-          return;
-        }
-        ensureSparkleCanvasReady();
-      });
-      sparkleResizeObserver.observe(playgroundPlayArea);
-    }
     buildBubbleGrid();
   }
 
