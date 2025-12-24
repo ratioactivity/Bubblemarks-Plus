@@ -779,6 +779,35 @@
     </div>
   </div>
 
+  <div
+    id="playground-modal"
+    class="playground-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="playground-modal-title"
+    hidden
+  >
+    <div class="playground-modal__backdrop" data-playground-dismiss="true"></div>
+    <div class="playground-modal__dialog" tabindex="-1">
+      <div class="playground-modal__header">
+        <h2 id="playground-modal-title">Playground</h2>
+        <button
+          type="button"
+          class="playground-modal__close"
+          data-playground-dismiss="true"
+          aria-label="Close playground"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="playground-modal__body">
+        <div class="playground-modal__grid-scroll" role="region" aria-label="Playground toy buttons">
+          <div class="playground-modal__grid" id="playground-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <template id="bookmark-manager-item-template">
     <div class="bookmark-manager-item" role="listitem">
       <div class="bookmark-manager-item__info">
