@@ -2865,7 +2865,8 @@ h6,
 .category-modal,
 .bookmark-modal,
 .bookmark-manager-modal,
-.notes-modal {
+.notes-modal,
+.playground-modal {
   position: fixed;
   inset: 0;
   display: grid;
@@ -2876,14 +2877,16 @@ h6,
 .category-modal[hidden],
 .bookmark-modal[hidden],
 .bookmark-manager-modal[hidden],
-.notes-modal[hidden] {
+.notes-modal[hidden],
+.playground-modal[hidden] {
   display: none;
 }
 
 .category-modal__backdrop,
 .bookmark-modal__backdrop,
 .bookmark-manager-modal__backdrop,
-.notes-modal__backdrop {
+.notes-modal__backdrop,
+.playground-modal__backdrop {
   position: absolute;
   inset: 0;
   background: var(--modal-backdrop);
@@ -2893,7 +2896,8 @@ h6,
 .category-modal__dialog,
 .bookmark-modal__dialog,
 .bookmark-manager-modal__dialog,
-.notes-modal__dialog {
+.notes-modal__dialog,
+.playground-modal__dialog {
   position: relative;
   z-index: 1;
   width: min(520px, calc(100vw - 2.5rem));
@@ -2914,7 +2918,8 @@ h6,
 .category-modal__header,
 .bookmark-modal__header,
 .bookmark-manager-modal__header,
-.notes-modal__header {
+.notes-modal__header,
+.playground-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2924,7 +2929,8 @@ h6,
 .category-modal__header h2,
 .bookmark-modal__header h2,
 .bookmark-manager-modal__header h2,
-.notes-modal__header h2 {
+.notes-modal__header h2,
+.playground-modal__header h2 {
   margin: 0;
   font-family: var(--font-heading);
   font-size: clamp(1.6rem, 4vw, 2.1rem);
@@ -2934,7 +2940,8 @@ h6,
 .category-modal__close,
 .bookmark-modal__close,
 .bookmark-manager-modal__close,
-.notes-modal__close {
+.notes-modal__close,
+.playground-modal__close {
   border: none;
   background: linear-gradient(135deg, rgba(255, 234, 255, 0.95), rgba(216, 237, 255, 0.9));
   color: var(--accent);
@@ -2955,9 +2962,35 @@ h6,
 .bookmark-manager-modal__close:hover,
 .bookmark-manager-modal__close:focus-visible,
 .notes-modal__close:hover,
-.notes-modal__close:focus-visible {
+.notes-modal__close:focus-visible,
+.playground-modal__close:hover,
+.playground-modal__close:focus-visible {
   transform: translateY(-1px);
   outline: none;
+}
+
+.playground-modal__dialog {
+  width: min(640px, calc(100vw - 2.5rem));
+  max-height: min(84vh, 660px);
+  background: linear-gradient(160deg, rgba(255, 247, 254, 0.96), rgba(233, 243, 255, 0.95));
+  box-shadow: 0 30px 70px rgba(145, 128, 185, 0.35), 0 12px 34px rgba(255, 194, 220, 0.25);
+}
+
+.playground-modal__body {
+  display: grid;
+  gap: 1rem;
+}
+
+.playground-modal__grid-scroll {
+  max-height: min(60vh, 480px);
+  overflow: auto;
+  padding-right: 0.35rem;
+}
+
+.playground-modal__grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .bookmark-modal__dialog {
