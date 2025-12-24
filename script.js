@@ -929,6 +929,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   const imageFridgePreviewImage = imageFridgePreview?.querySelector(
     ".image-fridge-preview__image"
   );
+  const playgroundModal = document.getElementById("playground-modal");
+  const playgroundBackdrop = playgroundModal?.querySelector(
+    "[data-playground-dismiss]"
+  );
+  const playgroundClose = playgroundModal?.querySelector(
+    ".playground-modal__close"
+  );
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -977,6 +984,36 @@ window.addEventListener("DOMContentLoaded", async () => {
     bubblewarpClose?.addEventListener("click", () => toggleBubblewarpView(false));
     bubblewarpBackdrop?.addEventListener("click", () => toggleBubblewarpView(false));
   }
+
+  let playgroundRestoreFocusTarget = null;
+
+  const togglePlaygroundModal = (shouldShow) => {
+    if (!playgroundModal) {
+      return;
+    }
+
+    if (shouldShow) {
+      playgroundRestoreFocusTarget = document.activeElement;
+      playgroundModal.removeAttribute("hidden");
+
+      window.requestAnimationFrame(() => {
+        playgroundClose?.focus({ preventScroll: true });
+      });
+
+      return;
+    }
+
+    playgroundModal.setAttribute("hidden", "");
+
+    const focusTarget =
+      playgroundRestoreFocusTarget instanceof HTMLElement
+        ? playgroundRestoreFocusTarget
+        : bubblewarpMenuTrigger;
+
+    window.requestAnimationFrame(() => {
+      focusTarget?.focus({ preventScroll: true });
+    });
+  };
 
   const toggleImageFridgeView = async (shouldShow) => {
     if (!imageFridgeOverlay) {
@@ -2321,6 +2358,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const imageFridgeMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"image-fridge\"]"
     );
+    const playgroundMenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"playground\"]"
+    );
     const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
       ".bubblewarp-menu-modal__dialog"
     );
@@ -2377,11 +2417,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       toggleImageFridgeView(true);
     });
 
+    playgroundMenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      togglePlaygroundModal(true);
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
       if (
         button === bubblewarpMenuPrimary ||
         button === sketchpadMenuButton ||
-        button === imageFridgeMenuButton
+        button === imageFridgeMenuButton ||
+        button === playgroundMenuButton
       ) {
         return;
       }
@@ -2403,6 +2449,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !bubblewarpMenuModal.hasAttribute("hidden")) {
         closeMenuModal();
+      }
+    });
+  }
+
+  if (playgroundModal) {
+    playgroundBackdrop?.addEventListener("click", () => togglePlaygroundModal(false));
+    playgroundClose?.addEventListener("click", () => togglePlaygroundModal(false));
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !playgroundModal.hasAttribute("hidden")) {
+        togglePlaygroundModal(false);
       }
     });
   }
