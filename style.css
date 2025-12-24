@@ -2872,6 +2872,7 @@ h6,
   display: grid;
   place-items: center;
   z-index: 4;
+  overflow: hidden;
 }
 
 .category-modal[hidden],
@@ -2880,6 +2881,10 @@ h6,
 .notes-modal[hidden],
 .playground-modal[hidden] {
   display: none;
+}
+
+body.playground-modal-open {
+  overflow: hidden;
 }
 
 .category-modal__backdrop,
@@ -2991,6 +2996,38 @@ h6,
   display: grid;
   gap: 0.75rem;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.playground-tile {
+  background: linear-gradient(160deg, rgba(255, 250, 255, 0.95), rgba(230, 239, 255, 0.95));
+  border: 1px solid rgba(255, 195, 220, 0.7);
+  border-radius: 18px;
+  padding: 1rem;
+  text-align: left;
+  display: grid;
+  gap: 0.35rem;
+  box-shadow: 0 10px 24px rgba(145, 128, 185, 0.2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.playground-tile:hover,
+.playground-tile:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(145, 128, 185, 0.28);
+}
+
+.playground-tile__title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+.playground-tile__description {
+  font-size: 0.95rem;
+  color: rgba(48, 48, 68, 0.85);
 }
 
 .bookmark-modal__dialog {

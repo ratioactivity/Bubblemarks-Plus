@@ -929,6 +929,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const imageFridgePreviewImage = imageFridgePreview?.querySelector(
     ".image-fridge-preview__image"
   );
+  const playgroundButton = document.getElementById("playground-button");
   const playgroundModal = document.getElementById("playground-modal");
   const playgroundBackdrop = playgroundModal?.querySelector(
     "[data-playground-dismiss]"
@@ -936,6 +937,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const playgroundClose = playgroundModal?.querySelector(
     ".playground-modal__close"
   );
+  const playgroundGrid = document.getElementById("playground-grid");
 
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
@@ -987,26 +989,32 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   let playgroundRestoreFocusTarget = null;
 
-  const togglePlaygroundModal = (shouldShow) => {
+  const openPlaygroundModal = () => {
     if (!playgroundModal) {
       return;
     }
 
-    if (shouldShow) {
-      playgroundRestoreFocusTarget = document.activeElement;
-      playgroundModal.removeAttribute("hidden");
+    playgroundRestoreFocusTarget = document.activeElement;
+    playgroundModal.removeAttribute("hidden");
+    document.body.classList.add("playground-modal-open");
 
-      window.requestAnimationFrame(() => {
-        playgroundClose?.focus({ preventScroll: true });
-      });
+    window.requestAnimationFrame(() => {
+      playgroundClose?.focus({ preventScroll: true });
+    });
+  };
 
+  const closePlaygroundModal = () => {
+    if (!playgroundModal) {
       return;
     }
 
     playgroundModal.setAttribute("hidden", "");
+    document.body.classList.remove("playground-modal-open");
 
     const focusTarget =
-      playgroundRestoreFocusTarget instanceof HTMLElement
+      playgroundButton instanceof HTMLElement
+        ? playgroundButton
+        : playgroundRestoreFocusTarget instanceof HTMLElement
         ? playgroundRestoreFocusTarget
         : bubblewarpMenuTrigger;
 
@@ -1014,6 +1022,65 @@ window.addEventListener("DOMContentLoaded", async () => {
       focusTarget?.focus({ preventScroll: true });
     });
   };
+
+  const renderPlaygroundGrid = () => {
+    if (!playgroundGrid) {
+      return;
+    }
+
+    const playgroundItems = [
+      {
+        key: "bubblewarp",
+        title: "BubbleWarp",
+        description: "Pop bubble wrap and play the arcade remix.",
+        action: () => {
+          closePlaygroundModal();
+          toggleBubblewarpView(true);
+        },
+      },
+      {
+        key: "sketchpad",
+        title: "Sketchpad",
+        description: "Doodle in the cozy sketch zone.",
+        action: () => {
+          closePlaygroundModal();
+          toggleSketchpadView(true);
+        },
+      },
+      {
+        key: "image-fridge",
+        title: "Image Fridge",
+        description: "Pin cute pics to your fridge door.",
+        action: () => {
+          closePlaygroundModal();
+          toggleImageFridgeView(true);
+        },
+      },
+    ];
+
+    playgroundGrid.innerHTML = "";
+
+    playgroundItems.forEach((item) => {
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "playground-tile";
+      tile.dataset.playgroundKey = item.key;
+
+      const title = document.createElement("span");
+      title.className = "playground-tile__title";
+      title.textContent = item.title;
+
+      const description = document.createElement("span");
+      description.className = "playground-tile__description";
+      description.textContent = item.description;
+
+      tile.append(title, description);
+      tile.addEventListener("click", () => item.action?.());
+
+      playgroundGrid.appendChild(tile);
+    });
+  };
+
 
   const toggleImageFridgeView = async (shouldShow) => {
     if (!imageFridgeOverlay) {
@@ -2419,7 +2486,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     playgroundMenuButton?.addEventListener("click", () => {
       closeMenuModal();
-      togglePlaygroundModal(true);
+      openPlaygroundModal();
     });
 
     bubblewarpMenuButtons.forEach((button) => {
@@ -2453,13 +2520,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  renderPlaygroundGrid();
+
+  playgroundButton?.addEventListener("click", () => {
+    closeMenuModal();
+    openPlaygroundModal();
+  });
+
   if (playgroundModal) {
-    playgroundBackdrop?.addEventListener("click", () => togglePlaygroundModal(false));
-    playgroundClose?.addEventListener("click", () => togglePlaygroundModal(false));
+    playgroundBackdrop?.addEventListener("click", () => closePlaygroundModal());
+    playgroundClose?.addEventListener("click", () => closePlaygroundModal());
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !playgroundModal.hasAttribute("hidden")) {
-        togglePlaygroundModal(false);
+        closePlaygroundModal();
       }
     });
   }
