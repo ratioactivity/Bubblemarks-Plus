@@ -913,6 +913,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     ".image-fridge-overlay__empty"
   );
   const imageFridgeTileTemplate = document.getElementById("image-fridge-tile-template");
+  const toyOverlay = document.getElementById("toy-overlay");
+  const toyOverlayClose = toyOverlay?.querySelector(".toy-overlay__close");
+  const toyOverlayFrame = toyOverlay?.querySelector("iframe");
   const imageFridgePreview = document.getElementById("image-fridge-preview");
   const imageFridgePreviewBackdrop = imageFridgePreview?.querySelector(
     "[data-image-fridge-preview-dismiss]"
@@ -947,6 +950,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   let sketchpadPreviousVisibility = new Map();
   const imageFridgeRestoreTargets = [appShell, petWidget].filter(Boolean);
   let imageFridgePreviousVisibility = new Map();
+  const toyOverlayRestoreTargets = [appShell, petWidget].filter(Boolean);
+  let toyOverlayPreviousVisibility = new Map();
+  let toyOverlayRestoreFocusTarget = null;
 
   const toggleBubblewarpView = (shouldShow) => {
     if (!bubblewarpOverlay) {
@@ -1077,6 +1083,64 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     resetImageFridgePreviewZoom();
   };
+
+  const openToyOverlay = (toyUrl) => {
+    if (!toyOverlay || !toyOverlayFrame) {
+      return;
+    }
+
+    toyOverlayPreviousVisibility = new Map(
+      toyOverlayRestoreTargets.map((target) => [target, target.hidden])
+    );
+
+    toyOverlayRestoreFocusTarget = document.activeElement;
+
+    if (typeof toyUrl === "string" && toyUrl.trim()) {
+      toyOverlayFrame.src = toyUrl;
+    }
+
+    toyOverlay.removeAttribute("hidden");
+    document.body.classList.add("toy-overlay-open");
+    document.documentElement.classList.add("toy-overlay-open");
+
+    toyOverlayRestoreTargets.forEach((target) => {
+      target.hidden = true;
+    });
+
+    window.requestAnimationFrame(() => {
+      toyOverlayClose?.focus({ preventScroll: true });
+    });
+  };
+
+  const closeToyOverlay = () => {
+    if (!toyOverlay) {
+      return;
+    }
+
+    toyOverlay.setAttribute("hidden", "");
+    document.body.classList.remove("toy-overlay-open");
+    document.documentElement.classList.remove("toy-overlay-open");
+
+    toyOverlayRestoreTargets.forEach((target) => {
+      const originalState = toyOverlayPreviousVisibility.get(target);
+      target.hidden = Boolean(originalState);
+    });
+
+    const focusTarget =
+      toyOverlayRestoreFocusTarget instanceof HTMLElement
+        ? toyOverlayRestoreFocusTarget
+        : playgroundButton || bubblewarpMenuTrigger;
+
+    window.requestAnimationFrame(() => {
+      focusTarget?.focus({ preventScroll: true });
+    });
+  };
+
+  if (toyOverlay) {
+    toyOverlayClose?.addEventListener("click", () => closeToyOverlay());
+    window.openToyOverlay = openToyOverlay;
+    window.closeToyOverlay = closeToyOverlay;
+  }
 
   const openImageFridgePreview = (item) => {
     if (!imageFridgePreview || !imageFridgePreviewImage) {
@@ -2471,6 +2535,25 @@ window.addEventListener("DOMContentLoaded", async () => {
     playgroundBackdrop?.addEventListener("click", () => closePlaygroundModal());
     playgroundClose?.addEventListener("click", () => closePlaygroundModal());
 
+    playgroundGrid?.addEventListener("click", (event) => {
+      const button =
+        event.target instanceof HTMLElement
+          ? event.target.closest(".playground-button")
+          : null;
+
+      if (!button) {
+        return;
+      }
+
+      const toyUrl = button.dataset.toyUrl;
+
+      if (toyUrl) {
+        event.preventDefault();
+        closePlaygroundModal();
+        openToyOverlay(toyUrl);
+      }
+    });
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !playgroundModal.hasAttribute("hidden")) {
         closePlaygroundModal();
@@ -2510,6 +2593,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       if (event.key === "Escape") {
         requestImageFridgeClose();
+      }
+    });
+  }
+
+  if (toyOverlay) {
+    document.addEventListener("keydown", (event) => {
+      if (toyOverlay.hasAttribute("hidden")) {
+        return;
+      }
+      if (event.key === "Escape") {
+        closeToyOverlay();
       }
     });
   }

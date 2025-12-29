@@ -527,6 +527,27 @@
     </template>
   </div>
   <div
+    id="toy-overlay"
+    class="toy-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Toy viewer"
+    hidden
+  >
+    <div class="toy-overlay__header">
+      <h2 class="toy-overlay__title">Toy Viewer</h2>
+      <button type="button" class="toy-overlay__close" aria-label="Close toy viewer">✕</button>
+    </div>
+    <div class="toy-overlay__frame">
+      <iframe
+        title="Toy view"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        allow="fullscreen"
+      ></iframe>
+    </div>
+  </div>
+  <div
     id="image-fridge-preview"
     class="image-fridge-preview"
     role="dialog"
