@@ -942,6 +942,202 @@ window.addEventListener("DOMContentLoaded", async () => {
   );
   const playgroundGrid = document.getElementById("playground-grid");
 
+  const buildToyContentUrl = (title, accentColor, bodyText) => {
+    const pageTitle = title || "Playground";
+    const description =
+      bodyText || "Have fun exploring this colorful Bubblemarks toy.";
+    const accent = accentColor || "#ff9ed8";
+
+    const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${pageTitle}</title>
+    <style>
+      :root { color-scheme: light; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Papernotes", "Inter", system-ui, -apple-system, sans-serif;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 241, 252, 0.9), transparent 40%),
+          radial-gradient(circle at 78% 14%, rgba(222, 242, 255, 0.78), transparent 38%),
+          linear-gradient(145deg, ${accent}, #ffffff);
+      }
+      .toy-card {
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: 22px;
+        padding: 24px 26px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        max-width: 520px;
+        text-align: center;
+      }
+      h1 { margin: 0 0 12px; color: #1f2b3a; font-size: 1.6rem; }
+      p { margin: 0; color: #314155; line-height: 1.6; font-size: 1rem; }
+      .accent {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, ${accent}, #ffffff);
+        color: #1f2b3a;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 14px 26px rgba(0, 0, 0, 0.06);
+      }
+      .accent span { font-size: 0.95rem; }
+    </style>
+  </head>
+  <body>
+    <article class="toy-card">
+      <h1>${pageTitle}</h1>
+      <p>${description}</p>
+      <div class="accent" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f2b3a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20"/><path d="M2 12h20"/>
+        </svg>
+        <span>Playful mode</span>
+      </div>
+    </article>
+  </body>
+</html>`;
+
+    return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+  };
+
+  const playgroundToys = [
+    {
+      label: "Pink Pop",
+      className: "playground-button--pink-red",
+      url: buildToyContentUrl(
+        "Pink Pop",
+        "#ff5a7a",
+        "Bubblegum gradients, gentle sparkles, and a soft bounce to start your toy tour."
+      ),
+    },
+    {
+      label: "Scarlet Swing",
+      className: "playground-button--red-orange",
+      url: buildToyContentUrl(
+        "Scarlet Swing",
+        "#ff7c45",
+        "Lean into the warm, sunset swing with citrus ribbons and playful motion."
+      ),
+    },
+    {
+      label: "Citrus Stack",
+      className: "playground-button--orange-yellow",
+      url: buildToyContentUrl(
+        "Citrus Stack",
+        "#ffb347",
+        "A zesty stack of floating cards with a bright squeeze of lemon-lime energy."
+      ),
+    },
+    {
+      label: "Lemon Lift",
+      className: "playground-button--yellow-green",
+      url: buildToyContentUrl(
+        "Lemon Lift",
+        "#d3ea5f",
+        "Lift off with mellow neon lines that drift like sunshine over fresh grass."
+      ),
+    },
+    {
+      label: "Mint Loop",
+      className: "playground-button--green-teal",
+      url: buildToyContentUrl(
+        "Mint Loop",
+        "#45c48c",
+        "Cool mint tones swirl in a loop, perfect for a calming focus session."
+      ),
+    },
+    {
+      label: "Lagoon Flip",
+      className: "playground-button--teal-blue",
+      url: buildToyContentUrl(
+        "Lagoon Flip",
+        "#3db3ff",
+        "Drift across lagoon blues and glittering ripples that flip with each view."
+      ),
+    },
+    {
+      label: "Indigo Bounce",
+      className: "playground-button--blue-purple",
+      url: buildToyContentUrl(
+        "Indigo Bounce",
+        "#7b82ff",
+        "A cozy night-sky bounce with constellations that shimmer as you explore."
+      ),
+    },
+    {
+      label: "Violet Bloom",
+      className: "playground-button--purple-pink",
+      url: buildToyContentUrl(
+        "Violet Bloom",
+        "#c07bff",
+        "Petals, pixels, and pastel flares combine for a soft bloom of inspiration."
+      ),
+    },
+    {
+      label: "Random",
+      className: "playground-button--purple-pink",
+      isRandom: true,
+    },
+  ];
+
+  const playgroundToyLookup = new Map(
+    playgroundToys.map((toy) => [toy.label, toy])
+  );
+
+  const renderPlaygroundButtons = () => {
+    if (!playgroundGrid) {
+      return;
+    }
+
+    playgroundGrid.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+
+    playgroundToys.forEach((toy) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `playground-button ${toy.className}`;
+      button.textContent = toy.label;
+      button.dataset.toyLabel = toy.label;
+
+      if (toy.url) {
+        button.dataset.toyUrl = toy.url;
+      }
+
+      if (toy.isRandom) {
+        button.dataset.toyRandom = "true";
+      }
+
+      fragment.appendChild(button);
+    });
+
+    playgroundGrid.appendChild(fragment);
+  };
+
+  const pickRandomToyUrl = () => {
+    const playableToys = playgroundToys.filter(
+      (toy) => !toy.isRandom && typeof toy.url === "string"
+    );
+
+    if (!playableToys.length) {
+      return null;
+    }
+
+    const selection = playableToys[Math.floor(Math.random() * playableToys.length)];
+    return selection?.url || null;
+  };
+
+  renderPlaygroundButtons();
+
   const appShell = document.querySelector(".app-shell");
   const petWidget = document.getElementById("pet-widget");
   const bubblewarpRestoreTargets = [appShell, petWidget].filter(Boolean);
@@ -2545,13 +2741,23 @@ window.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      const toyUrl = button.dataset.toyUrl;
+      const toyLabel = button.dataset.toyLabel;
+      const toyDefinition = toyLabel
+        ? playgroundToyLookup.get(toyLabel)
+        : null;
 
-      if (toyUrl) {
-        event.preventDefault();
-        closePlaygroundModal();
-        openToyOverlay(toyUrl);
+      const isRandomSelection = button.dataset.toyRandom === "true";
+      const toyUrl = isRandomSelection
+        ? pickRandomToyUrl()
+        : button.dataset.toyUrl || toyDefinition?.url;
+
+      if (!toyUrl) {
+        return;
       }
+
+      event.preventDefault();
+      closePlaygroundModal();
+      openToyOverlay(toyUrl);
     });
 
     document.addEventListener("keydown", (event) => {
