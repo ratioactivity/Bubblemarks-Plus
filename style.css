@@ -1859,6 +1859,11 @@ body.toy-overlay-open {
   color: #ffffff;
 }
 
+.bubblewarp-menu-modal__button--2048 .bubblewarp-toggle__label {
+  font-size: 2.2rem;
+  line-height: 1.1;
+}
+
 .bubblewarp-menu-modal__button--2048:focus-visible,
 .bubblewarp-menu-modal__button--2048:hover {
   background: linear-gradient(135deg, #FF006F, #F9FF80);
