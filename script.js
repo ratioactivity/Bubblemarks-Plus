@@ -2542,6 +2542,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const playgroundMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"playground\"]"
     );
+    const game2048MenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"2048\"]"
+    );
     const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
       ".bubblewarp-menu-modal__dialog"
     );
@@ -2603,12 +2606,18 @@ window.addEventListener("DOMContentLoaded", async () => {
       openPlaygroundModal();
     });
 
+    game2048MenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      openToyOverlay("https://classic.play2048.co", "2048");
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
       if (
         button === bubblewarpMenuPrimary ||
         button === sketchpadMenuButton ||
         button === imageFridgeMenuButton ||
-        button === playgroundMenuButton
+        button === playgroundMenuButton ||
+        button === game2048MenuButton
       ) {
         return;
       }
