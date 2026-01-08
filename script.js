@@ -395,6 +395,7 @@ let togglePetSoundsInput;
 let togglePetScrollInput;
 let resetPetProgressBtn;
 let scrollLockToggleInput;
+let scrollLockFloatingToggle;
 let cardSizeInput;
 let customizeCategoriesBtn;
 let categoryModal;
@@ -814,6 +815,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   settingsModal = document.getElementById("settings-modal");
   settingsForm = document.getElementById("settings-form");
   settingsDialog = document.querySelector(".settings-modal__dialog");
+  scrollLockFloatingToggle = document.getElementById("scroll-lock-toggle");
   petWidgetFrame = document.querySelector("#pet-widget iframe");
 
   const petLevelUpProxy = (amount = 1) => {
@@ -2542,6 +2544,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const playgroundMenuButton = bubblewarpMenuModal.querySelector(
       "[data-bubblewarp-menu-action=\"playground\"]"
     );
+    const game2048MenuButton = bubblewarpMenuModal.querySelector(
+      "[data-bubblewarp-menu-action=\"2048\"]"
+    );
     const bubblewarpMenuDialog = bubblewarpMenuModal.querySelector(
       ".bubblewarp-menu-modal__dialog"
     );
@@ -2603,12 +2608,18 @@ window.addEventListener("DOMContentLoaded", async () => {
       openPlaygroundModal();
     });
 
+    game2048MenuButton?.addEventListener("click", () => {
+      closeMenuModal();
+      openToyOverlay("https://classic.play2048.co", "2048");
+    });
+
     bubblewarpMenuButtons.forEach((button) => {
       if (
         button === bubblewarpMenuPrimary ||
         button === sketchpadMenuButton ||
         button === imageFridgeMenuButton ||
-        button === playgroundMenuButton
+        button === playgroundMenuButton ||
+        button === game2048MenuButton
       ) {
         return;
       }
@@ -2735,6 +2746,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   preferences = loadPreferences();
   applyScrollLock(preferences.scrollLocked);
   applyPreferences({ syncInputs: false, lazyAxolotl: true });
+
+  if (scrollLockFloatingToggle) {
+    scrollLockFloatingToggle.addEventListener("click", () => {
+      preferences.scrollLocked = !(preferences.scrollLocked === true);
+      savePreferences();
+      applyScrollLock(preferences.scrollLocked);
+      updateScrollLockToggleState(preferences.scrollLocked);
+    });
+  }
 
   if (petWidgetFrame) {
     petWidgetFrame.addEventListener("load", () => {
@@ -4051,6 +4071,21 @@ function setupSearch() {
   });
 }
 
+function updateScrollLockToggleState(scrollLocked, { syncSettings = true } = {}) {
+  if (syncSettings && scrollLockToggleInput) {
+    scrollLockToggleInput.checked = scrollLocked;
+  }
+
+  if (scrollLockFloatingToggle) {
+    scrollLockFloatingToggle.classList.toggle("is-locked", scrollLocked);
+    scrollLockFloatingToggle.setAttribute("aria-pressed", String(scrollLocked));
+    const label = scrollLockFloatingToggle.querySelector(".scroll-lock-toggle__label");
+    if (label) {
+      label.textContent = scrollLocked ? "Unlock scroll" : "Lock scroll";
+    }
+  }
+}
+
 function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   const showHeading = preferences.showHeading !== false;
   const showAxolotl = preferences.showAxolotl !== false;
@@ -4097,9 +4132,7 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
     if (togglePetScrollInput) {
       togglePetScrollInput.checked = petScrollDisabled;
     }
-    if (scrollLockToggleInput) {
-      scrollLockToggleInput.checked = scrollLocked;
-    }
+    updateScrollLockToggleState(scrollLocked, { syncSettings: true });
     if (cardSizeInput) {
       cardSizeInput.value = String(cardSizeToIndex(cardSize));
     }
@@ -4117,6 +4150,10 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
 
   if (document.body) {
     document.body.setAttribute("data-card-size", cardSize);
+  }
+
+  if (!syncInputs) {
+    updateScrollLockToggleState(scrollLocked, { syncSettings: false });
   }
 
   applyGridLayout(cardsPerRow, rowsPerPage);
@@ -4592,6 +4629,7 @@ function setupSettingsMenu() {
       preferences.scrollLocked = scrollLockCheckbox.checked;
       savePreferences();
       applyScrollLock(preferences.scrollLocked);
+      updateScrollLockToggleState(preferences.scrollLocked, { syncSettings: false });
     });
 
     const scrollLockText = document.createElement("span");
