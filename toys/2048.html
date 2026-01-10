@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2048</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        background: #f6f7fb;
+      }
+
+      body.scroll-locked {
+        overflow: hidden;
+      }
+
+      .page {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .scroll-lock-toggle {
+        position: fixed;
+        top: 18px;
+        right: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 1.1rem;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ffffff, #ffe8f6);
+        color: #7b5aa3;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 12px 24px rgba(160, 180, 220, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 10;
+      }
+
+      .scroll-lock-toggle::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(120, 140, 180, 0.6);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.75);
+      }
+
+      .scroll-lock-toggle.is-locked {
+        background: linear-gradient(135deg, #ffd8ec, #cfe9ff);
+      }
+
+      .scroll-lock-toggle.is-locked::before {
+        background: rgba(255, 123, 181, 0.9);
+        box-shadow: 0 0 0 3px rgba(255, 235, 246, 0.9);
+      }
+
+      .scroll-lock-toggle:hover,
+      .scroll-lock-toggle:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(160, 180, 220, 0.4);
+        outline: none;
+      }
+
+      .game-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <button class="scroll-lock-toggle" type="button" aria-pressed="false">
+        <span class="scroll-lock-toggle__label">Disable scroll</span>
+      </button>
+      <iframe
+        class="game-frame"
+        title="2048 game"
+        src="https://classic.play2048.co"
+        loading="eager"
+        referrerpolicy="no-referrer"
+        allow="fullscreen"
+      ></iframe>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const toggleButton = document.querySelector(".scroll-lock-toggle");
+        const label = toggleButton?.querySelector(".scroll-lock-toggle__label");
+
+        const setLockedState = (locked) => {
+          document.body.classList.toggle("scroll-locked", locked);
+          toggleButton?.classList.toggle("is-locked", locked);
+          toggleButton?.setAttribute("aria-pressed", String(locked));
+          if (label) {
+            label.textContent = locked ? "Enable scroll" : "Disable scroll";
+          }
+        };
+
+        setLockedState(false);
+
+        toggleButton?.addEventListener("click", () => {
+          const isLocked = document.body.classList.contains("scroll-locked");
+          setLockedState(!isLocked);
+        });
+
+        console.log("✅ script validated");
+      });
+    </script>
+  </body>
+</html>
