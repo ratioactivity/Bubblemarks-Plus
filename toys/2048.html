@@ -88,7 +88,7 @@
   <body>
     <div class="page">
       <button class="scroll-lock-toggle" type="button" aria-pressed="false">
-        <span class="scroll-lock-toggle__label">Lock scroll</span>
+        <span class="scroll-lock-toggle__label">Disable scroll</span>
       </button>
       <iframe
         class="game-frame"
@@ -110,7 +110,7 @@
           toggleButton?.classList.toggle("is-locked", locked);
           toggleButton?.setAttribute("aria-pressed", String(locked));
           if (label) {
-            label.textContent = locked ? "Unlock scroll" : "Lock scroll";
+            label.textContent = locked ? "Enable scroll" : "Disable scroll";
           }
         };
 
