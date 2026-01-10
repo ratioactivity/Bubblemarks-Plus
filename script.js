@@ -2610,7 +2610,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     game2048MenuButton?.addEventListener("click", () => {
       closeMenuModal();
-      openToyOverlay("https://classic.play2048.co", "2048");
+      openToyOverlay("toys/2048.html", "2048");
     });
 
     bubblewarpMenuButtons.forEach((button) => {
