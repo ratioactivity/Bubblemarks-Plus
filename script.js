@@ -135,6 +135,8 @@ const FALLBACK_PALETTES = [
   { background: "#e8fff6", accent: "#6ad6a6", shadow: "#c2f7da" },
 ];
 const CATEGORY_STORAGE_KEY = "bubblemarks.categories.v1";
+const FAVORITES_CATEGORY_KEY = "favorites";
+const FAVORITES_CATEGORY_LABEL = "⭐";
 const DEFAULT_CATEGORY_LABEL = "Unsorted";
 const DEFAULT_CATEGORY_SLUG = "unsorted";
 const CATEGORY_ALIAS_MAP = new Map([
@@ -346,7 +348,7 @@ const AXOLOTL_STATE_FRAME_PATTERNS = [
 const imageProbeCache = new Map();
 
 let bookmarks = [];
-let activeCategory = "all";
+let activeCategory = FAVORITES_CATEGORY_KEY;
 let searchTerm = "";
 let categorySettings = loadCategorySettings();
 let categoryInfo = new Map();
@@ -947,6 +949,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   safeInitialize("control tabs", setupControlTabs);
   safeInitialize("search", setupSearch);
+  safeInitialize("favorite toggles", setupFavoriteToggles);
   safeInitialize("keyboard", setupKeyboard);
   safeInitialize("settings menu", setupSettingsMenu);
   safeInitialize("data tools", setupDataTools);
@@ -1112,6 +1115,7 @@ function sanitizeBookmarks(entries) {
       const category = entry.category ? String(entry.category).trim() : "Unsorted";
       const image = entry.image ? String(entry.image).trim() : "";
       const imagePosition = normalizeImagePosition(entry.imagePosition);
+      const favorite = entry.favorite === true;
       const idValue =
         typeof entry.id === "string" && entry.id.trim()
           ? entry.id.trim()
@@ -1124,6 +1128,7 @@ function sanitizeBookmarks(entries) {
         category,
         image,
         imagePosition,
+        favorite,
       };
     })
     .filter((entry) => entry.name && entry.url);
@@ -1802,6 +1807,7 @@ function setupBookmarkCreation() {
         url: urlValue,
         category: categoryLabel,
         image: imageValue,
+        favorite: activeCategory === FAVORITES_CATEGORY_KEY,
       },
     ]);
 
@@ -3015,9 +3021,15 @@ function updateCategoryBar() {
   const descriptors = computeCategoryDescriptors();
   const availableKeys = new Set(descriptors.map((descriptor) => descriptor.key));
 
-    if (activeCategory !== "all" && !availableKeys.has(activeCategory)) {
-      activeCategory = "all";
+    if (activeCategory !== "all" && activeCategory !== FAVORITES_CATEGORY_KEY && !availableKeys.has(activeCategory)) {
+      activeCategory = FAVORITES_CATEGORY_KEY;
     }
+
+    const favoritesDescriptor = {
+      key: FAVORITES_CATEGORY_KEY,
+      label: FAVORITES_CATEGORY_LABEL,
+      color: "#ffd968",
+    };
 
     const allDescriptor = {
       key: "all",
@@ -3025,7 +3037,11 @@ function updateCategoryBar() {
       color: pickCategoryColor("all"),
     };
 
-    const pills = [createCategoryPill(allDescriptor), ...descriptors.map((descriptor) => createCategoryPill(descriptor))];
+    const pills = [
+      createCategoryPill(favoritesDescriptor),
+      createCategoryPill(allDescriptor),
+      ...descriptors.map((descriptor) => createCategoryPill(descriptor)),
+    ];
     replaceChildrenSafe(categoryBar, pills);
     syncActiveCategoryVisuals();
     renderBookmarkCategoryOptions(bookmarkCategorySelect?.value || activeCategory, descriptors);
@@ -3060,6 +3076,41 @@ function syncActiveCategoryVisuals() {
   });
 }
 
+function setupFavoriteToggles() {
+  if (!grid) {
+    return;
+  }
+
+  grid.addEventListener("click", (event) => {
+    const button = event.target?.closest?.(".card-favorite-toggle");
+    if (!(button instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const bookmarkId = button.dataset.bookmarkId || "";
+    if (!bookmarkId) {
+      return;
+    }
+
+    const bookmarkIndex = bookmarks.findIndex((bookmark) => bookmark?.id === bookmarkId);
+    if (bookmarkIndex === -1) {
+      return;
+    }
+
+    const next = bookmarks.slice();
+    const current = next[bookmarkIndex];
+    next[bookmarkIndex] = {
+      ...current,
+      favorite: current.favorite !== true,
+    };
+
+    setBookmarks(next, { persist: true });
+  });
+}
+
   function updateSuggestions() {
     if (!datalist) {
       return;
@@ -3079,7 +3130,13 @@ function syncActiveCategoryVisuals() {
   const filtered = bookmarks.filter((bookmark) => {
     const categoryKey = normalizeCategoryKey(bookmark.category || DEFAULT_CATEGORY_LABEL) ||
       DEFAULT_CATEGORY_SLUG;
-    const matchesCategory = activeCategory === "all" || categoryKey === activeCategory;
+    const isFavorite = bookmark.favorite === true;
+    const matchesCategory =
+      activeCategory === "all"
+        ? true
+        : activeCategory === FAVORITES_CATEGORY_KEY
+          ? isFavorite
+          : categoryKey === activeCategory;
     if (!matchesCategory) return false;
 
     if (!normalizedSearch) return true;
@@ -3190,6 +3247,20 @@ function renderBookmarks(collection) {
     if (categoryEl) {
       categoryEl.textContent = displayLabel;
       applyCategoryStylesToBadge(categoryEl, getCategoryColor(categoryKey));
+    }
+
+    const favoriteToggle = card.querySelector(".card-favorite-toggle");
+    if (favoriteToggle instanceof HTMLButtonElement) {
+      const isFavorite = bookmark.favorite === true;
+      favoriteToggle.textContent = "⭐";
+      favoriteToggle.dataset.bookmarkId = bookmark.id || "";
+      favoriteToggle.dataset.favorite = String(isFavorite);
+      favoriteToggle.setAttribute(
+        "aria-label",
+        isFavorite ? `Remove ${bookmarkTitle} from favorites` : `Add ${bookmarkTitle} to favorites`
+      );
+      favoriteToggle.classList.toggle("is-active", isFavorite);
+      favoriteToggle.classList.toggle("is-inactive", !isFavorite);
     }
 
     return card;

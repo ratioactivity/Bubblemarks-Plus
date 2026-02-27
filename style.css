@@ -2226,6 +2226,36 @@ h6,
   line-height: 1.2;
 }
 
+.card-favorite-toggle {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.38rem;
+  border: none;
+  background: transparent;
+  padding: 0.1rem;
+  line-height: 1;
+  font-size: 1.05rem;
+  cursor: pointer;
+  opacity: 0.4;
+  filter: grayscale(1);
+  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
+  z-index: 2;
+}
+
+.card-favorite-toggle.is-active {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+.card-favorite-toggle:hover,
+.card-favorite-toggle:focus-visible {
+  opacity: 0.9;
+  filter: grayscale(0);
+  transform: scale(1.08);
+  outline: none;
+}
+
+
 .empty-state {
   text-align: center;
   font-size: 1.1rem;
