@@ -46,6 +46,17 @@ contextBridge.exposeInMainWorld("quicklaunch", {
   },
 });
 
+contextBridge.exposeInMainWorld("displayPreferences", {
+  async updatePreference(preferences = {}) {
+    try {
+      return await ipcRenderer.invoke("display-preferences:update", preferences);
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to update display preferences", error);
+      return { success: false, error: error?.message || "Unable to update display preferences." };
+    }
+  },
+});
+
 const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
 const MUSIC_FOLDERS = {
