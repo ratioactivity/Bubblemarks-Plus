@@ -3997,13 +3997,6 @@ body.modal-open {
   font-weight: 600;
 }
 
-/* Optional smoother centering for embedded layouts */
-.scroll-locked .app-shell {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
 /* App icon styling */
 .app-logo {
   position: fixed;

@@ -411,6 +411,7 @@ let nextPageBtn;
 let lastRenderedCollection = [];
 let pendingResizeFrame = null;
 let lastLoggedLayout = { cardsPerRow: null, rowsPerPage: null };
+let lockedScrollPosition = 0;
 let manageBookmarksBtn;
 let manageBookmarksModal;
 let manageBookmarksList;
@@ -5140,24 +5141,32 @@ function applyScrollLock(isLocked) {
     return;
   }
 
-  const wasLocked = app.classList.contains("scroll-locked");
-
   if (isLocked) {
+    const wasLocked = document.body.classList.contains("scroll-locked");
+    if (!wasLocked) {
+      lockedScrollPosition = window.scrollY || window.pageYOffset || 0;
+    }
     app.classList.add("scroll-locked");
     if (document.body && app !== document.body) {
       document.body.classList.add("scroll-locked");
     }
-    if (!wasLocked) {
-      const centerTarget = Math.max((document.body.scrollHeight - window.innerHeight) / 2, 0);
-      window.requestAnimationFrame(() => {
-        window.scrollTo({ top: centerTarget, behavior: "smooth" });
-      });
-    }
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedScrollPosition}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
   } else {
     app.classList.remove("scroll-locked");
     if (document.body) {
       document.body.classList.remove("scroll-locked");
     }
+    const scrollRestoreTarget = Math.max(lockedScrollPosition, 0);
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    window.scrollTo({ top: scrollRestoreTarget, behavior: "auto" });
   }
 }
 
