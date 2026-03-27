@@ -4079,10 +4079,10 @@ body[data-monitor-layout="vertical-secondary"] .screenpad-layout,
 body.layout-vertical-secondary .screenpad-layout,
 .screenpad-layout.screenpad-layout--vertical-secondary {
   display: grid !important;
-  grid-template-columns: minmax(680px, 1fr) minmax(180px, 240px);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "left pet"
-    "main main";
+    "left"
+    "main";
   grid-template-rows: auto auto;
   gap: clamp(0.45rem, 1vw, 0.9rem);
   align-items: start;
@@ -4156,21 +4156,33 @@ body.layout-vertical-secondary .screenpad-layout .app-shell,
 body[data-monitor-layout="vertical-secondary"] .pet-column,
 body.layout-vertical-secondary .pet-column,
 .screenpad-layout.screenpad-layout--vertical-secondary .pet-column {
-  grid-area: pet;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  max-width: min(100%, 240px);
-  min-height: auto;
-  height: auto;
-  justify-self: end;
+  display: none;
 }
 
 body[data-monitor-layout="vertical-secondary"] .pet-widget,
 body.layout-vertical-secondary .pet-widget,
 .screenpad-layout.screenpad-layout--vertical-secondary .pet-widget {
   display: none;
+}
+
+body[data-monitor-layout="vertical-secondary"] #notes-widget .notes-card__header,
+body.layout-vertical-secondary #notes-widget .notes-card__header {
+  justify-content: space-between;
+}
+
+body[data-monitor-layout="vertical-secondary"] .bubblewarp-toggle-wrap--inline,
+body.layout-vertical-secondary .bubblewarp-toggle-wrap--inline {
+  width: auto;
+  margin: 0;
+}
+
+body[data-monitor-layout="vertical-secondary"] .bubblewarp-toggle-wrap--inline .bubblewarp-toggle,
+body.layout-vertical-secondary .bubblewarp-toggle-wrap--inline .bubblewarp-toggle {
+  width: auto;
+  margin-bottom: 0;
+  padding: 0.45rem 0.9rem;
+  font-size: 1.05rem;
+  border-radius: 12px;
 }
 
 body[data-monitor-layout="vertical-secondary"],

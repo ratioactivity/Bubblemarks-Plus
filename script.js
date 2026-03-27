@@ -410,6 +410,10 @@ let rowsPerPageInput;
 let paginationControls;
 let prevPageBtn;
 let nextPageBtn;
+let bubblewarpToggleWrap;
+let notesCardHeader;
+let bubblewarpOriginalParent = null;
+let bubblewarpOriginalNextSibling = null;
 let lastRenderedCollection = [];
 let pendingResizeFrame = null;
 let lastLoggedLayout = { cardsPerRow: null, rowsPerPage: null };
@@ -821,6 +825,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   scrollLockFloatingToggle = document.getElementById("scroll-lock-toggle");
   petWidgetFrame = document.querySelector("#pet-widget iframe");
   screenpadLayout = document.querySelector(".screenpad-layout");
+  bubblewarpToggleWrap = document.querySelector(".bubblewarp-toggle-wrap");
+  notesCardHeader = document.querySelector("#notes-widget .notes-card__header");
+  if (bubblewarpToggleWrap) {
+    bubblewarpOriginalParent = bubblewarpToggleWrap.parentElement;
+    bubblewarpOriginalNextSibling = bubblewarpToggleWrap.nextElementSibling;
+  }
 
   const petLevelUpProxy = (amount = 1) => {
     const petWindow = petWidgetFrame?.contentWindow;
@@ -4109,8 +4119,8 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
 
   if (enabled) {
     screenpadLayout.style.display = "grid";
-    screenpadLayout.style.gridTemplateColumns = "minmax(680px, 1fr) minmax(180px, 240px)";
-    screenpadLayout.style.gridTemplateAreas = '"left pet" "main main"';
+    screenpadLayout.style.gridTemplateColumns = "minmax(0, 1fr)";
+    screenpadLayout.style.gridTemplateAreas = '"left" "main"';
     screenpadLayout.style.gridTemplateRows = "auto auto";
     screenpadLayout.style.minHeight = "";
 
@@ -4136,13 +4146,19 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     petColumn.style.gridArea = "pet";
     petColumn.style.width = "100%";
     petColumn.style.minWidth = "0";
-    petColumn.style.maxWidth = "240px";
+    petColumn.style.maxWidth = "";
     petColumn.style.height = "";
     petColumn.style.minHeight = "";
-    petColumn.style.justifySelf = "end";
+    petColumn.style.justifySelf = "";
+    petColumn.style.display = "none";
 
     if (petWidget) {
       petWidget.style.display = "none";
+    }
+
+    if (bubblewarpToggleWrap && notesCardHeader && !notesCardHeader.contains(bubblewarpToggleWrap)) {
+      bubblewarpToggleWrap.classList.add("bubblewarp-toggle-wrap--inline");
+      notesCardHeader.insertBefore(bubblewarpToggleWrap, notesCardHeader.firstChild);
     }
   } else {
     screenpadLayout.style.display = "";
@@ -4177,9 +4193,26 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     petColumn.style.height = "";
     petColumn.style.minHeight = "";
     petColumn.style.justifySelf = "";
+    petColumn.style.display = "";
 
     if (petWidget) {
       petWidget.style.display = "";
+    }
+
+    if (
+      bubblewarpToggleWrap &&
+      bubblewarpOriginalParent &&
+      bubblewarpToggleWrap.parentElement !== bubblewarpOriginalParent
+    ) {
+      bubblewarpToggleWrap.classList.remove("bubblewarp-toggle-wrap--inline");
+      if (
+        bubblewarpOriginalNextSibling &&
+        bubblewarpOriginalNextSibling.parentElement === bubblewarpOriginalParent
+      ) {
+        bubblewarpOriginalParent.insertBefore(bubblewarpToggleWrap, bubblewarpOriginalNextSibling);
+      } else {
+        bubblewarpOriginalParent.appendChild(bubblewarpToggleWrap);
+      }
     }
   }
 }
