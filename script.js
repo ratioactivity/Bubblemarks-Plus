@@ -381,6 +381,7 @@ let axolotlFigure;
 let axolotlFrameDisplay;
 let axolotlPresenceMode = AXOLOTL_PRESENCE_MODES.WINDOW;
 let petWidgetFrame;
+let screenpadLayout;
 let heroHeading;
 let settingsBtn;
 let settingsModal;
@@ -388,6 +389,7 @@ let settingsForm;
 let settingsDialog;
 let toggleHeadingInput;
 let toggleAxolotlInput;
+let toggleSecondaryMonitorLayoutInput;
 let petNameInput;
 let petNameSaveBtn;
 let togglePetVacationInput;
@@ -818,6 +820,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   settingsDialog = document.querySelector(".settings-modal__dialog");
   scrollLockFloatingToggle = document.getElementById("scroll-lock-toggle");
   petWidgetFrame = document.querySelector("#pet-widget iframe");
+  screenpadLayout = document.querySelector(".screenpad-layout");
 
   const petLevelUpProxy = (amount = 1) => {
     const petWindow = petWidgetFrame?.contentWindow;
@@ -858,6 +861,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   toggleHeadingInput = document.getElementById("toggle-heading");
   toggleAxolotlInput = document.getElementById("toggle-axolotl");
+  toggleSecondaryMonitorLayoutInput = document.getElementById(
+    "toggle-secondary-monitor-layout"
+  );
   petNameInput = document.getElementById("pet-name-input");
   petNameSaveBtn = document.getElementById("pet-name-save");
   togglePetVacationInput = document.getElementById("toggle-vacation");
@@ -2747,6 +2753,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   preferences = loadPreferences();
   applyScrollLock(preferences.scrollLocked);
   applyPreferences({ syncInputs: false, lazyAxolotl: true });
+  await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout === true);
 
   if (scrollLockFloatingToggle) {
     scrollLockFloatingToggle.addEventListener("click", () => {
@@ -3135,6 +3142,7 @@ function getDefaultPreferences() {
     petVacation: false,
     petSoundEnabled: true,
     petScrollDisabled: false,
+    useSecondaryMonitorLayout: false,
   };
 }
 
@@ -3160,6 +3168,7 @@ function normalizePreferences(value) {
     petVacation: value.petVacation === true,
     petSoundEnabled: value.petSoundEnabled !== false,
     petScrollDisabled: value.petScrollDisabled === true,
+    useSecondaryMonitorLayout: value.useSecondaryMonitorLayout === true,
   };
 }
 
@@ -4087,6 +4096,94 @@ function updateScrollLockToggleState(scrollLocked, { syncSettings = true } = {})
   }
 }
 
+function applyVerticalSecondaryLayoutRuntime(enabled) {
+  const leftPanel = document.getElementById("bubblemarks-left");
+  const petColumn = document.querySelector(".pet-column");
+  const petWidget = document.querySelector(".pet-widget");
+  const leftShellBody = document.querySelector(".left-shell-body");
+  const appShell = screenpadLayout?.querySelector(".app-shell");
+
+  if (!screenpadLayout || !leftPanel || !petColumn || !appShell) {
+    return;
+  }
+
+  if (enabled) {
+    screenpadLayout.style.display = "grid";
+    screenpadLayout.style.gridTemplateColumns = "minmax(680px, 1fr) minmax(180px, 240px)";
+    screenpadLayout.style.gridTemplateAreas = '"left pet" "main main"';
+    screenpadLayout.style.gridTemplateRows = "auto auto";
+    screenpadLayout.style.minHeight = "";
+
+    leftPanel.style.gridArea = "left";
+    leftPanel.style.width = "100%";
+    leftPanel.style.minWidth = "0";
+    leftPanel.style.maxWidth = "none";
+    leftPanel.style.height = "";
+    leftPanel.style.minHeight = "";
+    leftPanel.style.position = "static";
+
+    if (leftShellBody) {
+      leftShellBody.style.overflow = "visible";
+    }
+
+    appShell.style.gridArea = "main";
+    appShell.style.width = "100%";
+    appShell.style.maxWidth = "none";
+    appShell.style.height = "";
+    appShell.style.minHeight = "";
+    appShell.style.overflow = "visible";
+
+    petColumn.style.gridArea = "pet";
+    petColumn.style.width = "100%";
+    petColumn.style.minWidth = "0";
+    petColumn.style.maxWidth = "240px";
+    petColumn.style.height = "";
+    petColumn.style.minHeight = "";
+    petColumn.style.justifySelf = "end";
+
+    if (petWidget) {
+      petWidget.style.display = "none";
+    }
+  } else {
+    screenpadLayout.style.display = "";
+    screenpadLayout.style.gridTemplateColumns = "";
+    screenpadLayout.style.gridTemplateAreas = "";
+    screenpadLayout.style.gridTemplateRows = "";
+    screenpadLayout.style.minHeight = "";
+
+    leftPanel.style.gridArea = "";
+    leftPanel.style.width = "";
+    leftPanel.style.minWidth = "";
+    leftPanel.style.maxWidth = "";
+    leftPanel.style.height = "";
+    leftPanel.style.minHeight = "";
+    leftPanel.style.position = "";
+
+    if (leftShellBody) {
+      leftShellBody.style.overflow = "";
+    }
+
+    appShell.style.gridArea = "";
+    appShell.style.width = "";
+    appShell.style.maxWidth = "";
+    appShell.style.height = "";
+    appShell.style.minHeight = "";
+    appShell.style.overflow = "";
+
+    petColumn.style.gridArea = "";
+    petColumn.style.width = "";
+    petColumn.style.minWidth = "";
+    petColumn.style.maxWidth = "";
+    petColumn.style.height = "";
+    petColumn.style.minHeight = "";
+    petColumn.style.justifySelf = "";
+
+    if (petWidget) {
+      petWidget.style.display = "";
+    }
+  }
+}
+
 function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   const showHeading = preferences.showHeading !== false;
   const showAxolotl = preferences.showAxolotl !== false;
@@ -4096,6 +4193,7 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   const petVacation = preferences.petVacation === true;
   const petSoundEnabled = preferences.petSoundEnabled !== false;
   const petScrollDisabled = preferences.petScrollDisabled === true;
+  const useSecondaryMonitorLayout = preferences.useSecondaryMonitorLayout === true;
   const cardsPerRow = normalizeLayoutCount(preferences.cardsPerRow, DEFAULT_CARDS_PER_ROW);
   const rowsPerPage = normalizeLayoutCount(preferences.rowsPerPage, DEFAULT_ROWS_PER_PAGE);
 
@@ -4109,6 +4207,7 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   preferences.petVacation = petVacation;
   preferences.petSoundEnabled = petSoundEnabled;
   preferences.petScrollDisabled = petScrollDisabled;
+  preferences.useSecondaryMonitorLayout = useSecondaryMonitorLayout;
 
   if (heroHeading) {
     heroHeading.hidden = !showHeading;
@@ -4133,6 +4232,9 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
     if (togglePetScrollInput) {
       togglePetScrollInput.checked = petScrollDisabled;
     }
+    if (toggleSecondaryMonitorLayoutInput) {
+      toggleSecondaryMonitorLayoutInput.checked = useSecondaryMonitorLayout;
+    }
     updateScrollLockToggleState(scrollLocked, { syncSettings: true });
     if (cardSizeInput) {
       cardSizeInput.value = String(cardSizeToIndex(cardSize));
@@ -4151,7 +4253,24 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
 
   if (document.body) {
     document.body.setAttribute("data-card-size", cardSize);
+    document.body.setAttribute(
+      "data-monitor-layout",
+      useSecondaryMonitorLayout ? "vertical-secondary" : "default"
+    );
+    document.body.classList.toggle(
+      "layout-vertical-secondary",
+      useSecondaryMonitorLayout
+    );
   }
+
+  if (screenpadLayout) {
+    screenpadLayout.classList.toggle(
+      "screenpad-layout--vertical-secondary",
+      useSecondaryMonitorLayout
+    );
+  }
+
+  applyVerticalSecondaryLayoutRuntime(useSecondaryMonitorLayout);
 
   if (!syncInputs) {
     updateScrollLockToggleState(scrollLocked, { syncSettings: false });
@@ -4440,6 +4559,23 @@ function setupKeyboard() {
   container.appendChild(backspaceBtn);
 }
 
+async function moveWindowForMonitorLayout(useSecondaryMonitorLayout) {
+  if (!window.displayManager || typeof window.displayManager.moveTo !== "function") {
+    return;
+  }
+
+  const preference = useSecondaryMonitorLayout ? "secondary" : "primary";
+
+  try {
+    const result = await window.displayManager.moveTo(preference);
+    if (!result || result.success !== true) {
+      console.warn("[Bubblemarks] Display move request did not complete.", result);
+    }
+  } catch (error) {
+    console.warn("[Bubblemarks] Failed to move display from renderer", error);
+  }
+}
+
 function setupSettingsMenu() {
   if (typeof window === "undefined" || !settingsBtn || !settingsModal) {
     return;
@@ -4553,6 +4689,15 @@ function setupSettingsMenu() {
       preferences.showAxolotl = event.target.checked;
       savePreferences();
       applyPreferences({ syncInputs: false });
+    });
+  }
+
+  if (toggleSecondaryMonitorLayoutInput) {
+    toggleSecondaryMonitorLayoutInput.addEventListener("change", async (event) => {
+      preferences.useSecondaryMonitorLayout = event.target.checked;
+      savePreferences();
+      applyPreferences({ syncInputs: false });
+      await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout);
     });
   }
 
