@@ -4096,6 +4096,100 @@ function updateScrollLockToggleState(scrollLocked, { syncSettings = true } = {})
   }
 }
 
+function applyVerticalSecondaryLayoutRuntime(enabled) {
+  const leftPanel = document.getElementById("bubblemarks-left");
+  const petColumn = document.querySelector(".pet-column");
+  const petWidget = document.querySelector(".pet-widget");
+  const leftShellBody = document.querySelector(".left-shell-body");
+  const appShell = screenpadLayout?.querySelector(".app-shell");
+
+  if (!screenpadLayout || !leftPanel || !petColumn || !appShell) {
+    return;
+  }
+
+  if (enabled) {
+    screenpadLayout.style.display = "grid";
+    screenpadLayout.style.gridTemplateColumns = "minmax(0, 1fr) minmax(0, 1fr)";
+    screenpadLayout.style.gridTemplateAreas = '"left pet" "main main"';
+    screenpadLayout.style.gridTemplateRows = "minmax(0, 50vh) minmax(0, 50vh)";
+    screenpadLayout.style.minHeight = "100vh";
+
+    leftPanel.style.gridArea = "left";
+    leftPanel.style.width = "100%";
+    leftPanel.style.minWidth = "0";
+    leftPanel.style.maxWidth = "none";
+    leftPanel.style.height = "100%";
+    leftPanel.style.minHeight = "0";
+    leftPanel.style.position = "static";
+
+    if (leftShellBody) {
+      leftShellBody.style.overflow = "auto";
+    }
+
+    appShell.style.gridArea = "main";
+    appShell.style.width = "100%";
+    appShell.style.maxWidth = "none";
+    appShell.style.height = "100%";
+    appShell.style.minHeight = "0";
+    appShell.style.overflow = "auto";
+
+    petColumn.style.gridArea = "pet";
+    petColumn.style.width = "100%";
+    petColumn.style.minWidth = "0";
+    petColumn.style.maxWidth = "none";
+    petColumn.style.height = "100%";
+    petColumn.style.minHeight = "0";
+
+    if (petWidget) {
+      petWidget.style.width = "100%";
+      petWidget.style.minWidth = "0";
+      petWidget.style.maxWidth = "none";
+      petWidget.style.height = "100%";
+      petWidget.style.minHeight = "0";
+    }
+  } else {
+    screenpadLayout.style.display = "";
+    screenpadLayout.style.gridTemplateColumns = "";
+    screenpadLayout.style.gridTemplateAreas = "";
+    screenpadLayout.style.gridTemplateRows = "";
+    screenpadLayout.style.minHeight = "";
+
+    leftPanel.style.gridArea = "";
+    leftPanel.style.width = "";
+    leftPanel.style.minWidth = "";
+    leftPanel.style.maxWidth = "";
+    leftPanel.style.height = "";
+    leftPanel.style.minHeight = "";
+    leftPanel.style.position = "";
+
+    if (leftShellBody) {
+      leftShellBody.style.overflow = "";
+    }
+
+    appShell.style.gridArea = "";
+    appShell.style.width = "";
+    appShell.style.maxWidth = "";
+    appShell.style.height = "";
+    appShell.style.minHeight = "";
+    appShell.style.overflow = "";
+
+    petColumn.style.gridArea = "";
+    petColumn.style.width = "";
+    petColumn.style.minWidth = "";
+    petColumn.style.maxWidth = "";
+    petColumn.style.height = "";
+    petColumn.style.minHeight = "";
+
+    if (petWidget) {
+      petWidget.style.width = "";
+      petWidget.style.minWidth = "";
+      petWidget.style.maxWidth = "";
+      petWidget.style.height = "";
+      petWidget.style.minHeight = "";
+    }
+  }
+}
+
 function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   const showHeading = preferences.showHeading !== false;
   const showAxolotl = preferences.showAxolotl !== false;
@@ -4181,6 +4275,8 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
       useSecondaryMonitorLayout
     );
   }
+
+  applyVerticalSecondaryLayoutRuntime(useSecondaryMonitorLayout);
 
   if (!syncInputs) {
     updateScrollLockToggleState(scrollLocked, { syncSettings: false });
