@@ -4073,3 +4073,80 @@ body.modal-open {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Secondary vertical-monitor mode */
+body[data-monitor-layout="vertical-secondary"] .screenpad-layout {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.2fr) minmax(190px, 0.9fr);
+  grid-template-areas:
+    "left left pet"
+    "main main main";
+  gap: clamp(0.45rem, 1vw, 0.9rem);
+  align-items: start;
+  min-height: auto;
+}
+
+body[data-monitor-layout="vertical-secondary"] #bubblemarks-left {
+  grid-area: left;
+  position: static;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: auto;
+  padding: 0.75rem;
+}
+
+body[data-monitor-layout="vertical-secondary"] .left-shell-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "clock notes"
+    "quick notes"
+    "music notes";
+  gap: 0.55rem;
+  overflow: visible;
+  padding-right: 0;
+}
+
+body[data-monitor-layout="vertical-secondary"] #clock-widget {
+  grid-area: clock;
+}
+
+body[data-monitor-layout="vertical-secondary"] #quicklaunch-widget {
+  grid-area: quick;
+}
+
+body[data-monitor-layout="vertical-secondary"] #music-player-widget {
+  grid-area: music;
+}
+
+body[data-monitor-layout="vertical-secondary"] #notes-widget {
+  grid-area: notes;
+  max-width: none;
+  min-height: 100%;
+}
+
+body[data-monitor-layout="vertical-secondary"] .screenpad-layout .app-shell {
+  grid-area: main;
+  width: 100%;
+  max-width: none;
+}
+
+body[data-monitor-layout="vertical-secondary"] .pet-column {
+  grid-area: pet;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+body[data-monitor-layout="vertical-secondary"] .pet-widget {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: clamp(320px, 38vh, 460px);
+}
+
+body[data-monitor-layout="vertical-secondary"] {
+  --grid-columns: 4;
+  --grid-max-width: 100%;
+}
