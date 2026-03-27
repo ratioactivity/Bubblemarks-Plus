@@ -4111,41 +4111,42 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     screenpadLayout.style.display = "grid";
     screenpadLayout.style.gridTemplateColumns = "minmax(0, 1fr) minmax(0, 1fr)";
     screenpadLayout.style.gridTemplateAreas = '"left pet" "main main"';
-    screenpadLayout.style.gridTemplateRows = "minmax(0, 50vh) minmax(0, 50vh)";
-    screenpadLayout.style.minHeight = "100vh";
+    screenpadLayout.style.gridTemplateRows = "auto auto";
+    screenpadLayout.style.minHeight = "";
 
     leftPanel.style.gridArea = "left";
     leftPanel.style.width = "100%";
     leftPanel.style.minWidth = "0";
     leftPanel.style.maxWidth = "none";
-    leftPanel.style.height = "100%";
-    leftPanel.style.minHeight = "0";
+    leftPanel.style.height = "";
+    leftPanel.style.minHeight = "";
     leftPanel.style.position = "static";
 
     if (leftShellBody) {
-      leftShellBody.style.overflow = "auto";
+      leftShellBody.style.overflow = "visible";
     }
 
     appShell.style.gridArea = "main";
     appShell.style.width = "100%";
     appShell.style.maxWidth = "none";
-    appShell.style.height = "100%";
-    appShell.style.minHeight = "0";
-    appShell.style.overflow = "auto";
+    appShell.style.height = "";
+    appShell.style.minHeight = "";
+    appShell.style.overflow = "visible";
 
     petColumn.style.gridArea = "pet";
     petColumn.style.width = "100%";
     petColumn.style.minWidth = "0";
-    petColumn.style.maxWidth = "none";
-    petColumn.style.height = "100%";
-    petColumn.style.minHeight = "0";
+    petColumn.style.maxWidth = "320px";
+    petColumn.style.height = "";
+    petColumn.style.minHeight = "";
+    petColumn.style.justifySelf = "end";
 
     if (petWidget) {
       petWidget.style.width = "100%";
       petWidget.style.minWidth = "0";
-      petWidget.style.maxWidth = "none";
-      petWidget.style.height = "100%";
-      petWidget.style.minHeight = "0";
+      petWidget.style.maxWidth = "320px";
+      petWidget.style.height = "";
+      petWidget.style.minHeight = "";
     }
   } else {
     screenpadLayout.style.display = "";
@@ -4179,6 +4180,7 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     petColumn.style.maxWidth = "";
     petColumn.style.height = "";
     petColumn.style.minHeight = "";
+    petColumn.style.justifySelf = "";
 
     if (petWidget) {
       petWidget.style.width = "";

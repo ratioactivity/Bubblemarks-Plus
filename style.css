@@ -4083,10 +4083,10 @@ body.layout-vertical-secondary .screenpad-layout,
   grid-template-areas:
     "left pet"
     "main main";
-  grid-template-rows: minmax(0, 50vh) minmax(0, 50vh);
+  grid-template-rows: auto auto;
   gap: clamp(0.45rem, 1vw, 0.9rem);
   align-items: start;
-  min-height: 100vh;
+  min-height: auto;
 }
 
 body[data-monitor-layout="vertical-secondary"] #bubblemarks-left,
@@ -4097,8 +4097,8 @@ body.layout-vertical-secondary #bubblemarks-left,
   width: 100%;
   min-width: 0;
   max-width: none;
-  min-height: 0;
-  height: 100%;
+  min-height: auto;
+  height: auto;
   padding: 0.75rem;
 }
 
@@ -4112,7 +4112,7 @@ body.layout-vertical-secondary .left-shell-body,
     "quick notes"
     "music notes";
   gap: 0.55rem;
-  overflow: auto;
+  overflow: visible;
   padding-right: 0;
 }
 
@@ -4148,9 +4148,9 @@ body.layout-vertical-secondary .screenpad-layout .app-shell,
   grid-area: main;
   width: 100%;
   max-width: none;
-  min-height: 0;
-  height: 100%;
-  overflow: auto;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
 }
 
 body[data-monitor-layout="vertical-secondary"] .pet-column,
@@ -4161,9 +4161,10 @@ body.layout-vertical-secondary .pet-column,
   grid-template-rows: auto minmax(0, 1fr);
   width: 100%;
   min-width: 0;
-  max-width: none;
-  min-height: 0;
-  height: 100%;
+  max-width: min(100%, 320px);
+  min-height: auto;
+  height: auto;
+  justify-self: end;
 }
 
 body[data-monitor-layout="vertical-secondary"] .pet-widget,
@@ -4171,9 +4172,9 @@ body.layout-vertical-secondary .pet-widget,
 .screenpad-layout.screenpad-layout--vertical-secondary .pet-widget {
   width: 100%;
   min-width: 0;
-  max-width: none;
-  min-height: 0;
-  height: 100%;
+  max-width: 320px;
+  min-height: auto;
+  height: auto;
 }
 
 body[data-monitor-layout="vertical-secondary"],
