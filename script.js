@@ -381,6 +381,7 @@ let axolotlFigure;
 let axolotlFrameDisplay;
 let axolotlPresenceMode = AXOLOTL_PRESENCE_MODES.WINDOW;
 let petWidgetFrame;
+let screenpadLayout;
 let heroHeading;
 let settingsBtn;
 let settingsModal;
@@ -819,6 +820,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   settingsDialog = document.querySelector(".settings-modal__dialog");
   scrollLockFloatingToggle = document.getElementById("scroll-lock-toggle");
   petWidgetFrame = document.querySelector("#pet-widget iframe");
+  screenpadLayout = document.querySelector(".screenpad-layout");
 
   const petLevelUpProxy = (amount = 1) => {
     const petWindow = petWidgetFrame?.contentWindow;
@@ -4166,6 +4168,17 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
     document.body.setAttribute(
       "data-monitor-layout",
       useSecondaryMonitorLayout ? "vertical-secondary" : "default"
+    );
+    document.body.classList.toggle(
+      "layout-vertical-secondary",
+      useSecondaryMonitorLayout
+    );
+  }
+
+  if (screenpadLayout) {
+    screenpadLayout.classList.toggle(
+      "screenpad-layout--vertical-secondary",
+      useSecondaryMonitorLayout
     );
   }
 
