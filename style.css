@@ -4077,13 +4077,14 @@ body.modal-open {
 /* Secondary vertical-monitor mode */
 body[data-monitor-layout="vertical-secondary"] .screenpad-layout {
   display: grid !important;
-  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.2fr) minmax(190px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
-    "left left pet"
-    "main main main";
+    "left pet"
+    "main main";
+  grid-template-rows: minmax(0, 50vh) minmax(0, 50vh);
   gap: clamp(0.45rem, 1vw, 0.9rem);
   align-items: start;
-  min-height: auto;
+  min-height: 100vh;
 }
 
 body[data-monitor-layout="vertical-secondary"] #bubblemarks-left {
@@ -4092,7 +4093,8 @@ body[data-monitor-layout="vertical-secondary"] #bubblemarks-left {
   width: 100%;
   min-width: 0;
   max-width: none;
-  min-height: auto;
+  min-height: 0;
+  height: 100%;
   padding: 0.75rem;
 }
 
@@ -4104,7 +4106,7 @@ body[data-monitor-layout="vertical-secondary"] .left-shell-body {
     "quick notes"
     "music notes";
   gap: 0.55rem;
-  overflow: visible;
+  overflow: auto;
   padding-right: 0;
 }
 
@@ -4130,20 +4132,28 @@ body[data-monitor-layout="vertical-secondary"] .screenpad-layout .app-shell {
   grid-area: main;
   width: 100%;
   max-width: none;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
 }
 
 body[data-monitor-layout="vertical-secondary"] .pet-column {
   grid-area: pet;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   width: 100%;
   min-width: 0;
   max-width: none;
+  min-height: 0;
+  height: 100%;
 }
 
 body[data-monitor-layout="vertical-secondary"] .pet-widget {
   width: 100%;
   min-width: 0;
   max-width: none;
-  min-height: clamp(320px, 38vh, 460px);
+  min-height: 0;
+  height: 100%;
 }
 
 body[data-monitor-layout="vertical-secondary"] {
