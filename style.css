@@ -4079,7 +4079,7 @@ body[data-monitor-layout="vertical-secondary"] .screenpad-layout,
 body.layout-vertical-secondary .screenpad-layout,
 .screenpad-layout.screenpad-layout--vertical-secondary {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(680px, 1fr) minmax(180px, 240px);
   grid-template-areas:
     "left pet"
     "main main";
@@ -4106,7 +4106,7 @@ body[data-monitor-layout="vertical-secondary"] .left-shell-body,
 body.layout-vertical-secondary .left-shell-body,
 .screenpad-layout.screenpad-layout--vertical-secondary .left-shell-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   grid-template-areas:
     "clock notes"
     "quick notes"
@@ -4157,11 +4157,11 @@ body[data-monitor-layout="vertical-secondary"] .pet-column,
 body.layout-vertical-secondary .pet-column,
 .screenpad-layout.screenpad-layout--vertical-secondary .pet-column {
   grid-area: pet;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
-  max-width: min(100%, 320px);
+  max-width: min(100%, 240px);
   min-height: auto;
   height: auto;
   justify-self: end;
@@ -4170,11 +4170,7 @@ body.layout-vertical-secondary .pet-column,
 body[data-monitor-layout="vertical-secondary"] .pet-widget,
 body.layout-vertical-secondary .pet-widget,
 .screenpad-layout.screenpad-layout--vertical-secondary .pet-widget {
-  width: 100%;
-  min-width: 0;
-  max-width: 320px;
-  min-height: auto;
-  height: auto;
+  display: none;
 }
 
 body[data-monitor-layout="vertical-secondary"],

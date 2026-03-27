@@ -4109,7 +4109,7 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
 
   if (enabled) {
     screenpadLayout.style.display = "grid";
-    screenpadLayout.style.gridTemplateColumns = "minmax(0, 1fr) minmax(0, 1fr)";
+    screenpadLayout.style.gridTemplateColumns = "minmax(680px, 1fr) minmax(180px, 240px)";
     screenpadLayout.style.gridTemplateAreas = '"left pet" "main main"';
     screenpadLayout.style.gridTemplateRows = "auto auto";
     screenpadLayout.style.minHeight = "";
@@ -4136,17 +4136,13 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     petColumn.style.gridArea = "pet";
     petColumn.style.width = "100%";
     petColumn.style.minWidth = "0";
-    petColumn.style.maxWidth = "320px";
+    petColumn.style.maxWidth = "240px";
     petColumn.style.height = "";
     petColumn.style.minHeight = "";
     petColumn.style.justifySelf = "end";
 
     if (petWidget) {
-      petWidget.style.width = "100%";
-      petWidget.style.minWidth = "0";
-      petWidget.style.maxWidth = "320px";
-      petWidget.style.height = "";
-      petWidget.style.minHeight = "";
+      petWidget.style.display = "none";
     }
   } else {
     screenpadLayout.style.display = "";
@@ -4183,11 +4179,7 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     petColumn.style.justifySelf = "";
 
     if (petWidget) {
-      petWidget.style.width = "";
-      petWidget.style.minWidth = "";
-      petWidget.style.maxWidth = "";
-      petWidget.style.height = "";
-      petWidget.style.minHeight = "";
+      petWidget.style.display = "";
     }
   }
 }
