@@ -388,6 +388,7 @@ let settingsForm;
 let settingsDialog;
 let toggleHeadingInput;
 let toggleAxolotlInput;
+let toggleSecondaryMonitorLayoutInput;
 let petNameInput;
 let petNameSaveBtn;
 let togglePetVacationInput;
@@ -858,6 +859,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   toggleHeadingInput = document.getElementById("toggle-heading");
   toggleAxolotlInput = document.getElementById("toggle-axolotl");
+  toggleSecondaryMonitorLayoutInput = document.getElementById(
+    "toggle-secondary-monitor-layout"
+  );
   petNameInput = document.getElementById("pet-name-input");
   petNameSaveBtn = document.getElementById("pet-name-save");
   togglePetVacationInput = document.getElementById("toggle-vacation");
@@ -2747,6 +2751,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   preferences = loadPreferences();
   applyScrollLock(preferences.scrollLocked);
   applyPreferences({ syncInputs: false, lazyAxolotl: true });
+  await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout === true);
 
   if (scrollLockFloatingToggle) {
     scrollLockFloatingToggle.addEventListener("click", () => {
@@ -3135,6 +3140,7 @@ function getDefaultPreferences() {
     petVacation: false,
     petSoundEnabled: true,
     petScrollDisabled: false,
+    useSecondaryMonitorLayout: false,
   };
 }
 
@@ -3160,6 +3166,7 @@ function normalizePreferences(value) {
     petVacation: value.petVacation === true,
     petSoundEnabled: value.petSoundEnabled !== false,
     petScrollDisabled: value.petScrollDisabled === true,
+    useSecondaryMonitorLayout: value.useSecondaryMonitorLayout === true,
   };
 }
 
@@ -4096,6 +4103,7 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   const petVacation = preferences.petVacation === true;
   const petSoundEnabled = preferences.petSoundEnabled !== false;
   const petScrollDisabled = preferences.petScrollDisabled === true;
+  const useSecondaryMonitorLayout = preferences.useSecondaryMonitorLayout === true;
   const cardsPerRow = normalizeLayoutCount(preferences.cardsPerRow, DEFAULT_CARDS_PER_ROW);
   const rowsPerPage = normalizeLayoutCount(preferences.rowsPerPage, DEFAULT_ROWS_PER_PAGE);
 
@@ -4109,6 +4117,7 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
   preferences.petVacation = petVacation;
   preferences.petSoundEnabled = petSoundEnabled;
   preferences.petScrollDisabled = petScrollDisabled;
+  preferences.useSecondaryMonitorLayout = useSecondaryMonitorLayout;
 
   if (heroHeading) {
     heroHeading.hidden = !showHeading;
@@ -4133,6 +4142,9 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
     if (togglePetScrollInput) {
       togglePetScrollInput.checked = petScrollDisabled;
     }
+    if (toggleSecondaryMonitorLayoutInput) {
+      toggleSecondaryMonitorLayoutInput.checked = useSecondaryMonitorLayout;
+    }
     updateScrollLockToggleState(scrollLocked, { syncSettings: true });
     if (cardSizeInput) {
       cardSizeInput.value = String(cardSizeToIndex(cardSize));
@@ -4151,6 +4163,10 @@ function applyPreferences({ syncInputs = true, lazyAxolotl = false } = {}) {
 
   if (document.body) {
     document.body.setAttribute("data-card-size", cardSize);
+    document.body.setAttribute(
+      "data-monitor-layout",
+      useSecondaryMonitorLayout ? "vertical-secondary" : "default"
+    );
   }
 
   if (!syncInputs) {
@@ -4440,6 +4456,23 @@ function setupKeyboard() {
   container.appendChild(backspaceBtn);
 }
 
+async function moveWindowForMonitorLayout(useSecondaryMonitorLayout) {
+  if (!window.displayManager || typeof window.displayManager.moveTo !== "function") {
+    return;
+  }
+
+  const preference = useSecondaryMonitorLayout ? "secondary" : "primary";
+
+  try {
+    const result = await window.displayManager.moveTo(preference);
+    if (!result || result.success !== true) {
+      console.warn("[Bubblemarks] Display move request did not complete.", result);
+    }
+  } catch (error) {
+    console.warn("[Bubblemarks] Failed to move display from renderer", error);
+  }
+}
+
 function setupSettingsMenu() {
   if (typeof window === "undefined" || !settingsBtn || !settingsModal) {
     return;
@@ -4553,6 +4586,15 @@ function setupSettingsMenu() {
       preferences.showAxolotl = event.target.checked;
       savePreferences();
       applyPreferences({ syncInputs: false });
+    });
+  }
+
+  if (toggleSecondaryMonitorLayoutInput) {
+    toggleSecondaryMonitorLayoutInput.addEventListener("change", async (event) => {
+      preferences.useSecondaryMonitorLayout = event.target.checked;
+      savePreferences();
+      applyPreferences({ syncInputs: false });
+      await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout);
     });
   }
 
