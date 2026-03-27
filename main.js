@@ -110,6 +110,7 @@ app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 console.log("✅ script validated");
 
 let mainWindow = null;
+let useSecondMonitorPreference = false;
 const pendingDeepLinks = [];
 
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -127,18 +128,7 @@ function displayMatchesZenbook(display) {
   });
 }
 
-function resolveTargetDisplay() {
-  const displays = screen.getAllDisplays();
-  if (displays.length === 0) {
-    return screen.getPrimaryDisplay();
-  }
-
-  const zenbookDisplay = displays.find(displayMatchesZenbook);
-  if (zenbookDisplay) {
-    return zenbookDisplay;
-  }
-
-  const primaryDisplay = displays.find((display) => display.primary) || displays[0];
+function resolveSecondaryDisplay(primaryDisplay, displays) {
   const secondaryDisplays = displays.filter((display) => display.id !== primaryDisplay.id);
 
   if (secondaryDisplays.length === 0) {
@@ -160,6 +150,65 @@ function resolveTargetDisplay() {
   }
 
   return secondaryDisplays[0];
+}
+
+function resolveTargetDisplay({ preferSecondMonitor = false } = {}) {
+  const displays = screen.getAllDisplays();
+  if (displays.length === 0) {
+    return screen.getPrimaryDisplay();
+  }
+
+  const primaryDisplay = displays.find((display) => display.primary) || displays[0];
+  if (preferSecondMonitor) {
+    return resolveSecondaryDisplay(primaryDisplay, displays);
+  }
+
+  const zenbookDisplay = displays.find(displayMatchesZenbook);
+  if (zenbookDisplay) {
+    return zenbookDisplay;
+  }
+
+  return primaryDisplay;
+}
+
+function applyDisplayPreference(preferSecondMonitor = false) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return;
+  }
+
+  const targetDisplay = resolveTargetDisplay({ preferSecondMonitor });
+  const { bounds, size, scaleFactor } = targetDisplay;
+  const targetSize = size || bounds;
+  const { width, height } = targetSize;
+
+  console.log(
+    `[Bubblemarks] targeting display ${targetDisplay.id} (${width}x${height}@${scaleFactor}x), second-monitor preference=${preferSecondMonitor}`
+  );
+
+  const wasFullScreen = mainWindow.isFullScreen();
+  if (wasFullScreen) {
+    mainWindow.setFullScreen(false);
+  }
+  mainWindow.setBounds({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+  });
+  mainWindow.setPosition(bounds.x, bounds.y);
+  mainWindow.setSize(bounds.width, bounds.height);
+  if (wasFullScreen) {
+    mainWindow.setFullScreen(true);
+  }
+}
+
+function registerDisplayPreferenceHandler() {
+  ipcMain.handle("display-preferences:update", (_event, nextPreferences = {}) => {
+    const shouldUseSecondMonitor = nextPreferences?.useSecondMonitor === true;
+    useSecondMonitorPreference = shouldUseSecondMonitor;
+    applyDisplayPreference(useSecondMonitorPreference);
+    return { success: true, useSecondMonitor: useSecondMonitorPreference };
+  });
 }
 
 function extractBubblemarksUrl(commandLine = []) {
@@ -349,7 +398,7 @@ function registerBubblemarksProtocol() {
 }
 
 function createWindow() {
-  const targetDisplay = resolveTargetDisplay();
+  const targetDisplay = resolveTargetDisplay({ preferSecondMonitor: useSecondMonitorPreference });
   const { bounds, size, scaleFactor } = targetDisplay;
   const targetSize = size || bounds;
   const { width, height } = targetSize;
@@ -437,6 +486,7 @@ function createWindow() {
     registerBubblemarksProtocol();
     registerMusicFolderHandler();
     registerQuicklaunchHandler();
+    registerDisplayPreferenceHandler();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
       registerDefaultProtocolClient();

@@ -1236,6 +1236,108 @@ body.bubblewarp-open {
   overflow: hidden;
 }
 
+body[data-vertical-monitor-layout="true"] .screenpad-layout,
+.screenpad-layout[data-layout-mode="vertical-monitor"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(210px, 0.72fr);
+  grid-template-areas:
+    "left left pet"
+    "main main main";
+  align-items: start;
+  justify-content: center;
+  width: min(100%, 1030px);
+  margin: 0 auto;
+  gap: 0.75rem;
+}
+
+body[data-vertical-monitor-layout="true"] #bubblemarks-left,
+.screenpad-layout[data-layout-mode="vertical-monitor"] #bubblemarks-left {
+  grid-area: left;
+  position: relative;
+  min-width: 0;
+  min-height: auto;
+  max-height: none;
+  padding: 0.8rem;
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "clock notes"
+    "quicklaunch notes"
+    "quicklaunch music";
+  gap: 0.6rem;
+}
+
+body[data-vertical-monitor-layout="true"] #clock-widget,
+.screenpad-layout[data-layout-mode="vertical-monitor"] #clock-widget {
+  grid-area: clock;
+}
+
+body[data-vertical-monitor-layout="true"] #quicklaunch-widget,
+.screenpad-layout[data-layout-mode="vertical-monitor"] #quicklaunch-widget {
+  grid-area: quicklaunch;
+}
+
+body[data-vertical-monitor-layout="true"] #notes-widget,
+.screenpad-layout[data-layout-mode="vertical-monitor"] #notes-widget {
+  grid-area: notes;
+}
+
+body[data-vertical-monitor-layout="true"] #music-player-widget,
+.screenpad-layout[data-layout-mode="vertical-monitor"] #music-player-widget {
+  grid-area: music;
+  min-height: 170px;
+}
+
+body[data-vertical-monitor-layout="true"] .app-shell,
+.screenpad-layout[data-layout-mode="vertical-monitor"] .app-shell {
+  grid-area: main;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+body[data-vertical-monitor-layout="true"] .pet-column,
+.screenpad-layout[data-layout-mode="vertical-monitor"] .pet-column {
+  grid-area: pet;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  align-self: stretch;
+}
+
+body[data-vertical-monitor-layout="true"] .pet-widget,
+.screenpad-layout[data-layout-mode="vertical-monitor"] .pet-widget {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 320px;
+}
+
+body[data-vertical-monitor-layout="true"] .quicklaunch-bar,
+.screenpad-layout[data-layout-mode="vertical-monitor"] .quicklaunch-bar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body[data-vertical-monitor-layout="true"] .grid,
+.screenpad-layout[data-layout-mode="vertical-monitor"] .grid {
+  max-width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 960px) {
+  body[data-vertical-monitor-layout="true"] .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .screenpad-layout[data-layout-mode="vertical-monitor"] .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1400px) {
   .screenpad-layout {
     flex-direction: row;
