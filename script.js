@@ -4112,6 +4112,8 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
   const petWidget = document.querySelector(".pet-widget");
   const leftShellBody = document.querySelector(".left-shell-body");
   const appShell = screenpadLayout?.querySelector(".app-shell");
+  const notesWidget = document.getElementById("notes-widget");
+  const notesBody = notesWidget?.querySelector(".notes-card__body");
 
   if (!screenpadLayout || !leftPanel || !petColumn || !appShell) {
     return;
@@ -4122,6 +4124,7 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     screenpadLayout.style.gridTemplateColumns = "minmax(0, 1fr)";
     screenpadLayout.style.gridTemplateAreas = '"left" "main"';
     screenpadLayout.style.gridTemplateRows = "auto auto";
+    screenpadLayout.style.gap = "0.35rem";
     screenpadLayout.style.minHeight = "";
 
     leftPanel.style.gridArea = "left";
@@ -4129,11 +4132,23 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     leftPanel.style.minWidth = "0";
     leftPanel.style.maxWidth = "none";
     leftPanel.style.height = "";
-    leftPanel.style.minHeight = "";
+    leftPanel.style.minHeight = "0";
     leftPanel.style.position = "static";
+    leftPanel.style.padding = "0.45rem";
 
     if (leftShellBody) {
       leftShellBody.style.overflow = "visible";
+      leftShellBody.style.alignItems = "start";
+      leftShellBody.style.gridAutoRows = "min-content";
+    }
+
+    if (notesWidget) {
+      notesWidget.style.alignSelf = "start";
+    }
+    if (notesBody) {
+      notesBody.style.maxHeight = "none";
+      notesBody.style.minHeight = "380px";
+      notesBody.style.height = "100%";
     }
 
     appShell.style.gridArea = "main";
@@ -4165,6 +4180,7 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     screenpadLayout.style.gridTemplateColumns = "";
     screenpadLayout.style.gridTemplateAreas = "";
     screenpadLayout.style.gridTemplateRows = "";
+    screenpadLayout.style.gap = "";
     screenpadLayout.style.minHeight = "";
 
     leftPanel.style.gridArea = "";
@@ -4174,9 +4190,21 @@ function applyVerticalSecondaryLayoutRuntime(enabled) {
     leftPanel.style.height = "";
     leftPanel.style.minHeight = "";
     leftPanel.style.position = "";
+    leftPanel.style.padding = "";
 
     if (leftShellBody) {
       leftShellBody.style.overflow = "";
+      leftShellBody.style.alignItems = "";
+      leftShellBody.style.gridAutoRows = "";
+    }
+
+    if (notesWidget) {
+      notesWidget.style.alignSelf = "";
+    }
+    if (notesBody) {
+      notesBody.style.maxHeight = "";
+      notesBody.style.minHeight = "";
+      notesBody.style.height = "";
     }
 
     appShell.style.gridArea = "";
