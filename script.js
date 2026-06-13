@@ -2763,7 +2763,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   preferences = loadPreferences();
   applyScrollLock(preferences.scrollLocked);
   applyPreferences({ syncInputs: false, lazyAxolotl: true });
-  await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout === true);
+  await moveWindowToSideMonitor();
 
   if (scrollLockFloatingToggle) {
     scrollLockFloatingToggle.addEventListener("click", () => {
@@ -4620,15 +4620,13 @@ function setupKeyboard() {
   container.appendChild(backspaceBtn);
 }
 
-async function moveWindowForMonitorLayout(useSecondaryMonitorLayout) {
+async function moveWindowToSideMonitor() {
   if (!window.displayManager || typeof window.displayManager.moveTo !== "function") {
     return;
   }
 
-  const preference = useSecondaryMonitorLayout ? "secondary" : "primary";
-
   try {
-    const result = await window.displayManager.moveTo(preference);
+    const result = await window.displayManager.moveTo("secondary");
     if (!result || result.success !== true) {
       console.warn("[Bubblemarks] Display move request did not complete.", result);
     }
@@ -4758,7 +4756,7 @@ function setupSettingsMenu() {
       preferences.useSecondaryMonitorLayout = event.target.checked;
       savePreferences();
       applyPreferences({ syncInputs: false });
-      await moveWindowForMonitorLayout(preferences.useSecondaryMonitorLayout);
+      await moveWindowToSideMonitor();
     });
   }
 
