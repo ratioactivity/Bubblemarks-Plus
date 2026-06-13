@@ -4073,3 +4073,133 @@ body.modal-open {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Secondary vertical-monitor mode */
+body[data-monitor-layout="vertical-secondary"] .screenpad-layout,
+body.layout-vertical-secondary .screenpad-layout,
+.screenpad-layout.screenpad-layout--vertical-secondary {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "left"
+    "main";
+  grid-template-rows: auto auto;
+  gap: clamp(0.45rem, 1vw, 0.9rem);
+  align-items: start;
+  min-height: auto;
+}
+
+body[data-monitor-layout="vertical-secondary"] #bubblemarks-left,
+body.layout-vertical-secondary #bubblemarks-left,
+.screenpad-layout.screenpad-layout--vertical-secondary #bubblemarks-left {
+  grid-area: left;
+  position: static;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 0 !important;
+  height: auto;
+  padding: 0.45rem;
+}
+
+body[data-monitor-layout="vertical-secondary"] .left-shell-body,
+body.layout-vertical-secondary .left-shell-body,
+.screenpad-layout.screenpad-layout--vertical-secondary .left-shell-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-areas:
+    "clock notes"
+    "quick notes"
+    "music notes";
+  gap: 0.45rem;
+  overflow: visible;
+  padding-right: 0;
+  align-items: start;
+  grid-auto-rows: min-content;
+}
+
+body[data-monitor-layout="vertical-secondary"] #clock-widget,
+body.layout-vertical-secondary #clock-widget,
+.screenpad-layout.screenpad-layout--vertical-secondary #clock-widget {
+  grid-area: clock;
+}
+
+body[data-monitor-layout="vertical-secondary"] #quicklaunch-widget,
+body.layout-vertical-secondary #quicklaunch-widget,
+.screenpad-layout.screenpad-layout--vertical-secondary #quicklaunch-widget {
+  grid-area: quick;
+}
+
+body[data-monitor-layout="vertical-secondary"] #music-player-widget,
+body.layout-vertical-secondary #music-player-widget,
+.screenpad-layout.screenpad-layout--vertical-secondary #music-player-widget {
+  grid-area: music;
+}
+
+body[data-monitor-layout="vertical-secondary"] #notes-widget,
+body.layout-vertical-secondary #notes-widget,
+.screenpad-layout.screenpad-layout--vertical-secondary #notes-widget {
+  grid-area: notes;
+  max-width: none;
+  min-height: 0;
+  align-self: start;
+}
+
+body[data-monitor-layout="vertical-secondary"] #notes-widget .notes-card__body,
+body.layout-vertical-secondary #notes-widget .notes-card__body,
+.screenpad-layout.screenpad-layout--vertical-secondary #notes-widget .notes-card__body {
+  min-height: 380px;
+  max-height: none;
+  height: 100%;
+}
+
+body[data-monitor-layout="vertical-secondary"] .screenpad-layout .app-shell,
+body.layout-vertical-secondary .screenpad-layout .app-shell,
+.screenpad-layout.screenpad-layout--vertical-secondary .app-shell {
+  grid-area: main;
+  width: 100%;
+  max-width: none;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+}
+
+body[data-monitor-layout="vertical-secondary"] .pet-column,
+body.layout-vertical-secondary .pet-column,
+.screenpad-layout.screenpad-layout--vertical-secondary .pet-column {
+  display: none;
+}
+
+body[data-monitor-layout="vertical-secondary"] .pet-widget,
+body.layout-vertical-secondary .pet-widget,
+.screenpad-layout.screenpad-layout--vertical-secondary .pet-widget {
+  display: none;
+}
+
+body[data-monitor-layout="vertical-secondary"] #notes-widget .notes-card__header,
+body.layout-vertical-secondary #notes-widget .notes-card__header {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.2rem;
+}
+
+body[data-monitor-layout="vertical-secondary"] .bubblewarp-toggle-wrap--inline,
+body.layout-vertical-secondary .bubblewarp-toggle-wrap--inline {
+  width: auto;
+  margin: 0;
+}
+
+body[data-monitor-layout="vertical-secondary"] .bubblewarp-toggle-wrap--inline .bubblewarp-toggle,
+body.layout-vertical-secondary .bubblewarp-toggle-wrap--inline .bubblewarp-toggle {
+  width: auto;
+  margin-bottom: 0;
+  padding: 0.45rem 0.9rem;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+
+body[data-monitor-layout="vertical-secondary"],
+body.layout-vertical-secondary {
+  --grid-columns: 4;
+  --grid-max-width: 100%;
+}
