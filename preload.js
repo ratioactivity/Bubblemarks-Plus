@@ -46,6 +46,18 @@ contextBridge.exposeInMainWorld("quicklaunch", {
   },
 });
 
+contextBridge.exposeInMainWorld("displayManager", {
+  async moveTo(target) {
+    const normalizedTarget = target === "secondary" ? "secondary" : "primary";
+    try {
+      return await ipcRenderer.invoke("display-move", normalizedTarget);
+    } catch (error) {
+      console.warn("[Bubblemarks] Failed to move window across displays", error);
+      return { success: false, error: error?.message || "Unable to move window." };
+    }
+  },
+});
+
 const SUPPORTED_AUDIO_EXTENSIONS = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"]);
 
 const MUSIC_FOLDERS = {

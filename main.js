@@ -127,39 +127,113 @@ function displayMatchesZenbook(display) {
   });
 }
 
+function resolveSecondaryDisplay(displays, primaryDisplay) {
+  const secondaryDisplays = displays.filter((display) => display.id !== primaryDisplay.id);
+
+  if (secondaryDisplays.length === 0) {
+    return null;
+  }
+
+  const rightSideMatches = secondaryDisplays
+    .filter((display) => display.bounds.x > primaryDisplay.bounds.x)
+    .sort((a, b) => a.bounds.x - b.bounds.x);
+  if (rightSideMatches.length > 0) {
+    return rightSideMatches[0];
+  }
+
+  const leftSideMatches = secondaryDisplays
+    .filter((display) => display.bounds.x < primaryDisplay.bounds.x)
+    .sort((a, b) => b.bounds.x - a.bounds.x);
+  if (leftSideMatches.length > 0) {
+    return leftSideMatches[0];
+  }
+
+  const verticalMatches = secondaryDisplays
+    .filter((display) => display.bounds.y !== primaryDisplay.bounds.y)
+    .sort((a, b) => Math.abs(a.bounds.y - primaryDisplay.bounds.y) - Math.abs(b.bounds.y - primaryDisplay.bounds.y));
+  if (verticalMatches.length > 0) {
+    return verticalMatches[0];
+  }
+
+  const zenbookDisplay = secondaryDisplays.find(displayMatchesZenbook);
+  if (zenbookDisplay) {
+    return zenbookDisplay;
+  }
+
+  return secondaryDisplays[0];
+}
+
 function resolveTargetDisplay() {
   const displays = screen.getAllDisplays();
   if (displays.length === 0) {
     return screen.getPrimaryDisplay();
   }
 
-  const zenbookDisplay = displays.find(displayMatchesZenbook);
-  if (zenbookDisplay) {
-    return zenbookDisplay;
-  }
-
   const primaryDisplay = displays.find((display) => display.primary) || displays[0];
-  const secondaryDisplays = displays.filter((display) => display.id !== primaryDisplay.id);
+  const secondaryDisplay = resolveSecondaryDisplay(displays, primaryDisplay);
 
-  if (secondaryDisplays.length === 0) {
+  return secondaryDisplay || primaryDisplay;
+}
+
+function resolveDisplayByPreference(preference = "auto") {
+  const displays = screen.getAllDisplays();
+  const primaryDisplay = displays.find((display) => display.primary) || displays[0] || screen.getPrimaryDisplay();
+  const secondaryDisplay = resolveSecondaryDisplay(displays, primaryDisplay);
+
+  if (preference === "primary") {
     return primaryDisplay;
   }
 
-  const verticalMatches = secondaryDisplays
-    .filter((display) => display.bounds.y > primaryDisplay.bounds.y)
-    .sort((a, b) => b.bounds.y - a.bounds.y);
-  if (verticalMatches.length > 0) {
-    return verticalMatches[0];
+  if (preference === "secondary") {
+    return secondaryDisplay || primaryDisplay;
   }
 
-  const horizontalMatches = secondaryDisplays
-    .filter((display) => display.bounds.x !== primaryDisplay.bounds.x)
-    .sort((a, b) => a.bounds.x - b.bounds.x);
-  if (horizontalMatches.length > 0) {
-    return horizontalMatches[0];
+  return secondaryDisplay || primaryDisplay;
+}
+
+function moveMainWindowToDisplay(preference = "auto") {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return { success: false, error: "Main window is not available." };
   }
 
-  return secondaryDisplays[0];
+  const targetDisplay = resolveDisplayByPreference(preference);
+  if (!targetDisplay) {
+    return { success: false, error: "No display available." };
+  }
+
+  const { bounds } = targetDisplay;
+
+  try {
+    mainWindow.setFullScreen(false);
+    mainWindow.setBounds({
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+    });
+    mainWindow.setFullScreen(true);
+    mainWindow.focus();
+
+    return {
+      success: true,
+      display: {
+        id: targetDisplay.id,
+        bounds: targetDisplay.bounds,
+        scaleFactor: targetDisplay.scaleFactor,
+      },
+    };
+  } catch (error) {
+    console.error("[Bubblemarks] Failed to move window to target display", error);
+    return { success: false, error: error?.message || String(error) };
+  }
+}
+
+function registerDisplayHandlers() {
+  ipcMain.handle("display-move", async (_event, preference) => {
+    const normalizedPreference =
+      preference === "secondary" || preference === "primary" ? preference : "primary";
+    return moveMainWindowToDisplay(normalizedPreference);
+  });
 }
 
 function extractBubblemarksUrl(commandLine = []) {
@@ -437,6 +511,7 @@ function createWindow() {
     registerBubblemarksProtocol();
     registerMusicFolderHandler();
     registerQuicklaunchHandler();
+    registerDisplayHandlers();
 
     if (!app.isDefaultProtocolClient(BUBBLEMARKS_PROTOCOL)) {
       registerDefaultProtocolClient();
