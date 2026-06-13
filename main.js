@@ -236,6 +236,67 @@ function registerDisplayHandlers() {
   });
 }
 
+function resolveDisplayByPreference(preference = "auto") {
+  const displays = screen.getAllDisplays();
+  const primaryDisplay = displays.find((display) => display.primary) || displays[0] || screen.getPrimaryDisplay();
+  const secondaryDisplay = displays.find((display) => display.id !== primaryDisplay.id) || null;
+
+  if (preference === "primary") {
+    return primaryDisplay;
+  }
+
+  if (preference === "secondary") {
+    return secondaryDisplay || primaryDisplay;
+  }
+
+  return resolveTargetDisplay();
+}
+
+function moveMainWindowToDisplay(preference = "auto") {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return { success: false, error: "Main window is not available." };
+  }
+
+  const targetDisplay = resolveDisplayByPreference(preference);
+  if (!targetDisplay) {
+    return { success: false, error: "No display available." };
+  }
+
+  const { bounds } = targetDisplay;
+
+  try {
+    mainWindow.setFullScreen(false);
+    mainWindow.setBounds({
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+    });
+    mainWindow.setFullScreen(true);
+    mainWindow.focus();
+
+    return {
+      success: true,
+      display: {
+        id: targetDisplay.id,
+        bounds: targetDisplay.bounds,
+        scaleFactor: targetDisplay.scaleFactor,
+      },
+    };
+  } catch (error) {
+    console.error("[Bubblemarks] Failed to move window to target display", error);
+    return { success: false, error: error?.message || String(error) };
+  }
+}
+
+function registerDisplayHandlers() {
+  ipcMain.handle("display-move", async (_event, preference) => {
+    const normalizedPreference =
+      preference === "secondary" || preference === "primary" ? preference : "primary";
+    return moveMainWindowToDisplay(normalizedPreference);
+  });
+}
+
 function extractBubblemarksUrl(commandLine = []) {
   return commandLine.find((arg) => typeof arg === "string" && arg.startsWith(`${BUBBLEMARKS_PROTOCOL}://`));
 }
