@@ -169,7 +169,7 @@ function resolveTargetDisplay() {
     return screen.getPrimaryDisplay();
   }
 
-  const primaryDisplay = displays.find((display) => display.primary) || displays[0];
+  const primaryDisplay = screen.getPrimaryDisplay();
   const secondaryDisplay = resolveSecondaryDisplay(displays, primaryDisplay);
 
   return secondaryDisplay || primaryDisplay;
@@ -177,7 +177,7 @@ function resolveTargetDisplay() {
 
 function resolveDisplayByPreference(preference = "auto") {
   const displays = screen.getAllDisplays();
-  const primaryDisplay = displays.find((display) => display.primary) || displays[0] || screen.getPrimaryDisplay();
+  const primaryDisplay = screen.getPrimaryDisplay();
   const secondaryDisplay = resolveSecondaryDisplay(displays, primaryDisplay);
 
   if (preference === "primary") {
@@ -191,65 +191,47 @@ function resolveDisplayByPreference(preference = "auto") {
   return secondaryDisplay || primaryDisplay;
 }
 
-function moveMainWindowToDisplay(preference = "auto") {
-  if (!mainWindow || mainWindow.isDestroyed()) {
-    return { success: false, error: "Main window is not available." };
+
+function describeDisplay(display) {
+  if (!display) {
+    return "unavailable";
   }
 
-  const targetDisplay = resolveDisplayByPreference(preference);
-  if (!targetDisplay) {
-    return { success: false, error: "No display available." };
+  const { bounds, workArea, scaleFactor } = display;
+  return [
+    `id=${display.id}`,
+    `bounds=${bounds.x},${bounds.y},${bounds.width}x${bounds.height}`,
+    workArea ? `workArea=${workArea.x},${workArea.y},${workArea.width}x${workArea.height}` : null,
+    `scale=${scaleFactor}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function logDisplayPlan(targetDisplay) {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const displays = screen.getAllDisplays();
+
+  console.log(`[Bubblemarks] primary display ${describeDisplay(primaryDisplay)}`);
+  displays.forEach((display, index) => {
+    const role = display.id === primaryDisplay.id ? "primary" : "secondary";
+    console.log(`[Bubblemarks] display[${index}] ${role} ${describeDisplay(display)}`);
+  });
+  console.log(`[Bubblemarks] selected startup display ${describeDisplay(targetDisplay)}`);
+}
+
+function applyWindowBoundsToDisplay(targetDisplay) {
+  if (!mainWindow || mainWindow.isDestroyed() || !targetDisplay) {
+    return;
   }
 
   const { bounds } = targetDisplay;
-
-  try {
-    mainWindow.setFullScreen(false);
-    mainWindow.setBounds({
-      x: bounds.x,
-      y: bounds.y,
-      width: bounds.width,
-      height: bounds.height,
-    });
-    mainWindow.setFullScreen(true);
-    mainWindow.focus();
-
-    return {
-      success: true,
-      display: {
-        id: targetDisplay.id,
-        bounds: targetDisplay.bounds,
-        scaleFactor: targetDisplay.scaleFactor,
-      },
-    };
-  } catch (error) {
-    console.error("[Bubblemarks] Failed to move window to target display", error);
-    return { success: false, error: error?.message || String(error) };
-  }
-}
-
-function registerDisplayHandlers() {
-  ipcMain.handle("display-move", async (_event, preference) => {
-    const normalizedPreference =
-      preference === "secondary" || preference === "primary" ? preference : "primary";
-    return moveMainWindowToDisplay(normalizedPreference);
+  mainWindow.setBounds({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
   });
-}
-
-function resolveDisplayByPreference(preference = "auto") {
-  const displays = screen.getAllDisplays();
-  const primaryDisplay = displays.find((display) => display.primary) || displays[0] || screen.getPrimaryDisplay();
-  const secondaryDisplay = displays.find((display) => display.id !== primaryDisplay.id) || null;
-
-  if (preference === "primary") {
-    return primaryDisplay;
-  }
-
-  if (preference === "secondary") {
-    return secondaryDisplay || primaryDisplay;
-  }
-
-  return resolveTargetDisplay();
 }
 
 function moveMainWindowToDisplay(preference = "auto") {
@@ -489,6 +471,7 @@ function createWindow() {
   const targetSize = size || bounds;
   const { width, height } = targetSize;
 
+  logDisplayPlan(targetDisplay);
   console.log(
     `[Bubblemarks] targeting display ${targetDisplay.id} (${width}x${height}@${scaleFactor}x)`
   );
@@ -511,9 +494,21 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => {
-    mainWindow.setFullScreen(true);
+    applyWindowBoundsToDisplay(targetDisplay);
     mainWindow.show();
+    applyWindowBoundsToDisplay(targetDisplay);
+    mainWindow.setFullScreen(true);
     mainWindow.focus();
+
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setFullScreen(false);
+        applyWindowBoundsToDisplay(resolveTargetDisplay());
+        mainWindow.setFullScreen(true);
+        mainWindow.focus();
+      }
+    }, 500);
+
     flushPendingDeepLinks();
   });
 
